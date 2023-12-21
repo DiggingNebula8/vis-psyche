@@ -95,6 +95,14 @@ int main()
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 460");
 
+    // Variables to be changed in the ImGUI window
+    GLfloat clearColor[4] = { 0.05f, 0.02f, 0.01f, 1.0f };
+    float color[4] = { 0.2f, 0.3f, 0.8f, 1.0f };
+
+    // Exporting variables to shaders
+    glUseProgram(shaderProgram.ID);
+    glUniform4f(glGetUniformLocation(shaderProgram.ID, "color"), color[0], color[1], color[2], color[3]);
+
 
     // render loop
     // -----------
@@ -106,7 +114,7 @@ int main()
 
         // render
         // ------
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClearColor(clearColor[0], clearColor[1], clearColor[2], clearColor[3]);
         glClear(GL_COLOR_BUFFER_BIT);
 
         // Tell OpenGL a new frame is about to begin
@@ -127,8 +135,14 @@ int main()
         ImGui::Begin("ImGui Window");
         // Text that appears in the window
         ImGui::Text("Initialise ImGui Window");
+        ImGui::ColorEdit4("Color", color);
+        ImGui::ColorEdit4("Clear Color", clearColor);
         // Ends the window
         ImGui::End();
+
+        // Export variables to shader
+        glUseProgram(shaderProgram.ID);
+        glUniform4f(glGetUniformLocation(shaderProgram.ID, "color"), color[0], color[1], color[2], color[3]);
 
         // Renders the ImGUI elements
         ImGui::Render();
