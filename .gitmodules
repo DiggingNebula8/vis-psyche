@@ -1,0 +1,3 @@
+[submodule "VizPsyche/Libraries/vendor/imgui"]
+	path = VizPsyche/Libraries/vendor/imgui
+	url = https://github.com/ocornut/imgui.git
