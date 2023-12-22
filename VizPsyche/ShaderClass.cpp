@@ -1,28 +1,51 @@
 #include"ShaderClass.h"
 
-// Reads a text file and outputs a string with everything in the text file
-std::string get_file_contents(const char* filename)
+// Reads a .shader file and outputs two strings from the Shader Program Struct
+static ShaderPrograms ShaderParser(const char* shader)
 {
-	std::ifstream in(filename, std::ios::binary);
+	std::ifstream in(shader, std::ios::binary);
+	enum class ShaderType
+	{
+		NONE = -1, VERTEX = 0, FRAGMENT = 1
+	};
+
 	if (in)
 	{
 		std::string contents;
-		in.seekg(0, std::ios::end);
-		contents.resize(in.tellg());
-		in.seekg(0, std::ios::beg);
-		in.read(&contents[0], contents.size());
-		in.close();
-		return(contents);
+		std::stringstream ss[2];
+		ShaderType shaderType = ShaderType::NONE;
+		while (getline(in, contents))
+		{
+			if (contents.find("#shader") != std::string::npos)
+			{
+				if (contents.find("vertex") != std::string::npos)
+				{
+					shaderType = ShaderType::VERTEX;
+				}
+				else if (contents.find("fragment") != std::string::npos)
+				{
+					shaderType = ShaderType::FRAGMENT;
+				}
+			}
+			else
+			{
+				ss[(int)shaderType] << contents << '\n';
+			}
+		}
+		return {ss[0].str(), ss[1].str()};
 	}
 	throw(errno);
 }
 
-// Constructor that build the Shader Program from 2 different shaders
-Shader::Shader(const char* vertexFile, const char* fragmentFile)
+// Constructor that builds the final Shader
+Shader::Shader(const char* shader)
 {
-	// Read vertexFile and fragmentFile and store the strings
-	std::string vertexCode = get_file_contents(vertexFile);
-	std::string fragmentCode = get_file_contents(fragmentFile);
+	// Creating an object of the type ShaderPrograms to read the shader data from the file
+	ShaderPrograms shaders = ShaderParser(shader);
+
+	// Read vertex and fragment shaders from the shader programs and store the strings
+	std::string vertexCode = shaders.VertexProgram;
+	std::string fragmentCode = shaders.FragmentProgram;
 
 	// Convert the shader source strings into character arrays
 	const char* vertexSource = vertexCode.c_str();
