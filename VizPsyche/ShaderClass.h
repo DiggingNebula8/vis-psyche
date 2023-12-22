@@ -8,7 +8,15 @@
 #include<iostream>
 #include<cerrno>
 
-std::string get_file_contents(const char* filename);
+// Struct to return two or more strings. For Vertex and Fragment Shader Programs from the same file.
+struct ShaderPrograms
+{
+	std::string VertexProgram;
+	std::string FragmentProgram;
+};
+
+// Shader parser with a return type of ShaderPrograms
+static ShaderPrograms ShaderParser(const char* shader);
 
 class Shader
 {
@@ -16,7 +24,7 @@ public:
 	// Reference ID of the Shader Program
 	GLuint ID;
 	// Constructor that build the Shader Program from 2 different shaders
-	Shader(const char* vertexFile, const char* fragmentFile);
+	Shader(const char* shader);
 
 	// Activates the Shader Program
 	void Activate();
