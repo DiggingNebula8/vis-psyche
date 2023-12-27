@@ -67,7 +67,7 @@ int main()
     }
 
 
-    // Generates Shader object using shaders defualt.vert and default.frag
+    // Generates Shader object
     Shader shaderProgram("default.shader");
 
     // Generates Vertex Array Object and binds it
@@ -96,13 +96,13 @@ int main()
     ImGui_ImplOpenGL3_Init("#version 460");
 
     // Variables to be changed in the ImGUI window
-    GLfloat clearColor[4] = { 0.05f, 0.02f, 0.01f, 1.0f };
+    float clearColor[4] = { 0.05f, 0.02f, 0.01f, 1.0f };
     float color[4] = { 0.2f, 0.3f, 0.8f, 1.0f };
 
     // Exporting variables to shaders
     glUseProgram(shaderProgram.ID);
-    glUniform4f(glGetUniformLocation(shaderProgram.ID, "color"), color[0], color[1], color[2], color[3]);
-
+    //glUniform4f(glGetUniformLocation(shaderProgram.ID, "color"), color[0], color[1], color[2], color[3]);
+    shaderProgram.SetColor("color", color);
 
     // render loop
     // -----------
@@ -142,7 +142,8 @@ int main()
 
         // Export variables to shader
         glUseProgram(shaderProgram.ID);
-        glUniform4f(glGetUniformLocation(shaderProgram.ID, "color"), color[0], color[1], color[2], color[3]);
+        //glUniform4f(glGetUniformLocation(shaderProgram.ID, "color"), color[0], color[1], color[2], color[3]);
+        shaderProgram.SetColor("color", color);
 
         // Renders the ImGUI elements
         ImGui::Render();
