@@ -3,6 +3,8 @@
 
 #include <glad/glad.h>
 #include <vector>
+#include <type_traits>
+#include <iostream>
 
 struct VertexBufferElement
 {
@@ -34,7 +36,10 @@ public:
 	template<typename T>
 	void Push(unsigned int count)
 	{
-		//static_assert(false);
+		static_assert(std::is_same<T, float>::value || std::is_same<T, unsigned int>::value || std::is_same<T, unsigned char>::value,
+			"Unsupported type for VertexBufferLayout::Push");
+		// This is a general template for future types, currently does nothing or logs an error
+		std::cerr << "Type not supported yet!\n";
 	}
 
 	template<>
@@ -59,6 +64,7 @@ public:
 		m_Stride += count * VertexBufferElement::GetSizeOfType(GL_UNSIGNED_BYTE);
 
 	}
+
 
 	inline const std::vector<VertexBufferElement> GetElements() const& { return m_Elements; }
 	inline unsigned int GetStride() const { return m_Stride; }

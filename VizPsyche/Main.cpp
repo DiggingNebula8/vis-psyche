@@ -11,6 +11,7 @@
 #include"VertexArray.h"
 #include"VertexBuffer.h"
 #include"IndexBuffer.h"
+#include"Renderer.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
