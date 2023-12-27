@@ -14,6 +14,13 @@
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
+void GLAPIENTRY errorHandleGL(GLenum source,
+    GLenum type,
+    GLuint id,
+    GLenum severity,
+    GLsizei length,
+    const GLchar* message,
+    const void* userParam);
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -41,6 +48,9 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE); // for error handling
+
+
 
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
@@ -104,6 +114,11 @@ int main()
     //glUniform4f(glGetUniformLocation(shaderProgram.ID, "color"), color[0], color[1], color[2], color[3]);
     shaderProgram.SetColor("color", color);
 
+
+    // Error handling for OpenGL 4.3 and above https://docs.gl/gl4/glDebugMessageCallback
+    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+    glDebugMessageCallback(errorHandleGL, NULL);
+
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window))
@@ -127,7 +142,7 @@ int main()
         VAO1.Bind();
         // Draw primitives, number of indices, datatype of indices, index of indices
 
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
         // glBindVertexArray(0); // no need to unbind it every time 
 
 
@@ -192,4 +207,25 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     // make sure the viewport matches the new window dimensions; note that width and 
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
+}
+
+
+// Error handling for OpenGL 4.3 and above https://docs.gl/gl4/glDebugMessageCallback
+void GLAPIENTRY errorHandleGL(GLenum source,
+    GLenum type,
+    GLuint id,
+    GLenum severity,
+    GLsizei length,
+    const GLchar* message,
+    const void* userParam)
+{
+    std::cout << "OpenGL Error:\n"
+        << "Source: 0x" << std::hex << source << "\n"
+        << "Type: 0x" << std::hex << type << "\n"
+        << "Id: 0x" << std::hex << id << "\n"
+        << "Severity: 0x" << std::hex << severity << "\n";
+    std::cout << message << "\n";
+
+    exit(-1); // shut down the program gracefully (it does cleanup stuff too)
+    // without exit(), OpenGL will constantly print the error message... make sure to kill your program.
 }
