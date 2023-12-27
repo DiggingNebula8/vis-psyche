@@ -1,27 +1,31 @@
-#include"VBO.h"
+#include"VertexBuffer.h"
 
 // Constructor that generates a Vertex Buffer Object and links it to vertices
-VBO::VBO(GLfloat* vertices, GLsizeiptr size)
+VertexBuffer::VertexBuffer(const void* vertices, unsigned int size)
 {
 	glGenBuffers(1, &ID);
 	glBindBuffer(GL_ARRAY_BUFFER, ID);
 	glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
 }
 
-// Binds the VBO
-void VBO::Bind()
+VertexBuffer::~VertexBuffer()
+{
+	glDeleteBuffers(1, &ID);
+}
+
+// Binds the VertexBuffer
+void VertexBuffer::Bind() const
 {
 	glBindBuffer(GL_ARRAY_BUFFER, ID);
 }
 
-// Unbinds the VBO
-void VBO::Unbind()
+// Unbinds the VertexBuffer
+void VertexBuffer::Unbind() const
 {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-// Deletes the VBO
-void VBO::Delete()
+void VertexBuffer::Delete() const
 {
 	glDeleteBuffers(1, &ID);
 }

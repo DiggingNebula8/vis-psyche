@@ -8,9 +8,9 @@
 #include <iostream>
 
 #include"shaderClass.h"
-#include"VAO.h"
-#include"VBO.h"
-#include"EBO.h"
+#include"VertexArray.h"
+#include"VertexBuffer.h"
+#include"IndexBuffer.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -29,14 +29,14 @@ const unsigned int SCR_HEIGHT = 600;
 // set up vertex data (and buffer(s)) and configure vertex attributes
 // ------------------------------------------------------------------
 float vertices[] = {
-     0.5f,  0.5f, 0.0f,  // top right
-     0.5f, -0.5f, 0.0f,  // bottom right
-    -0.5f, -0.5f, 0.0f,  // bottom left
-    -0.5f,  0.5f, 0.0f   // top left 
+     -0.5f,  -0.5f,  // top right
+     0.5f, -0.5f,  // bottom right
+    0.5f, 0.5f,  // bottom left
+    -0.5f,  0.5f  // top left 
 };
 unsigned int indices[] = {  // note that we start from 0!
-    0, 1, 3,   // first triangle
-    1, 2, 3    // second triangle
+    0, 1, 2,   // first triangle
+    2, 3, 0    // second triangle
 };
 
 
@@ -81,20 +81,21 @@ int main()
     Shader shaderProgram("default.shader");
 
     // Generates Vertex Array Object and binds it
-    VAO VAO1;
-    VAO1.Bind();
-
+    VertexArray vertexArray;
     // Generates Vertex Buffer Object and links it to vertices
-    VBO VBO1(vertices, sizeof(vertices));
+    VertexBuffer vertexBuffer(vertices, 4 * 2 * sizeof(float));
+    
+    VertexBufferLayout layout;
+    layout.Push<float>(2);
+    // Links VertexBuffer to VertexArray
+    vertexArray.LinkVertexBuffer(vertexBuffer, layout);
     // Generates Element Buffer Object and links it to indices
-    EBO EBO1(indices, sizeof(indices));
+    IndexBuffer indexBuffer(indices, 6);
 
-    // Links VBO to VAO
-    VAO1.LinkVBO(VBO1, 0);
     // Unbind all to prevent accidentally modifying them
-    VAO1.Unbind();
-    VBO1.Unbind();
-    EBO1.Unbind();
+    //vertexArray.Unbind();
+    //vertexBuffer.Unbind();
+    //indexBuffer.Unbind();
 
 
     // Initialize ImGUI
@@ -138,8 +139,9 @@ int main()
         ImGui::NewFrame();
 
         shaderProgram.Activate();
-        // Bind the VAO so OpenGL knows to use it
-        VAO1.Bind();
+        // Bind the VertexArray so OpenGL knows to use it
+        vertexArray.Bind();
+        indexBuffer.Bind();
         // Draw primitives, number of indices, datatype of indices, index of indices
 
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
@@ -179,9 +181,8 @@ int main()
     // optional: de-allocate all resources once they've outlived their purpose:
     // ------------------------------------------------------------------------
     // Delete all the objects we've created
-    VAO1.Delete();
-    VBO1.Delete();
-    EBO1.Delete();
+    vertexArray.Delete();
+
     shaderProgram.Delete();
 
     glfwDestroyWindow(window);
