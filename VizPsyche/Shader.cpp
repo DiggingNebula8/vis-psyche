@@ -1,4 +1,4 @@
-#include"ShaderClass.h"
+#include"Shader.h"
 
 // Reads a .shader file and outputs two strings from the Shader Program Struct
 ShaderPrograms Shader::ShaderParser(const std::string& shaderFile)

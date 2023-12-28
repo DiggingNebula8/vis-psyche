@@ -54,7 +54,7 @@
     <ClCompile Include="IndexBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ShaderClass.cpp">
+    <ClCompile Include="Shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VertexArray.cpp">
@@ -98,7 +98,7 @@
     <ClInclude Include="IndexBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ShaderClass.h">
+    <ClInclude Include="Shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VertexArray.h">
