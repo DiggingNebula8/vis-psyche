@@ -1,5 +1,5 @@
-#ifndef SHADER_CLASS_H
-#define SHADER_CLASS_H
+#ifndef SHADER_H
+#define SHADER_H
 
 #include<glad/glad.h>
 #include<string>
@@ -16,34 +16,37 @@ struct ShaderPrograms
 	std::string FragmentProgram;
 };
 
-// Shader parser with a return type of ShaderPrograms
-static ShaderPrograms ShaderParser(const char* shader);
 
 class Shader
 {
+private:
+	std::string m_shaderPath;
+	unsigned int m_RendererID;
 public:
 	// Reference ID of the Shader Program
 	GLuint ID;
 	// Constructor that build the Shader Program from 2 different shaders
-	Shader(const char* shader);
+	Shader(const std::string& shaderFile);
+	~Shader();
 
 	// Activates the Shader Program
-	void Activate();
+	void Bind() const;
 	// Deletes the Shader Program
-	void Delete();
+	void Unbind() const;
 
     // utility uniform functions
-    // ------------------------------------------------------------------------
-    void SetBool(const std::string& name, bool value) const;
-    // ------------------------------------------------------------------------
-	void SetInt(const std::string& name, int value) const;
-    // ------------------------------------------------------------------------
-	void SetFloat(const std::string& name, float value) const;
-	// ------------------------------------------------------------------------
-	void SetColor(const std::string& name, float value[4]) const;
+    void SetBool(const std::string& name, bool value);
+	void SetInt(const std::string& name, int value);
+	void SetFloat(const std::string& name, float value);
+	void SetColor(const std::string& name, float value[4]);
 
 
 private:
+	// Shader parser with a return type of ShaderPrograms
+	ShaderPrograms ShaderParser(const std::string& shaderFile);
+	unsigned int CompileShader(unsigned int type, const std::string& source);
+	unsigned int CreateShader(const std::string& vert, const std::string& frag);
+	unsigned int GetUniformLocation(const std::string& name);
     // utility function for checking shader compilation/linking errors.
     // ------------------------------------------------------------------------
 	void CheckCompileErrors(unsigned int shader, std::string type);

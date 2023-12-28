@@ -7,7 +7,7 @@
 
 #include <iostream>
 
-#include"shaderClass.h"
+#include"ShaderClass.h"
 #include"VertexArray.h"
 #include"VertexBuffer.h"
 #include"IndexBuffer.h"
@@ -78,8 +78,6 @@ int main()
     }
 
 
-    // Generates Shader object
-    Shader shaderProgram("default.shader");
 
     // Generates Vertex Array Object and binds it
     VertexArray vertexArray;
@@ -92,9 +90,13 @@ int main()
     vertexArray.LinkVertexBuffer(vertexBuffer, layout);
     // Generates Element Buffer Object and links it to indices
     IndexBuffer indexBuffer(indices, 6);
+    // Generates Shader object
+    Shader shader("default.shader");
 
+    shader.Bind();
     // Unbind all to prevent accidentally modifying them
-    //vertexArray.Unbind();
+    vertexArray.Unbind();
+    //shader.Unbind();
     //vertexBuffer.Unbind();
     //indexBuffer.Unbind();
 
@@ -111,10 +113,11 @@ int main()
     float clearColor[4] = { 0.05f, 0.02f, 0.01f, 1.0f };
     float color[4] = { 0.2f, 0.3f, 0.8f, 1.0f };
 
-    // Exporting variables to shaders
-    glUseProgram(shaderProgram.ID);
-    //glUniform4f(glGetUniformLocation(shaderProgram.ID, "color"), color[0], color[1], color[2], color[3]);
-    shaderProgram.SetColor("color", color);
+    //// Exporting variables to shaders
+    //glUseProgram(shader.ID);
+    ////glUniform4f(glGetUniformLocation(shader.ID, "color"), color[0], color[1], color[2], color[3]);
+    shader.SetColor("color", color);
+    shader.Unbind();
 
 
     // Error handling for OpenGL 4.3 and above https://docs.gl/gl4/glDebugMessageCallback
@@ -139,7 +142,7 @@ int main()
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        shaderProgram.Activate();
+        shader.Bind();
         // Bind the VertexArray so OpenGL knows to use it
         vertexArray.Bind();
         indexBuffer.Bind();
@@ -158,10 +161,10 @@ int main()
         // Ends the window
         ImGui::End();
 
-        // Export variables to shader
-        glUseProgram(shaderProgram.ID);
-        //glUniform4f(glGetUniformLocation(shaderProgram.ID, "color"), color[0], color[1], color[2], color[3]);
-        shaderProgram.SetColor("color", color);
+        //// Export variables to shader
+        //glUseProgram(shader.ID);
+        ////glUniform4f(glGetUniformLocation(shader.ID, "color"), color[0], color[1], color[2], color[3]);
+        shader.SetColor("color", color);
 
         // Renders the ImGUI elements
         ImGui::Render();
@@ -183,8 +186,6 @@ int main()
     // ------------------------------------------------------------------------
     // Delete all the objects we've created
     vertexArray.Delete();
-
-    shaderProgram.Delete();
 
     glfwDestroyWindow(window);
 
