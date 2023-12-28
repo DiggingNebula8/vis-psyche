@@ -7,10 +7,11 @@
 
 #include <iostream>
 
-#include"shaderClass.h"
-#include"VAO.h"
-#include"VBO.h"
-#include"EBO.h"
+#include"Shader.h"
+#include"VertexArray.h"
+#include"VertexBuffer.h"
+#include"IndexBuffer.h"
+#include"Renderer.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -29,14 +30,14 @@ const unsigned int SCR_HEIGHT = 600;
 // set up vertex data (and buffer(s)) and configure vertex attributes
 // ------------------------------------------------------------------
 float vertices[] = {
-     0.5f,  0.5f, 0.0f,  // top right
-     0.5f, -0.5f, 0.0f,  // bottom right
-    -0.5f, -0.5f, 0.0f,  // bottom left
-    -0.5f,  0.5f, 0.0f   // top left 
+     -0.5f,  -0.5f,  // top right
+     0.5f, -0.5f,  // bottom right
+    0.5f, 0.5f,  // bottom left
+    -0.5f,  0.5f  // top left 
 };
 unsigned int indices[] = {  // note that we start from 0!
-    0, 1, 3,   // first triangle
-    1, 2, 3    // second triangle
+    0, 1, 2,   // first triangle
+    2, 3, 0    // second triangle
 };
 
 
@@ -77,24 +78,27 @@ int main()
     }
 
 
-    // Generates Shader object
-    Shader shaderProgram("default.shader");
 
     // Generates Vertex Array Object and binds it
-    VAO VAO1;
-    VAO1.Bind();
-
+    VertexArray vertexArray;
     // Generates Vertex Buffer Object and links it to vertices
-    VBO VBO1(vertices, sizeof(vertices));
+    VertexBuffer vertexBuffer(vertices, 4 * 2 * sizeof(float));
+    
+    VertexBufferLayout layout;
+    layout.Push<float>(2);
+    // Links VertexBuffer to VertexArray
+    vertexArray.LinkVertexBuffer(vertexBuffer, layout);
     // Generates Element Buffer Object and links it to indices
-    EBO EBO1(indices, sizeof(indices));
+    IndexBuffer indexBuffer(indices, 6);
+    // Generates Shader object
+    Shader shader("default.shader");
 
-    // Links VBO to VAO
-    VAO1.LinkVBO(VBO1, 0);
+    shader.Bind();
     // Unbind all to prevent accidentally modifying them
-    VAO1.Unbind();
-    VBO1.Unbind();
-    EBO1.Unbind();
+    vertexArray.Unbind();
+    //shader.Unbind();
+    //vertexBuffer.Unbind();
+    //indexBuffer.Unbind();
 
 
     // Initialize ImGUI
@@ -109,10 +113,11 @@ int main()
     float clearColor[4] = { 0.05f, 0.02f, 0.01f, 1.0f };
     float color[4] = { 0.2f, 0.3f, 0.8f, 1.0f };
 
-    // Exporting variables to shaders
-    glUseProgram(shaderProgram.ID);
-    //glUniform4f(glGetUniformLocation(shaderProgram.ID, "color"), color[0], color[1], color[2], color[3]);
-    shaderProgram.SetColor("color", color);
+    //// Exporting variables to shaders
+    //glUseProgram(shader.ID);
+    ////glUniform4f(glGetUniformLocation(shader.ID, "color"), color[0], color[1], color[2], color[3]);
+    shader.SetColor("color", color);
+    shader.Unbind();
 
 
     // Error handling for OpenGL 4.3 and above https://docs.gl/gl4/glDebugMessageCallback
@@ -137,9 +142,10 @@ int main()
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        shaderProgram.Activate();
-        // Bind the VAO so OpenGL knows to use it
-        VAO1.Bind();
+        shader.Bind();
+        // Bind the VertexArray so OpenGL knows to use it
+        vertexArray.Bind();
+        indexBuffer.Bind();
         // Draw primitives, number of indices, datatype of indices, index of indices
 
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
@@ -155,10 +161,10 @@ int main()
         // Ends the window
         ImGui::End();
 
-        // Export variables to shader
-        glUseProgram(shaderProgram.ID);
-        //glUniform4f(glGetUniformLocation(shaderProgram.ID, "color"), color[0], color[1], color[2], color[3]);
-        shaderProgram.SetColor("color", color);
+        //// Export variables to shader
+        //glUseProgram(shader.ID);
+        ////glUniform4f(glGetUniformLocation(shader.ID, "color"), color[0], color[1], color[2], color[3]);
+        shader.SetColor("color", color);
 
         // Renders the ImGUI elements
         ImGui::Render();
@@ -179,10 +185,7 @@ int main()
     // optional: de-allocate all resources once they've outlived their purpose:
     // ------------------------------------------------------------------------
     // Delete all the objects we've created
-    VAO1.Delete();
-    VBO1.Delete();
-    EBO1.Delete();
-    shaderProgram.Delete();
+    vertexArray.Delete();
 
     glfwDestroyWindow(window);
 
