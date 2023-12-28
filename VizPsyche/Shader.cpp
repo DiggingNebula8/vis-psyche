@@ -107,15 +107,15 @@ unsigned int Shader::CreateShader(const std::string& vert, const std::string& fr
 // utility uniform functions
 void Shader::SetBool(const std::string& name, bool value)
 {
-	glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value);
+	glUniform1i(GetUniformLocation(name), (int)value);
 }
 void Shader::SetInt(const std::string& name, int value)
 {
-	glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
+	glUniform1i(GetUniformLocation(name), value);
 }
 void Shader::SetFloat(const std::string& name, float value)
 {
-	glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
+	glUniform1f(GetUniformLocation(name), value);
 }
 void Shader::SetColor(const std::string& name, float value[4])
 {
@@ -124,13 +124,16 @@ void Shader::SetColor(const std::string& name, float value[4])
 
 unsigned int Shader::GetUniformLocation(const std::string& name)
 {
+	if (m_LocationCache.find(name) != m_LocationCache.end())
+		return m_LocationCache[name];
+
 	int location = glGetUniformLocation(m_RendererID, name.c_str());
 	if (location == -1)
 		std::cout << "Warning: Shader Uniform " << name << " doesn't exist!" << std::endl;
+
+	m_LocationCache[name] = location;
 	return location;
 }
-
-
 
 // utility function for checking shader compilation/linking errors.
 void Shader::CheckCompileErrors(unsigned int shader, std::string type)
