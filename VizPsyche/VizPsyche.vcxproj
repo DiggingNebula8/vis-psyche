@@ -151,7 +151,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="EBO.cpp" />
+    <ClCompile Include="ErrorHandling.cpp" />
+    <ClCompile Include="IndexBuffer.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="Libraries\vendor\imgui\backends\imgui_impl_glfw.cpp" />
     <ClCompile Include="Libraries\vendor\imgui\backends\imgui_impl_opengl3.cpp" />
@@ -161,12 +162,15 @@
     <ClCompile Include="Libraries\vendor\imgui\imgui_tables.cpp" />
     <ClCompile Include="Libraries\vendor\imgui\imgui_widgets.cpp" />
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="ShaderClass.cpp" />
-    <ClCompile Include="VAO.cpp" />
-    <ClCompile Include="VBO.cpp" />
+    <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="UIManager.cpp" />
+    <ClCompile Include="VertexArray.cpp" />
+    <ClCompile Include="VertexBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="EBO.h" />
+    <ClInclude Include="ErrorHandling.h" />
+    <ClInclude Include="IndexBuffer.h" />
     <ClInclude Include="Libraries\vendor\imgui\backends\imgui_impl_glfw.h" />
     <ClInclude Include="Libraries\vendor\imgui\backends\imgui_impl_opengl3.h" />
     <ClInclude Include="Libraries\vendor\imgui\backends\imgui_impl_opengl3_loader.h" />
@@ -176,9 +180,12 @@
     <ClInclude Include="Libraries\vendor\imgui\imstb_rectpack.h" />
     <ClInclude Include="Libraries\vendor\imgui\imstb_textedit.h" />
     <ClInclude Include="Libraries\vendor\imgui\imstb_truetype.h" />
-    <ClInclude Include="ShaderClass.h" />
-    <ClInclude Include="VAO.h" />
-    <ClInclude Include="VBO.h" />
+    <ClInclude Include="Renderer.h" />
+    <ClInclude Include="Shader.h" />
+    <ClInclude Include="UIManager.h" />
+    <ClInclude Include="VertexArray.h" />
+    <ClInclude Include="VertexBuffer.h" />
+    <ClInclude Include="VertexBufferLayout.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="default.shader" />

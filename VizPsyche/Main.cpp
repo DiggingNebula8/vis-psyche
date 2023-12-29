@@ -6,21 +6,12 @@
 #include <GLFW/glfw3.h>
 
 #include <iostream>
-
-#include"shaderClass.h"
-#include"VAO.h"
-#include"VBO.h"
-#include"EBO.h"
+#include"Renderer.h"
+#include"UIManager.h"
+#include"ErrorHandling.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
-void GLAPIENTRY errorHandleGL(GLenum source,
-    GLenum type,
-    GLuint id,
-    GLenum severity,
-    GLsizei length,
-    const GLchar* message,
-    const void* userParam);
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -29,14 +20,14 @@ const unsigned int SCR_HEIGHT = 600;
 // set up vertex data (and buffer(s)) and configure vertex attributes
 // ------------------------------------------------------------------
 float vertices[] = {
-     0.5f,  0.5f, 0.0f,  // top right
-     0.5f, -0.5f, 0.0f,  // bottom right
-    -0.5f, -0.5f, 0.0f,  // bottom left
-    -0.5f,  0.5f, 0.0f   // top left 
+     -0.5f,  -0.5f,  // top right
+     0.5f, -0.5f,  // bottom right
+    0.5f, 0.5f,  // bottom left
+    -0.5f,  0.5f  // top left 
 };
 unsigned int indices[] = {  // note that we start from 0!
-    0, 1, 3,   // first triangle
-    1, 2, 3    // second triangle
+    0, 1, 2,   // first triangle
+    2, 3, 0    // second triangle
 };
 
 
@@ -77,47 +68,41 @@ int main()
     }
 
 
-    // Generates Shader object
-    Shader shaderProgram("default.shader");
 
     // Generates Vertex Array Object and binds it
-    VAO VAO1;
-    VAO1.Bind();
-
+    VertexArray vertexArray;
     // Generates Vertex Buffer Object and links it to vertices
-    VBO VBO1(vertices, sizeof(vertices));
+    VertexBuffer vertexBuffer(vertices, 4 * 2 * sizeof(float));
+    
+    VertexBufferLayout layout;
+    layout.Push<float>(2);
+    // Links VertexBuffer to VertexArray
+    vertexArray.LinkVertexBuffer(vertexBuffer, layout);
     // Generates Element Buffer Object and links it to indices
-    EBO EBO1(indices, sizeof(indices));
+    IndexBuffer indexBuffer(indices, 6);
+    // Generates Shader object
+    Shader shader("default.shader");
 
-    // Links VBO to VAO
-    VAO1.LinkVBO(VBO1, 0);
-    // Unbind all to prevent accidentally modifying them
-    VAO1.Unbind();
-    VBO1.Unbind();
-    EBO1.Unbind();
-
-
-    // Initialize ImGUI
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    ImGui::StyleColorsDark();
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init("#version 460");
+    shader.Bind();
+    // Initialize UI
+    UIManager uiManager(window);
 
     // Variables to be changed in the ImGUI window
     float clearColor[4] = { 0.05f, 0.02f, 0.01f, 1.0f };
     float color[4] = { 0.2f, 0.3f, 0.8f, 1.0f };
+    shader.SetColor("color", color);
+    // Unbind all to prevent accidentally modifying them
+    shader.Unbind();
+    vertexArray.Unbind();
+    vertexBuffer.Unbind();
+    indexBuffer.Unbind();
 
-    // Exporting variables to shaders
-    glUseProgram(shaderProgram.ID);
-    //glUniform4f(glGetUniformLocation(shaderProgram.ID, "color"), color[0], color[1], color[2], color[3]);
-    shaderProgram.SetColor("color", color);
+
+    Renderer renderer;
 
 
-    // Error handling for OpenGL 4.3 and above https://docs.gl/gl4/glDebugMessageCallback
-    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-    glDebugMessageCallback(errorHandleGL, NULL);
+    // Error handling for OpenGL 4.3
+    ErrorHandling::HandleErrors();
 
     // render loop
     // -----------
@@ -129,60 +114,43 @@ int main()
 
         // render
         // ------
-        glClearColor(clearColor[0], clearColor[1], clearColor[2], clearColor[3]);
-        glClear(GL_COLOR_BUFFER_BIT);
+        renderer.Clear(clearColor);
 
-        // Tell OpenGL a new frame is about to begin
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
+        // Tell ImGUI that a new OpenGL frame is about to begin
+        uiManager.BeginFrame();
+        //ImGui_ImplOpenGL3_NewFrame();
+        //ImGui_ImplGlfw_NewFrame();
+        //ImGui::NewFrame();
 
-        shaderProgram.Activate();
-        // Bind the VAO so OpenGL knows to use it
-        VAO1.Bind();
-        // Draw primitives, number of indices, datatype of indices, index of indices
+        // Binding
+        shader.Bind();
+        vertexArray.Bind();
+        indexBuffer.Bind();
 
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
-        // glBindVertexArray(0); // no need to unbind it every time 
+        //Drawcall
+        renderer.Draw(vertexArray, indexBuffer, shader);
 
 
         // ImGUI window creation
-        ImGui::Begin("ImGui Window");
+        uiManager.StartWindow("Simple UI Window");
         // Text that appears in the window
         ImGui::Text("Initialise ImGui Window");
         ImGui::ColorEdit4("Color", color);
         ImGui::ColorEdit4("Clear Color", clearColor);
         // Ends the window
-        ImGui::End();
+        uiManager.EndWindow();
 
-        // Export variables to shader
-        glUseProgram(shaderProgram.ID);
-        //glUniform4f(glGetUniformLocation(shaderProgram.ID, "color"), color[0], color[1], color[2], color[3]);
-        shaderProgram.SetColor("color", color);
+        //// Export variables to shader
+        shader.SetColor("color", color);
 
         // Renders the ImGUI elements
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
+        uiManager.Render();
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-
-    // Deletes all ImGUI instances
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
-
-    // optional: de-allocate all resources once they've outlived their purpose:
-    // ------------------------------------------------------------------------
-    // Delete all the objects we've created
-    VAO1.Delete();
-    VBO1.Delete();
-    EBO1.Delete();
-    shaderProgram.Delete();
 
     glfwDestroyWindow(window);
 
@@ -207,25 +175,4 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     // make sure the viewport matches the new window dimensions; note that width and 
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
-}
-
-
-// Error handling for OpenGL 4.3 and above https://docs.gl/gl4/glDebugMessageCallback
-void GLAPIENTRY errorHandleGL(GLenum source,
-    GLenum type,
-    GLuint id,
-    GLenum severity,
-    GLsizei length,
-    const GLchar* message,
-    const void* userParam)
-{
-    std::cout << "OpenGL Error:\n"
-        << "Source: 0x" << std::hex << source << "\n"
-        << "Type: 0x" << std::hex << type << "\n"
-        << "Id: 0x" << std::hex << id << "\n"
-        << "Severity: 0x" << std::hex << severity << "\n";
-    std::cout << message << "\n";
-
-    exit(-1); // shut down the program gracefully (it does cleanup stuff too)
-    // without exit(), OpenGL will constantly print the error message... make sure to kill your program.
 }
