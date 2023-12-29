@@ -81,7 +81,7 @@ int main()
     // Generates Element Buffer Object and links it to indices
     IndexBuffer indexBuffer(indices, 6);
     // Generates Shader object
-    Shader shader("default.shader");
+    Shader shader("src/resources/shaders/default.shader");
 
     shader.Bind();
     // Initialize UI
