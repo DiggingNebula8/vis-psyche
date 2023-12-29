@@ -12,7 +12,7 @@ VertexArray::~VertexArray()
 }
 
 // Links a VertexBuffer to the VertexArray using a certain layout
-void VertexArray::LinkVertexBuffer(const VertexBuffer& vertexBuffer, const VertexBufferLayout& layout)
+void VertexArray::LinkVertexBuffer(const VertexBuffer& vertexBuffer, const VertexBufferLayout& layout) const
 {
 	Bind();
 	vertexBuffer.Bind();
@@ -22,7 +22,7 @@ void VertexArray::LinkVertexBuffer(const VertexBuffer& vertexBuffer, const Verte
 	{
 		const auto& element = elements[i];
 		glEnableVertexAttribArray(i);
-		glVertexAttribPointer(i, element.count, element.type, element.normalised, layout.GetStride() , (const void*)offset);
+		glVertexAttribPointer(i, element.count, element.type, element.normalised, layout.GetStride(), reinterpret_cast<const void*>(static_cast<size_t>(offset)));
 		offset += element.count * VertexBufferElement::GetSizeOfType(element.type);
 	}
 	//vertexBuffer.Unbind();

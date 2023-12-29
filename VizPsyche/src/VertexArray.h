@@ -14,7 +14,7 @@ public:
 	~VertexArray();
 
 	// Links a VertexBuffer to the VertexArray using a certain layout
-	void LinkVertexBuffer(const VertexBuffer& vertexBuffer, const VertexBufferLayout& layout);
+	void LinkVertexBuffer(const VertexBuffer& vertexBuffer, const VertexBufferLayout& layout) const;
 	// Binds the VertexArray
 	void Bind() const;
 	// Unbinds the VertexArray
