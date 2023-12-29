@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include"Renderer.h"
+#include"UIManager.h"
 #include"ErrorHandling.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -83,32 +84,22 @@ int main()
     Shader shader("default.shader");
 
     shader.Bind();
-    // Unbind all to prevent accidentally modifying them
-    vertexArray.Unbind();
-    //shader.Unbind();
-    //vertexBuffer.Unbind();
-    //indexBuffer.Unbind();
-
-
-    // Initialize ImGUI
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    ImGui::StyleColorsDark();
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init("#version 460");
+    // Initialize UI
+    UIManager uiManager(window);
 
     // Variables to be changed in the ImGUI window
     float clearColor[4] = { 0.05f, 0.02f, 0.01f, 1.0f };
     float color[4] = { 0.2f, 0.3f, 0.8f, 1.0f };
-
-    //// Exporting variables to shaders
-    //glUseProgram(shader.ID);
-    ////glUniform4f(glGetUniformLocation(shader.ID, "color"), color[0], color[1], color[2], color[3]);
     shader.SetColor("color", color);
+    // Unbind all to prevent accidentally modifying them
     shader.Unbind();
+    vertexArray.Unbind();
+    vertexBuffer.Unbind();
+    indexBuffer.Unbind();
+
 
     Renderer renderer;
+
 
     // Error handling for OpenGL 4.3
     ErrorHandling::HandleErrors();
@@ -125,56 +116,41 @@ int main()
         // ------
         renderer.Clear(clearColor);
 
-        // Tell OpenGL a new frame is about to begin
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
+        // Tell ImGUI that a new OpenGL frame is about to begin
+        uiManager.BeginFrame();
+        //ImGui_ImplOpenGL3_NewFrame();
+        //ImGui_ImplGlfw_NewFrame();
+        //ImGui::NewFrame();
 
+        // Binding
         shader.Bind();
-        // Bind the VertexArray so OpenGL knows to use it
         vertexArray.Bind();
         indexBuffer.Bind();
-        // Draw primitives, number of indices, datatype of indices, index of indices
 
+        //Drawcall
         renderer.Draw(vertexArray, indexBuffer, shader);
-        //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
-        // glBindVertexArray(0); // no need to unbind it every time 
 
 
         // ImGUI window creation
-        ImGui::Begin("ImGui Window");
+        uiManager.StartWindow("Simple UI Window");
         // Text that appears in the window
         ImGui::Text("Initialise ImGui Window");
         ImGui::ColorEdit4("Color", color);
         ImGui::ColorEdit4("Clear Color", clearColor);
         // Ends the window
-        ImGui::End();
+        uiManager.EndWindow();
 
         //// Export variables to shader
-        //glUseProgram(shader.ID);
-        ////glUniform4f(glGetUniformLocation(shader.ID, "color"), color[0], color[1], color[2], color[3]);
         shader.SetColor("color", color);
 
         // Renders the ImGUI elements
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
+        uiManager.Render();
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-
-    // Deletes all ImGUI instances
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
-
-    // optional: de-allocate all resources once they've outlived their purpose:
-    // ------------------------------------------------------------------------
-    // Delete all the objects we've created
-    vertexArray.Delete();
 
     glfwDestroyWindow(window);
 
