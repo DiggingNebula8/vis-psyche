@@ -33,6 +33,7 @@ void GLFWManager::Init(unsigned int width, unsigned int height, const std::strin
 
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, FramebufferSizeCallback);
+    glfwSetKeyCallback(window, KeyCallback);
 
 }
 
@@ -63,4 +64,15 @@ void GLFWManager::FramebufferSizeCallback(GLFWwindow* window, int width, int hei
     // make sure the viewport matches the new window dimensions; note that width and 
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
+}
+
+void GLFWManager::ProcessInput() {
+    // You can handle continuous key presses here
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+        glfwSetWindowShouldClose(window, true);
+    }
+}
+
+void GLFWManager::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    // Handle single key events here
 }
