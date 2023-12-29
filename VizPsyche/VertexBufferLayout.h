@@ -1,5 +1,4 @@
-#ifndef VERTEX_BUFFER_LAYOUT_CLASS_H
-#define VERTEX_BUFFER_LAYOUT_CLASS_H
+#pragma once
 
 #include <glad/glad.h>
 #include <vector>
@@ -69,5 +68,3 @@ public:
 	inline const std::vector<VertexBufferElement> GetElements() const& { return m_Elements; }
 	inline unsigned int GetStride() const { return m_Stride; }
 };
-
-#endif

@@ -29,13 +29,13 @@ void VertexArray::LinkVertexBuffer(const VertexBuffer& vertexBuffer, const Verte
 }
 
 // Binds the VertexArray
-void VertexArray::Bind()
+void VertexArray::Bind() const
 {
 	glBindVertexArray(ID);
 }
 
 // Unbinds the VertexArray
-void VertexArray::Unbind()
+void VertexArray::Unbind() const
 {
 	glBindVertexArray(0);
 }

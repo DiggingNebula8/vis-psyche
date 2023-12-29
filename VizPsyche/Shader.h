@@ -1,5 +1,4 @@
-#ifndef SHADER_H
-#define SHADER_H
+#pragma once
 
 #include<glad/glad.h>
 #include<string>
@@ -54,4 +53,3 @@ private:
     // utility function for checking shader compilation/linking errors.
 	void CheckCompileErrors(unsigned int shader, std::string type);
 };
-#endif

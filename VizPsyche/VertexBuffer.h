@@ -1,5 +1,4 @@
-#ifndef VERTEX_BUFFER_CLASS_H
-#define VERTEX_BUFFER_CLASS_H
+#pragma once
 
 #include<glad/glad.h>
 
@@ -19,5 +18,3 @@ public:
 	// Deletes the VertexBuffer
 	void Delete() const;
 };
-
-#endif

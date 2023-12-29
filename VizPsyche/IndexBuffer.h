@@ -1,5 +1,4 @@
-#ifndef INDEX_BUFFER_CLASS_H
-#define INDEX_BUFFER_CLASS_H
+#pragma once
 
 #include<glad/glad.h>
 
@@ -21,5 +20,3 @@ public:
 
 	inline unsigned int GetCount() const { return count; }
 };
-
-#endif

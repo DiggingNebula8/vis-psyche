@@ -151,6 +151,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ErrorHandling.cpp" />
     <ClCompile Include="IndexBuffer.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="Libraries\vendor\imgui\backends\imgui_impl_glfw.cpp" />
@@ -167,6 +168,7 @@
     <ClCompile Include="VertexBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ErrorHandling.h" />
     <ClInclude Include="IndexBuffer.h" />
     <ClInclude Include="Libraries\vendor\imgui\backends\imgui_impl_glfw.h" />
     <ClInclude Include="Libraries\vendor\imgui\backends\imgui_impl_opengl3.h" />

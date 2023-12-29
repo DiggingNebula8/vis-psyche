@@ -6,11 +6,6 @@
 #include <GLFW/glfw3.h>
 
 #include <iostream>
-
-#include"Shader.h"
-#include"VertexArray.h"
-#include"VertexBuffer.h"
-#include"IndexBuffer.h"
 #include"Renderer.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -119,6 +114,7 @@ int main()
     shader.SetColor("color", color);
     shader.Unbind();
 
+    Renderer renderer;
 
     // Error handling for OpenGL 4.3 and above https://docs.gl/gl4/glDebugMessageCallback
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
@@ -134,8 +130,7 @@ int main()
 
         // render
         // ------
-        glClearColor(clearColor[0], clearColor[1], clearColor[2], clearColor[3]);
-        glClear(GL_COLOR_BUFFER_BIT);
+        renderer.Clear(clearColor);
 
         // Tell OpenGL a new frame is about to begin
         ImGui_ImplOpenGL3_NewFrame();
@@ -148,7 +143,8 @@ int main()
         indexBuffer.Bind();
         // Draw primitives, number of indices, datatype of indices, index of indices
 
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+        renderer.Draw(vertexArray, indexBuffer, shader);
+        //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
         // glBindVertexArray(0); // no need to unbind it every time 
 
 

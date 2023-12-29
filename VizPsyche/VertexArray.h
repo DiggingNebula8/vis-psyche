@@ -1,5 +1,4 @@
-#ifndef VERTEX_ARRAY_CLASS_H
-#define VERTEX_ARRAY_CLASS_H
+#pragma once
 
 #include<glad/glad.h>
 #include"VertexBuffer.h"
@@ -17,10 +16,9 @@ public:
 	// Links a VertexBuffer to the VertexArray using a certain layout
 	void LinkVertexBuffer(const VertexBuffer& vertexBuffer, const VertexBufferLayout& layout);
 	// Binds the VertexArray
-	void Bind();
+	void Bind() const;
 	// Unbinds the VertexArray
-	void Unbind();
+	void Unbind() const;
 	// Deletes the VertexArray
 	void Delete() const;
 };
-#endif
