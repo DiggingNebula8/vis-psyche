@@ -36,7 +36,8 @@ int main()
         return -1;
     }
 
-
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // Generates Vertex Array Object and binds it
     VertexArray vertexArray;
@@ -55,8 +56,8 @@ int main()
     Shader shader("src/resources/shaders/default.shader");
 
     shader.Bind();
-    //Texture texture("resources/textures/hellotexture.png");
-    //texture.Bind();
+    Texture texture("src/resources/textures/hellotexture.png");
+    texture.Bind();
 
     // Initialize UI
     UIManager uiManager(glfw.GetWindow());

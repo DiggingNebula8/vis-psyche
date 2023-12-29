@@ -10,9 +10,9 @@ out vec2 v_TexCoord;
 
 void main()
 {
-   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
-   v_VertColor = vertColor;
-   v_TexCoord = texCoord;
+	gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
+	v_VertColor = vertColor;
+	v_TexCoord = texCoord;
 }
 
 #shader fragment
@@ -24,7 +24,9 @@ in vec4 v_VertColor;
 in vec2 v_TexCoord;
 
 uniform vec4 u_Color;
+uniform sampler2D u_MainTex;
 void main()
 {
-   FragColor = v_VertColor * u_Color;
+	vec4 textureColour = texture(u_MainTex, v_TexCoord);
+	FragColor = v_VertColor * u_Color * textureColour;
 }
