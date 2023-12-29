@@ -1,18 +1,10 @@
-#include"imgui.h"
-#include"imgui_impl_glfw.h"
-#include"imgui_impl_opengl3.h"
-
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-
-#include <iostream>
+#include"Commons.h"
+#include"GLFWManager.h"
 #include"Renderer.h"
 #include"UIManager.h"
 #include"ErrorHandling.h"
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
-
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
@@ -33,31 +25,7 @@ unsigned int indices[] = {  // note that we start from 0!
 
 int main()
 {
-    // glfw: initialize and configure
-    // ------------------------------
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE); // for error handling
-
-
-
-#ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
-
-    // glfw window creation
-    // --------------------
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Viz Psyche", NULL, NULL);
-    if (window == NULL)
-    {
-        std::cout << "Failed to create GLFW window" << std::endl;
-        glfwTerminate();
-        return -1;
-    }
-    glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    GLFWManager glfw(SCR_WIDTH, SCR_HEIGHT, "Viz Psyche");
 
     // glad: load all OpenGL function pointers
     // ---------------------------------------
@@ -85,7 +53,7 @@ int main()
 
     shader.Bind();
     // Initialize UI
-    UIManager uiManager(window);
+    UIManager uiManager(glfw.GetWindow());
 
     // Variables to be changed in the ImGUI window
     float clearColor[4] = { 0.05f, 0.02f, 0.01f, 1.0f };
@@ -106,21 +74,15 @@ int main()
 
     // render loop
     // -----------
-    while (!glfwWindowShouldClose(window))
+    while (!glfw.WindowShouldClose())
     {
-        // input
-        // -----
-        processInput(window);
+        // Inputs
+        processInput(glfw.GetWindow());
+        uiManager.BeginFrame();
 
-        // render
-        // ------
+        // Rendering
         renderer.Clear(clearColor);
 
-        // Tell ImGUI that a new OpenGL frame is about to begin
-        uiManager.BeginFrame();
-        //ImGui_ImplOpenGL3_NewFrame();
-        //ImGui_ImplGlfw_NewFrame();
-        //ImGui::NewFrame();
 
         // Binding
         shader.Bind();
@@ -146,17 +108,8 @@ int main()
         // Renders the ImGUI elements
         uiManager.Render();
 
-        // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
-        // -------------------------------------------------------------------------------
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+        glfw.SwapBuffersAndPollEvents();
     }
-
-    glfwDestroyWindow(window);
-
-    // glfw: terminate, clearing all previously allocated GLFW resources.
-    // ------------------------------------------------------------------
-    glfwTerminate();
     return 0;
 }
 
@@ -166,13 +119,4 @@ void processInput(GLFWwindow* window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
-}
-
-// glfw: whenever the window size changed (by OS or user resize) this callback function executes
-// ---------------------------------------------------------------------------------------------
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-    // make sure the viewport matches the new window dimensions; note that width and 
-    // height will be significantly larger than specified on retina displays.
-    glViewport(0, 0, width, height);
 }
