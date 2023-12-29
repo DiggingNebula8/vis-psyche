@@ -49,7 +49,7 @@ private:
 	// Creates the final shader 
 	unsigned int CreateShader(const std::string& vert, const std::string& frag);
 	// Get uniform location for the set shader uniforms
-	unsigned int GetUniformLocation(const std::string& name);
+	int GetUniformLocation(const std::string& name);
     // utility function for checking shader compilation/linking errors.
 	void CheckCompileErrors(unsigned int shader, std::string type);
 };
