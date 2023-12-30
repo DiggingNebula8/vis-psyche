@@ -8,9 +8,11 @@ layout (location = 2) in vec2 texCoord;
 out vec4 v_VertColor;
 out vec2 v_TexCoord;
 
+uniform float u_Scale;
+
 void main()
 {
-	gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
+	gl_Position = vec4(aPos.xyz * u_Scale, 1.0);
 	v_VertColor = vertColor;
 	v_TexCoord = texCoord;
 }

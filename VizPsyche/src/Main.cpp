@@ -65,7 +65,9 @@ int main()
     // Variables to be changed in the ImGUI window
     float clearColor[4] = { 0.05f, 0.02f, 0.01f, 1.0f };
     float color[4] = { 0.2f, 0.3f, 0.8f, 1.0f };
+    float scale = 1.0f;
     shader.SetColor("u_Color", color);
+    shader.SetFloat("u_Scale", scale);
     // Unbind all to prevent accidentally modifying them
     shader.Unbind();
     vertexArray.Unbind();
@@ -103,14 +105,22 @@ int main()
         // ImGUI window creation
         uiManager.StartWindow("Simple UI Window");
         // Text that appears in the window
-        ImGui::Text("Initialise ImGui Window");
-        ImGui::ColorEdit4("Color", color);
+        ImGui::Text("Background Parameters");
+        ImGui::Spacing();
         ImGui::ColorEdit4("Clear Color", clearColor);
+        ImGui::Spacing();
+        ImGui::Spacing();
+        ImGui::Text("Image Parameters");
+        ImGui::Spacing();
+        ImGui::SliderFloat("Scale", &scale, 0.0f, 2.0f);
+        ImGui::ColorEdit4("Colour", color);
         // Ends the window
         uiManager.EndWindow();
 
         //// Export variables to shader
         shader.SetColor("u_Color", color);
+        shader.SetFloat("u_Scale", scale);
+
 
         // Renders the ImGUI elements
         uiManager.Render();
