@@ -10,7 +10,7 @@ namespace VizPsyche
 		Application();
 		virtual ~Application();
 
-		void Run();
+		int Run();
 	};
 
 	Application* CreateApplication();
