@@ -89,11 +89,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\VizPsyche\Application.cpp" />
-    <ClCompile Include="src\VizPsyche\ErrorHandling.cpp" />
-    <ClCompile Include="src\VizPsyche\GLFWManager.cpp" />
-    <ClCompile Include="src\VizPsyche\IndexBuffer.cpp" />
-    <ClCompile Include="src\VizPsyche\glad.c" />
-    <ClCompile Include="src\VizPsyche\Texture.cpp" />
+    <ClCompile Include="src\VizPsyche\OpenGL\ErrorHandling.cpp" />
+    <ClCompile Include="src\VizPsyche\OpenGL\GLFWManager.cpp" />
+    <ClCompile Include="src\VizPsyche\OpenGL\IndexBuffer.cpp" />
+    <ClCompile Include="src\VizPsyche\OpenGL\glad.c" />
+    <ClCompile Include="src\VizPsyche\OpenGL\Texture.cpp" />
     <ClCompile Include="vendor\imgui\backends\imgui_impl_glfw.cpp" />
     <ClCompile Include="vendor\imgui\backends\imgui_impl_opengl3.cpp" />
     <ClCompile Include="vendor\imgui\imgui.cpp" />
@@ -101,22 +101,21 @@
     <ClCompile Include="vendor\imgui\imgui_draw.cpp" />
     <ClCompile Include="vendor\imgui\imgui_tables.cpp" />
     <ClCompile Include="vendor\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="src\VizPsyche\Main.cpp" />
-    <ClCompile Include="src\VizPsyche\Renderer.cpp" />
-    <ClCompile Include="src\VizPsyche\Shader.cpp" />
-    <ClCompile Include="src\VizPsyche\UIManager.cpp" />
-    <ClCompile Include="src\VizPsyche\VertexArray.cpp" />
-    <ClCompile Include="src\VizPsyche\VertexBuffer.cpp" />
+    <ClCompile Include="src\VizPsyche\OpenGL\Renderer.cpp" />
+    <ClCompile Include="src\VizPsyche\OpenGL\Shader.cpp" />
+    <ClCompile Include="src\VizPsyche\GUI\UIManager.cpp" />
+    <ClCompile Include="src\VizPsyche\OpenGL\VertexArray.cpp" />
+    <ClCompile Include="src\VizPsyche\OpenGL\VertexBuffer.cpp" />
     <ClCompile Include="vendor\stb_image\stb_image.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\VizPsyche\Application.h" />
-    <ClInclude Include="src\VizPsyche\Commons.h" />
+    <ClInclude Include="src\VizPsyche\OpenGL\Commons.h" />
     <ClInclude Include="src\VizPsyche\Core.h" />
-    <ClInclude Include="src\VizPsyche\ErrorHandling.h" />
-    <ClInclude Include="src\VizPsyche\GLFWManager.h" />
-    <ClInclude Include="src\VizPsyche\IndexBuffer.h" />
-    <ClInclude Include="src\VizPsyche\Texture.h" />
+    <ClInclude Include="src\VizPsyche\OpenGL\ErrorHandling.h" />
+    <ClInclude Include="src\VizPsyche\OpenGL\GLFWManager.h" />
+    <ClInclude Include="src\VizPsyche\OpenGL\IndexBuffer.h" />
+    <ClInclude Include="src\VizPsyche\OpenGL\Texture.h" />
     <ClInclude Include="src\VizPsyche.h" />
     <ClInclude Include="src\VizPsyche\EntryPoint.h" />
     <ClInclude Include="vendor\imgui\backends\imgui_impl_glfw.h" />
@@ -128,12 +127,12 @@
     <ClInclude Include="vendor\imgui\imstb_rectpack.h" />
     <ClInclude Include="vendor\imgui\imstb_textedit.h" />
     <ClInclude Include="vendor\imgui\imstb_truetype.h" />
-    <ClInclude Include="src\VizPsyche\Renderer.h" />
-    <ClInclude Include="src\VizPsyche\Shader.h" />
-    <ClInclude Include="src\VizPsyche\UIManager.h" />
-    <ClInclude Include="src\VizPsyche\VertexArray.h" />
-    <ClInclude Include="src\VizPsyche\VertexBuffer.h" />
-    <ClInclude Include="src\VizPsyche\VertexBufferLayout.h" />
+    <ClInclude Include="src\VizPsyche\OpenGL\Renderer.h" />
+    <ClInclude Include="src\VizPsyche\OpenGL\Shader.h" />
+    <ClInclude Include="src\VizPsyche\GUI\UIManager.h" />
+    <ClInclude Include="src\VizPsyche\OpenGL\VertexArray.h" />
+    <ClInclude Include="src\VizPsyche\OpenGL\VertexBuffer.h" />
+    <ClInclude Include="src\VizPsyche\OpenGL\VertexBufferLayout.h" />
     <ClInclude Include="vendor\stb_image\stb_image.h" />
   </ItemGroup>
   <ItemGroup>

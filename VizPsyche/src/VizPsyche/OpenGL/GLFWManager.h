@@ -1,6 +1,8 @@
 #pragma once
 
-#include"Commons.h"
+#include <iostream>
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 
 class GLFWManager
 {

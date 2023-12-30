@@ -1,10 +1,15 @@
-#include "Application.h"
-#include"Commons.h"
-#include"GLFWManager.h"
-#include"Renderer.h"
-#include"Texture.h"
-#include"UIManager.h"
-#include"ErrorHandling.h"
+#include"Application.h"
+
+#include <iostream>
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+
+#include"GUI/UIManager.h"
+
+#include"OpenGL/GLFWManager.h"
+#include"OpenGL/Renderer.h"
+#include"OpenGL/Texture.h"
+#include"OpenGL/ErrorHandling.h"
 
 
 namespace VizPsyche
