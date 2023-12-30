@@ -22,6 +22,9 @@
     <Filter Include="Resource Files\Shaders">
       <UniqueIdentifier>{06e3c605-f753-4966-8590-43d2fb6c07ee}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Texture">
+      <UniqueIdentifier>{fe4807fe-6bf3-42d4-81c0-cb7b96c7d875}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="vendor\imgui\imgui.cpp">
@@ -79,6 +82,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Texture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VizPsyche\Application.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -144,6 +150,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Texture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\VizPsyche\Core.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\VizPsyche\Application.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\VizPsyche.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\VizPsyche\EntryPoint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
