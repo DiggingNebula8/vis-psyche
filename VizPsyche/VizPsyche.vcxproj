@@ -1,14 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug|Win32">
-      <Configuration>Debug</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|Win32">
-      <Configuration>Release</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
@@ -26,27 +18,14 @@
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-    <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-    <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -57,12 +36,6 @@
   </ImportGroup>
   <ImportGroup Label="Shared">
   </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
@@ -70,61 +43,25 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(SolutionDir)include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)lib;$(LibraryPath)</LibraryPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(SolutionDir)include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)lib;$(LibraryPath)</LibraryPath>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)VizPsyche\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)VizPsyche\lib;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)\bin\$(Configuration)-$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)\bin-int\$(Configuration)-$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(SolutionDir)include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)VizPsyche\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)VizPsyche\lib;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)\bin\$(Configuration)-$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)\bin-int\$(Configuration)-$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)vendor\imgui;$(SolutionDir)vendor\imgui\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ClCompile>
-    <Link>
-      <SubSystem>Console</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)vendor\imgui;$(SolutionDir)vendor\imgui\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ClCompile>
-    <Link>
-      <SubSystem>Console</SubSystem>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
-  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>VP_PLATFORM_WINDOWS;VP_BUILD_DLL;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)vendor\imgui;$(SolutionDir)vendor\imgui\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)VizPsyche\vendor\imgui;$(SolutionDir)VizPsyche\vendor\imgui\backends;$(SolutionDir)VizPsyche\vendor\spdlog\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -138,9 +75,9 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>VP_PLATFORM_WINDOWS;VP_BUILD_DLL;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)vendor\imgui;$(SolutionDir)vendor\imgui\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)VizPsyche\vendor\imgui;$(SolutionDir)VizPsyche\vendor\imgui\backends;$(SolutionDir)VizPsyche\vendor\spdlog\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -151,11 +88,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\ErrorHandling.cpp" />
-    <ClCompile Include="src\GLFWManager.cpp" />
-    <ClCompile Include="src\IndexBuffer.cpp" />
-    <ClCompile Include="src\glad.c" />
-    <ClCompile Include="src\Texture.cpp" />
+    <ClCompile Include="src\VizPsyche\Log.cpp" />
+    <ClCompile Include="src\VizPsyche\Application.cpp" />
+    <ClCompile Include="src\VizPsyche\OpenGL\ErrorHandling.cpp" />
+    <ClCompile Include="src\VizPsyche\OpenGL\GLFWManager.cpp" />
+    <ClCompile Include="src\VizPsyche\OpenGL\IndexBuffer.cpp" />
+    <ClCompile Include="src\VizPsyche\OpenGL\glad.c" />
+    <ClCompile Include="src\VizPsyche\OpenGL\Texture.cpp" />
     <ClCompile Include="vendor\imgui\backends\imgui_impl_glfw.cpp" />
     <ClCompile Include="vendor\imgui\backends\imgui_impl_opengl3.cpp" />
     <ClCompile Include="vendor\imgui\imgui.cpp" />
@@ -163,20 +102,24 @@
     <ClCompile Include="vendor\imgui\imgui_draw.cpp" />
     <ClCompile Include="vendor\imgui\imgui_tables.cpp" />
     <ClCompile Include="vendor\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="src\Main.cpp" />
-    <ClCompile Include="src\Renderer.cpp" />
-    <ClCompile Include="src\Shader.cpp" />
-    <ClCompile Include="src\UIManager.cpp" />
-    <ClCompile Include="src\VertexArray.cpp" />
-    <ClCompile Include="src\VertexBuffer.cpp" />
+    <ClCompile Include="src\VizPsyche\OpenGL\Renderer.cpp" />
+    <ClCompile Include="src\VizPsyche\OpenGL\Shader.cpp" />
+    <ClCompile Include="src\VizPsyche\GUI\UIManager.cpp" />
+    <ClCompile Include="src\VizPsyche\OpenGL\VertexArray.cpp" />
+    <ClCompile Include="src\VizPsyche\OpenGL\VertexBuffer.cpp" />
     <ClCompile Include="vendor\stb_image\stb_image.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Commons.h" />
-    <ClInclude Include="src\ErrorHandling.h" />
-    <ClInclude Include="src\GLFWManager.h" />
-    <ClInclude Include="src\IndexBuffer.h" />
-    <ClInclude Include="src\Texture.h" />
+    <ClInclude Include="src\VizPsyche\Log.h" />
+    <ClInclude Include="src\VizPsyche\Application.h" />
+    <ClInclude Include="src\VizPsyche\OpenGL\Commons.h" />
+    <ClInclude Include="src\VizPsyche\Core.h" />
+    <ClInclude Include="src\VizPsyche\OpenGL\ErrorHandling.h" />
+    <ClInclude Include="src\VizPsyche\OpenGL\GLFWManager.h" />
+    <ClInclude Include="src\VizPsyche\OpenGL\IndexBuffer.h" />
+    <ClInclude Include="src\VizPsyche\OpenGL\Texture.h" />
+    <ClInclude Include="src\VizPsyche.h" />
+    <ClInclude Include="src\VizPsyche\EntryPoint.h" />
     <ClInclude Include="vendor\imgui\backends\imgui_impl_glfw.h" />
     <ClInclude Include="vendor\imgui\backends\imgui_impl_opengl3.h" />
     <ClInclude Include="vendor\imgui\backends\imgui_impl_opengl3_loader.h" />
@@ -186,12 +129,12 @@
     <ClInclude Include="vendor\imgui\imstb_rectpack.h" />
     <ClInclude Include="vendor\imgui\imstb_textedit.h" />
     <ClInclude Include="vendor\imgui\imstb_truetype.h" />
-    <ClInclude Include="src\Renderer.h" />
-    <ClInclude Include="src\Shader.h" />
-    <ClInclude Include="src\UIManager.h" />
-    <ClInclude Include="src\VertexArray.h" />
-    <ClInclude Include="src\VertexBuffer.h" />
-    <ClInclude Include="src\VertexBufferLayout.h" />
+    <ClInclude Include="src\VizPsyche\OpenGL\Renderer.h" />
+    <ClInclude Include="src\VizPsyche\OpenGL\Shader.h" />
+    <ClInclude Include="src\VizPsyche\GUI\UIManager.h" />
+    <ClInclude Include="src\VizPsyche\OpenGL\VertexArray.h" />
+    <ClInclude Include="src\VizPsyche\OpenGL\VertexBuffer.h" />
+    <ClInclude Include="src\VizPsyche\OpenGL\VertexBufferLayout.h" />
     <ClInclude Include="vendor\stb_image\stb_image.h" />
   </ItemGroup>
   <ItemGroup>
