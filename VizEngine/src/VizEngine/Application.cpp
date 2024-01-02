@@ -12,7 +12,7 @@
 #include"OpenGL/ErrorHandling.h"
 
 
-namespace VizPsyche
+namespace VizEngine
 {
 	Application::Application()
 	{

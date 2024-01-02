@@ -2,9 +2,9 @@
 
 #include"Core.h"
 
-namespace VizPsyche
+namespace VizEngine
 {
-	class VizPsyche_API Application
+	class VizEngine_API Application
 	{
 	public:
 		Application();
