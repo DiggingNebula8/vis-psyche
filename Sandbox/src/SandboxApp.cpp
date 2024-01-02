@@ -1,6 +1,6 @@
-#include <VizPsyche.h>
+#include <VizEngine.h>
 
-class Sandbox : public VizPsyche::Application
+class Sandbox : public VizEngine::Application
 {
 public:
 	Sandbox()
@@ -14,7 +14,7 @@ public:
 	}
 };
 
-VizPsyche::Application* VizPsyche::CreateApplication()
+VizEngine::Application* VizEngine::CreateApplication()
 {
 	return new Sandbox();
 }

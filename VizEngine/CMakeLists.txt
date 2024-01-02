@@ -1,4 +1,4 @@
-project(VizPsyche)
+project(VizEngine)
 
 # Include your engine source files and the vendor source files
 file(GLOB_RECURSE ENGINE_SOURCES 
@@ -15,10 +15,10 @@ file(GLOB_RECURSE ENGINE_SOURCES
 )
 
 # Create a library for the engine
-add_library(VizPsyche SHARED ${ENGINE_SOURCES})
+add_library(VizEngine SHARED ${ENGINE_SOURCES})
 
 # Add include directories
-target_include_directories(VizPsyche PUBLIC
+target_include_directories(VizEngine PUBLIC
     include
     src/
     vendor/spdlog/include
@@ -28,11 +28,11 @@ target_include_directories(VizPsyche PUBLIC
 )
 
 # Add definitions and link libraries as needed
-target_compile_definitions(VizPsyche PRIVATE
+target_compile_definitions(VizEngine PRIVATE
     VP_PLATFORM_WINDOWS
     VP_BUILD_DLL
 )
 # Specify the library directories (if you have pre-compiled libs in lib)
-target_link_directories(VizPsyche PRIVATE lib)
+target_link_directories(VizEngine PRIVATE lib)
 # Link external libraries (adjust according to your needs)
-target_link_libraries(VizPsyche PRIVATE glfw3 opengl32)
+target_link_libraries(VizEngine PRIVATE glfw3 opengl32)
