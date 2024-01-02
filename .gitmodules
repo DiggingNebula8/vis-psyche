@@ -1,6 +1,6 @@
-[submodule "VizPsyche/vendor/imgui"]
-	path = VizPsyche/vendor/imgui
+[submodule "VizEngine/vendor/imgui"]
+	path = VizEngine/vendor/imgui
 	url = https://github.com/ocornut/imgui.git
-[submodule "VizPsyche/vendor/spdlog"]
-	path = VizPsyche/vendor/spdlog
+[submodule "VizEngine/vendor/spdlog"]
+	path = VizEngine/vendor/spdlog
 	url = https://github.com/gabime/spdlog

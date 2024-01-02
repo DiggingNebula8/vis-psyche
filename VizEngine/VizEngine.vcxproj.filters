@@ -48,43 +48,43 @@
     <ClCompile Include="vendor\imgui\backends\imgui_impl_opengl3.cpp">
       <Filter>Source Files\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="src\VizPsyche\OpenGL\ErrorHandling.cpp">
+    <ClCompile Include="src\VizEngine\OpenGL\ErrorHandling.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\VizPsyche\OpenGL\GLFWManager.cpp">
+    <ClCompile Include="src\VizEngine\OpenGL\GLFWManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\VizPsyche\OpenGL\IndexBuffer.cpp">
+    <ClCompile Include="src\VizEngine\OpenGL\IndexBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\VizPsyche\OpenGL\glad.c">
+    <ClCompile Include="src\VizEngine\OpenGL\glad.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\VizPsyche\OpenGL\Renderer.cpp">
+    <ClCompile Include="src\VizEngine\OpenGL\Renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\VizPsyche\OpenGL\Shader.cpp">
+    <ClCompile Include="src\VizEngine\OpenGL\Shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\VizPsyche\GUI\UIManager.cpp">
+    <ClCompile Include="src\VizEngine\GUI\UIManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\VizPsyche\OpenGL\VertexArray.cpp">
+    <ClCompile Include="src\VizEngine\OpenGL\VertexArray.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\VizPsyche\OpenGL\VertexBuffer.cpp">
+    <ClCompile Include="src\VizEngine\OpenGL\VertexBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="vendor\stb_image\stb_image.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\VizPsyche\OpenGL\Texture.cpp">
+    <ClCompile Include="src\VizEngine\OpenGL\Texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\VizPsyche\Application.cpp">
+    <ClCompile Include="src\VizEngine\Application.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\VizPsyche\Log.cpp">
+    <ClCompile Include="src\VizEngine\Log.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -116,55 +116,55 @@
     <ClInclude Include="vendor\imgui\backends\imgui_impl_opengl3_loader.h">
       <Filter>Header Files\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="src\VizPsyche\OpenGL\Commons.h">
+    <ClInclude Include="src\VizEngine\OpenGL\Commons.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\VizPsyche\OpenGL\ErrorHandling.h">
+    <ClInclude Include="src\VizEngine\OpenGL\ErrorHandling.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\VizPsyche\OpenGL\GLFWManager.h">
+    <ClInclude Include="src\VizEngine\OpenGL\GLFWManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\VizPsyche\OpenGL\IndexBuffer.h">
+    <ClInclude Include="src\VizEngine\OpenGL\IndexBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\VizPsyche\OpenGL\Renderer.h">
+    <ClInclude Include="src\VizEngine\OpenGL\Renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\VizPsyche\OpenGL\Shader.h">
+    <ClInclude Include="src\VizEngine\OpenGL\Shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\VizPsyche\GUI\UIManager.h">
+    <ClInclude Include="src\VizEngine\GUI\UIManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\VizPsyche\OpenGL\VertexArray.h">
+    <ClInclude Include="src\VizEngine\OpenGL\VertexArray.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\VizPsyche\OpenGL\VertexBuffer.h">
+    <ClInclude Include="src\VizEngine\OpenGL\VertexBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\VizPsyche\OpenGL\VertexBufferLayout.h">
+    <ClInclude Include="src\VizEngine\OpenGL\VertexBufferLayout.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="vendor\stb_image\stb_image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\VizPsyche\OpenGL\Texture.h">
+    <ClInclude Include="src\VizEngine\OpenGL\Texture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\VizPsyche\Core.h">
+    <ClInclude Include="src\VizEngine\Core.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\VizPsyche\Application.h">
+    <ClInclude Include="src\VizEngine\Application.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\VizPsyche.h">
+    <ClInclude Include="src\VizEngine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\VizPsyche\EntryPoint.h">
+    <ClInclude Include="src\VizEngine\EntryPoint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\VizPsyche\Log.h">
+    <ClInclude Include="src\VizEngine\Log.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
