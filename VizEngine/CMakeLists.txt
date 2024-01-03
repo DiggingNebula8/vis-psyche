@@ -26,6 +26,7 @@ target_include_directories(VizEngine PUBLIC
     vendor/imgui
     vendor/imgui/backends
     vendor/stb_image
+    vendor/glm/glm
 )
 
 # Add definitions and link libraries as needed
