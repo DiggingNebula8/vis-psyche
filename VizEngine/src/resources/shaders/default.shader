@@ -1,7 +1,7 @@
 #shader vertex
 #version 460 core
 
-layout (location = 0) in vec3 aPos;
+layout (location = 0) in vec4 aPos;
 layout (location = 1) in vec4 vertColor;
 layout (location = 2) in vec2 texCoord;
 
@@ -9,10 +9,12 @@ out vec4 v_VertColor;
 out vec2 v_TexCoord;
 
 uniform float u_Scale;
+uniform mat4 u_MVP;
 
 void main()
 {
-	gl_Position = vec4(aPos.xyz * u_Scale, 1.0);
+	vec4 scaling = aPos * u_Scale;
+	gl_Position = u_MVP * scaling;
 	v_VertColor = vertColor;
 	v_TexCoord = texCoord;
 }
