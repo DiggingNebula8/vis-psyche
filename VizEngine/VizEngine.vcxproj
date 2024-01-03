@@ -44,14 +44,14 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)VizEngine\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)VizEngine\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)VizEngine\include;$(SolutionDir)VizEngine\vendor\glfw\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)VizEngine\lib;$(SolutionDir)build\VizEngine\vendor\glfw\src\Debug;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)\bin\$(Configuration)-$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)\bin-int\$(Configuration)-$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(SolutionDir)VizEngine\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)VizEngine\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)VizEngine\include;$(SolutionDir)VizEngine\vendor\glfw\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)VizEngine\lib;$(SolutionDir)build\VizEngine\vendor\glfw\src\Debug;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)\bin\$(Configuration)-$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)\bin-int\$(Configuration)-$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
