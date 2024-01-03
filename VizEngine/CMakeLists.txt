@@ -21,6 +21,7 @@ add_library(VizEngine SHARED ${ENGINE_SOURCES})
 target_include_directories(VizEngine PUBLIC
     include
     src/
+    vendor/glfw/include/
     vendor/spdlog/include
     vendor/imgui
     vendor/imgui/backends
@@ -32,7 +33,6 @@ target_compile_definitions(VizEngine PRIVATE
     VP_PLATFORM_WINDOWS
     VP_BUILD_DLL
 )
-# Specify the library directories (if you have pre-compiled libs in lib)
-target_link_directories(VizEngine PRIVATE lib)
+
 # Link external libraries (adjust according to your needs)
-target_link_libraries(VizEngine PRIVATE glfw3 opengl32)
+target_link_libraries(VizEngine PRIVATE glfw opengl32)

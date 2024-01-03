@@ -1,10 +1,11 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.5)
 project(VizPsyche)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Add subdirectories for the engine and the sandbox application
+add_subdirectory(VizEngine/vendor/glfw/)
 add_subdirectory(VizEngine)
 add_subdirectory(Sandbox)
 
