@@ -1,5 +1,19 @@
 project(VizEngine)
 
+# Copy GLFW headers from vendor/glfw/include to include/GLFW
+file(COPY ${CMAKE_SOURCE_DIR}/VizEngine/vendor/glfw/include/ 
+    DESTINATION ${CMAKE_SOURCE_DIR}/VizEngine/include/)
+
+# Copy the GLFW lib file
+file(COPY ${CMAKE_SOURCE_DIR}/VizEngine/vendor/glfw/build/src/Debug/glfw3.lib
+    DESTINATION ${CMAKE_SOURCE_DIR}/VizEngine/lib/)
+
+# Copy the GLFW pdb file
+file(COPY ${CMAKE_SOURCE_DIR}/VizEngine/vendor/glfw/build/src/Debug/glfw3.pdb
+    DESTINATION ${CMAKE_SOURCE_DIR}/VizEngine/lib/)
+
+
+
 # Include your engine source files and the vendor source files
 file(GLOB_RECURSE ENGINE_SOURCES 
     "src/*.cpp"

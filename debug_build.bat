@@ -20,4 +20,8 @@ REM Return to the original directory
 popd
 
 echo Build completed.
+
+REM Pause and wait for a key press before closing
+pause
+
 endlocal
