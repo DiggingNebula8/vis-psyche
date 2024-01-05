@@ -62,8 +62,6 @@
       <PreprocessorDefinitions>VP_PLATFORM_WINDOWS;VP_BUILD_DLL;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)VizEngine\vendor\imgui;$(SolutionDir)VizEngine\vendor\imgui\backends;$(SolutionDir)VizEngine\vendor\spdlog\include;$(SolutionDir)VizEngine\vendor\glm\glm;$(SolutionDir)VizEngine\vendor\stb_image;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>vepch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -80,8 +78,6 @@
       <PreprocessorDefinitions>VP_PLATFORM_WINDOWS;VP_BUILD_DLL;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)VizEngine\vendor\imgui;$(SolutionDir)VizEngine\vendor\imgui\backends;$(SolutionDir)VizEngine\vendor\spdlog\include;$(SolutionDir)VizEngine\vendor\glm\glm;$(SolutionDir)VizEngine\vendor\stb_image;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>vepch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -112,12 +108,6 @@
     <ClCompile Include="src\VizEngine\OpenGL\VertexArray.cpp" />
     <ClCompile Include="src\VizEngine\OpenGL\VertexBuffer.cpp" />
     <ClCompile Include="vendor\stb_image\stb_image.cpp" />
-    <ClCompile Include="src\VizEngine\vepch.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">vepch.h</PrecompiledHeaderFile>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">vepch.h</PrecompiledHeaderFile>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\VizEngine\Events\AppEvent.h" />
@@ -150,7 +140,6 @@
     <ClInclude Include="src\VizEngine\OpenGL\VertexBuffer.h" />
     <ClInclude Include="src\VizEngine\OpenGL\VertexBufferLayout.h" />
     <ClInclude Include="vendor\stb_image\stb_image.h" />
-    <ClInclude Include="src\VizEngine\vepch.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\resources\shaders\default.shader" />
