@@ -107,8 +107,8 @@ namespace VizEngine
         // Variables to be changed in the ImGUI window
         float clearColor[4] = { 0.05f, 0.02f, 0.01f, 1.0f };
         glm::vec4 color = { 0.2f, 0.3f, 0.8f, 1.0f };
-        float scale = 1.0f;
         float rotation = 0.0f;
+        float rotationSpeed = 0.1f;
         double prevTime = glfwGetTime();
         shader.SetColor("u_Color", color);
         // Unbind all to prevent accidentally modifying them
@@ -142,7 +142,7 @@ namespace VizEngine
             double crntTime = glfwGetTime();
             if (crntTime - prevTime >= 1 / 60)
             {
-                rotation += 0.1f;
+                rotation += rotationSpeed;
                 prevTime = crntTime;
             }
             glm::mat4 model = glm::mat4(1.0f);
@@ -168,9 +168,9 @@ namespace VizEngine
             ImGui::ColorEdit4("Clear Color", clearColor);
             ImGui::Spacing();
             ImGui::Spacing();
-            ImGui::Text("Image Parameters");
+            ImGui::Text("Parameters");
             ImGui::Spacing();
-            ImGui::SliderFloat("Scale", &scale, 0.0f, 2.0f);
+            ImGui::SliderFloat("Rotation Speed", &rotationSpeed, 0.0f, 1.0f);
             ImGui::ColorEdit4("Colour", glm::value_ptr(color));
             // Ends the window
             uiManager.EndWindow();
