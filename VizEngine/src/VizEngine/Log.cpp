@@ -39,8 +39,8 @@ namespace VizEngine
 		SetClientLogLevel(LogLevel::Debug);
 
 		// Log initialization messages
-		VP_CORE_INFO("Core Logger initialised");
-		VP_CORE_INFO("Client Logger initialised");
+		VE_CORE_INFO("Core Logger initialised");
+		VE_CORE_INFO("Client Logger initialised");
 	}
 
 	void Log::SetCoreLogLevel(LogLevel level)

@@ -14,6 +14,9 @@
 #include"gtc//matrix_transform.hpp"
 #include"gtc/type_ptr.hpp"
 
+#include"Events/AppEvent.h"
+#include"Log.h"
+
 namespace VizEngine
 {
 	Application::Application()
@@ -57,6 +60,8 @@ namespace VizEngine
 
 	int Application::Run()
 	{
+        WindowResizeEvent e(SCR_WIDTH, SCR_HEIGHT);
+        VE_CORE_DEBUG(e);
         GLFWManager glfw(SCR_WIDTH, SCR_HEIGHT, "Viz Psyche");
 
         // glad: load all OpenGL function pointers
