@@ -40,7 +40,7 @@ public:
 	void SetInt(const std::string& name, int value);
 	void SetFloat(const std::string& name, float value);
 	void SetColor(const std::string& name, const glm::vec4& value);
-	void SetMatrix4f(const std::string& name, const glm::mat4& matrix);
+	void SetMatrix4fv(const std::string& name, const glm::mat4& matrix);
 
 
 private:

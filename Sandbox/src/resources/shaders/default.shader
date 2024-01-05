@@ -8,13 +8,11 @@ layout (location = 2) in vec2 texCoord;
 out vec4 v_VertColor;
 out vec2 v_TexCoord;
 
-uniform float u_Scale;
 uniform mat4 u_MVP;
 
 void main()
 {
-	vec4 scaling = aPos * u_Scale;
-	gl_Position = u_MVP * scaling;
+	gl_Position = u_MVP * aPos;
 	v_VertColor = vertColor;
 	v_TexCoord = texCoord;
 }

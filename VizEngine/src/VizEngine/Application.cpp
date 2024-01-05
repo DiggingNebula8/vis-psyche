@@ -28,21 +28,32 @@ namespace VizEngine
 
     // settings
     const unsigned int SCR_WIDTH = 800;
-    const unsigned int SCR_HEIGHT = 600;
+    const unsigned int SCR_HEIGHT = 800;
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     float vertices[] = {
-        -0.5f, -0.5f, 0.0f, /*Position*/  1.0f, 1.0f, 1.0f, 1.0f, /*Vertex Colors*/  0.0f, 0.0f, /*Texture Coords*/
-         0.5f, -0.5f, 0.0f, /*Position*/  1.0f, 1.0f, 1.0f, 1.0f, /*Vertex Colors*/  1.0f, 0.0f, /*Texture Coords*/
-         0.5f,  0.5f, 0.0f, /*Position*/  1.0f, 1.0f, 1.0f, 1.0f, /*Vertex Colors*/  1.0f, 1.0f, /*Texture Coords*/
-        -0.5f,  0.5f, 0.0f, /*Position*/  1.0f, 1.0f, 1.0f, 1.0f, /*Vertex Colors*/  0.0f, 1.0f  /*Texture Coords*/
+        // Base of the Pyramid
+        // Position             Color                   Texture Coords
+        -0.5f, 0.0f,  0.5f, 1.0f, /**/ 1.0f, 1.0f, 1.0f, 1.0f, /**/ 0.0f, 0.0f, // Bottom Left
+        -0.5f, 0.0f, -0.5f, 1.0f, /**/ 1.0f, 1.0f, 1.0f, 1.0f, /**/ 0.0f, 2.0f, // Top Left
+         0.5f, 0.0f, -0.5f, 1.0f, /**/ 1.0f, 1.0f, 1.0f, 1.0f, /**/ 2.0f, 2.0f, // Top Right
+         0.5f, 0.0f,  0.5f, 1.0f, /**/ 1.0f, 1.0f, 1.0f, 1.0f, /**/ 2.0f, 0.0f, // Bottom Right
+
+         // Tip of the Pyramid
+         0.0f, 0.8f,  0.0f, 1.0f, /**/ 1.0f, 1.0f, 1.0f, 1.0f, /**/ 1.0f, 1.0f  // Tip
     };
 
-    unsigned int indices[] = {  // note that we start from 0!
-        0, 1, 2,   // first triangle
-        2, 3, 0    // second triangle
+
+    unsigned int indices[] = {
+        0, 1, 2,   // base
+        0, 2, 3,
+        0, 1, 4,   // sides
+        1, 2, 4,
+        2, 3, 4,
+        3, 0, 4
     };
+
 
 	int Application::Run()
 	{
@@ -58,28 +69,36 @@ namespace VizEngine
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glEnable(GL_DEPTH_TEST);
 
         // Generates Vertex Array Object and binds it
         VertexArray vertexArray;
         // Generates Vertex Buffer Object and links it to vertices
-        VertexBuffer vertexBuffer(vertices, 4 * 9 * sizeof(float));
+        VertexBuffer vertexBuffer(vertices, 5 * 10 * sizeof(float));
 
         VertexBufferLayout layout;
-        layout.Push<float>(3);
+        layout.Push<float>(4);
         layout.Push<float>(4);
         layout.Push<float>(2);
         // Links VertexBuffer to VertexArray
         vertexArray.LinkVertexBuffer(vertexBuffer, layout);
         // Generates Element Buffer Object and links it to indices
-        IndexBuffer indexBuffer(indices, 6);
-
-        glm::mat4 projectionMatrix = glm::ortho(-2.0f, 2.0f, -1.5f, 1.5f, -1.0f, 1.0f);
+        IndexBuffer indexBuffer(indices, 18);
 
         // Generates Shader object
         Shader shader("src/resources/shaders/default.shader");
 
         shader.Bind();
-        Texture texture("src/resources/textures/hellotexture.png");
+        glm::mat4 model = glm::mat4(1.0f);
+        glm::mat4 view = glm::mat4(1.0f);
+        glm::mat4 proj = glm::mat4(1.0f);
+        view = glm::translate(view, glm::vec3(0.0f, -0.5f, -2.0f));
+        proj = glm::perspective(glm::radians(45.0f), (float)(SCR_WIDTH / SCR_HEIGHT), 0.1f, 100.0f);
+        glm::mat4 u_MVP = proj * view * model;
+        shader.SetMatrix4fv("u_MVP", u_MVP);
+
+
+        Texture texture("src/resources/textures/uvchecker.png");
         texture.Bind();
 
         // Initialize UI
@@ -89,9 +108,9 @@ namespace VizEngine
         float clearColor[4] = { 0.05f, 0.02f, 0.01f, 1.0f };
         glm::vec4 color = { 0.2f, 0.3f, 0.8f, 1.0f };
         float scale = 1.0f;
+        float rotation = 0.0f;
+        double prevTime = glfwGetTime();
         shader.SetColor("u_Color", color);
-        shader.SetFloat("u_Scale", scale);
-        shader.SetMatrix4f("u_MVP", projectionMatrix);
         // Unbind all to prevent accidentally modifying them
         shader.Unbind();
         vertexArray.Unbind();
@@ -115,10 +134,25 @@ namespace VizEngine
 
             // Rendering
             renderer.Clear(clearColor);
-
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             // Binding
             shader.Bind();
+
+            double crntTime = glfwGetTime();
+            if (crntTime - prevTime >= 1 / 60)
+            {
+                rotation += 0.1f;
+                prevTime = crntTime;
+            }
+            glm::mat4 model = glm::mat4(1.0f);
+            glm::mat4 view = glm::mat4(1.0f);
+            glm::mat4 proj = glm::mat4(1.0f);
+            model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
+            view = glm::translate(view, glm::vec3(0.0f, -0.5f, -2.0f));
+            proj = glm::perspective(glm::radians(45.0f), (float)(SCR_WIDTH / SCR_HEIGHT), 0.1f, 100.0f);
+            glm::mat4 u_MVP = proj * view * model;
+            shader.SetMatrix4fv("u_MVP", u_MVP);
             vertexArray.Bind();
             indexBuffer.Bind();
 
@@ -143,7 +177,6 @@ namespace VizEngine
 
             //// Export variables to shader
             shader.SetColor("u_Color", color);
-            shader.SetFloat("u_Scale", scale);
 
             // Renders the ImGUI elements
             uiManager.Render();

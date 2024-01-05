@@ -122,7 +122,7 @@ void Shader::SetColor(const std::string& name, const glm::vec4& value)
 	glUniform4f(GetUniformLocation(name), value.x, value.y, value.z, value.w);
 }
 
-void Shader::SetMatrix4f(const std::string& name, const glm::mat4& matrix)
+void Shader::SetMatrix4fv(const std::string& name, const glm::mat4& matrix)
 {
 	glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, &matrix[0][0]);
 }
