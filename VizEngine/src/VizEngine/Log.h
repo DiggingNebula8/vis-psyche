@@ -3,6 +3,8 @@
 #include<memory>
 #include"Core.h"
 #include"spdlog/spdlog.h"
+#include <spdlog/fmt/ostr.h>
+
 
 namespace VizEngine
 {
@@ -30,17 +32,20 @@ namespace VizEngine
 	};
 }
 //core
-#define VP_CORE_TRACE(...)		::VizEngine::Log::GetCoreLogger()->trace(__VA_ARGS__)
-#define VP_CORE_INFO(...)		::VizEngine::Log::GetCoreLogger()->info(__VA_ARGS__)
-#define VP_CORE_WARN(...)		::VizEngine::Log::GetCoreLogger()->warn(__VA_ARGS__)
-#define VP_CORE_ERROR(...)		::VizEngine::Log::GetCoreLogger()->error(__VA_ARGS__)
-#define VP_CORE_CRITICAL(...)	::VizEngine::Log::GetCoreLogger()->critical(__VA_ARGS__)
+
+#define VE_CORE_TRACE(...)		::VizEngine::Log::GetCoreLogger()->trace(__VA_ARGS__)
+#define VE_CORE_DEBUG(...)		::VizEngine::Log::GetCoreLogger()->debug(__VA_ARGS__)
+#define VE_CORE_INFO(...)		::VizEngine::Log::GetCoreLogger()->info(__VA_ARGS__)
+#define VE_CORE_WARN(...)		::VizEngine::Log::GetCoreLogger()->warn(__VA_ARGS__)
+#define VE_CORE_ERROR(...)		::VizEngine::Log::GetCoreLogger()->error(__VA_ARGS__)
+#define VE_CORE_CRITICAL(...)	::VizEngine::Log::GetCoreLogger()->critical(__VA_ARGS__)
 
 //client
-#define VP_TRACE(...)		::VizEngine::Log::GetClientLogger()->trace(__VA_ARGS__)
-#define VP_INFO(...)		::VizEngine::Log::GetClientLogger()->info(__VA_ARGS__)
-#define VP_WARN(...)		::VizEngine::Log::GetClientLogger()->warn(__VA_ARGS__)
-#define VP_ERROR(...)		::VizEngine::Log::GetClientLogger()->error(__VA_ARGS__)
-#define VP_CRITICAL(...)	::VizEngine::Log::GetClientLogger()->critical(__VA_ARGS__)
+#define VE_TRACE(...)		::VizEngine::Log::GetClientLogger()->trace(__VA_ARGS__)
+#define VE_DEBUG(...)		::VizEngine::Log::GetClientLogger()->debug(__VA_ARGS__)
+#define VE_INFO(...)		::VizEngine::Log::GetClientLogger()->info(__VA_ARGS__)
+#define VE_WARN(...)		::VizEngine::Log::GetClientLogger()->warn(__VA_ARGS__)
+#define VE_ERROR(...)		::VizEngine::Log::GetClientLogger()->error(__VA_ARGS__)
+#define VE_CRITICAL(...)	::VizEngine::Log::GetClientLogger()->critical(__VA_ARGS__)
 
 

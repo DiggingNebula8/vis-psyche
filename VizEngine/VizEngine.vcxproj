@@ -110,6 +110,10 @@
     <ClCompile Include="vendor\stb_image\stb_image.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\VizEngine\Events\AppEvent.h" />
+    <ClInclude Include="src\VizEngine\Events\Event.h" />
+    <ClInclude Include="src\VizEngine\Events\KeyEvent.h" />
+    <ClInclude Include="src\VizEngine\Events\MouseEvent.h" />
     <ClInclude Include="src\VizEngine\Log.h" />
     <ClInclude Include="src\VizEngine\Application.h" />
     <ClInclude Include="src\VizEngine\OpenGL\Commons.h" />
