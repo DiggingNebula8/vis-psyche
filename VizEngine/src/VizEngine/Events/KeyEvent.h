@@ -20,10 +20,10 @@ namespace VizEngine
 		int m_KeyCode;
 	};
 
-	class VizEngine_API KeyPressed : public KeyEvent
+	class VizEngine_API KeyPressedEvent : public KeyEvent
 	{
 	public:
-		KeyPressed(int keycode, int repeatCount)
+		KeyPressedEvent(int keycode, int repeatCount)
 			:KeyEvent(keycode), m_RepeatCount(repeatCount) {}
 
 		inline int GetRepeatCount() const { return m_RepeatCount; }
@@ -41,10 +41,10 @@ namespace VizEngine
 		int m_RepeatCount;
 	};
 
-	class VizEngine_API KeyReleased : public KeyEvent
+	class VizEngine_API KeyReleasedEvent : public KeyEvent
 	{
 	public:
-		KeyReleased(int keycode)
+		KeyReleasedEvent(int keycode)
 			:KeyEvent(keycode) {}
 		std::string ToString() const override
 		{

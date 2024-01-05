@@ -6,10 +6,10 @@
 
 namespace VizEngine
 {
-	class VizEngine_API MouseMoved : public Event
+	class VizEngine_API MouseMovedEvent : public Event
 	{
 	public:
-		MouseMoved(float x, float y)
+		MouseMovedEvent(float x, float y)
 			:m_MouseX(x), m_MouseY(y) {}
 
 		inline float GetX() const { return m_MouseX; }
@@ -30,10 +30,10 @@ namespace VizEngine
 
 	};
 
-	class VizEngine_API MouseScrolled : public Event
+	class VizEngine_API MouseScrolledEvent : public Event
 	{
 	public:
-		MouseScrolled(float xOffset, float yOffset)
+		MouseScrolledEvent(float xOffset, float yOffset)
 			:m_MouseXOffset(xOffset), m_MouseYOffset(yOffset) {}
 
 		inline float GetXOffset() const { return m_MouseXOffset; }
@@ -53,7 +53,7 @@ namespace VizEngine
 		float m_MouseXOffset, m_MouseYOffset;
 	};
 
-	class VizEngine_API MouseButton : public Event
+	class VizEngine_API MouseButtonEvent : public Event
 	{
 	public:
 		inline int GetMouseButton() const { return m_Button; }
@@ -61,16 +61,16 @@ namespace VizEngine
 		EVENT_CLASS_CATEGORY(EC_Mouse | EC_Input)
 
 	protected:
-		MouseButton(int button)
+		MouseButtonEvent(int button)
 			: m_Button(button) {}
 		int m_Button;
 	};
 
-	class VizEngine_API MouseButtonPressed : public MouseButton
+	class VizEngine_API MouseButtonPressedEvent : public MouseButtonEvent
 	{
 	public:
-		MouseButtonPressed(int button)
-			: MouseButton(button) {}
+		MouseButtonPressedEvent(int button)
+			: MouseButtonEvent(button) {}
 
 		std::string ToString() const override
 		{
@@ -83,11 +83,11 @@ namespace VizEngine
 		EVENT_CLASS_TYPE(MouseButtonPressed)
 	};
 
-	class VizEngine_API MouseButtonReleased : public MouseButton
+	class VizEngine_API MouseButtonReleasedEvent : public MouseButtonEvent
 	{
 	public:
-		MouseButtonReleased(int button)
-			: MouseButton(button) {}
+		MouseButtonReleasedEvent(int button)
+			: MouseButtonEvent(button) {}
 
 		std::string ToString() const override
 		{
