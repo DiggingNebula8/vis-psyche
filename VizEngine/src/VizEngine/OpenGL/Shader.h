@@ -7,6 +7,7 @@
 #include<iostream>
 #include<cerrno>
 #include<unordered_map>
+#include"glm.hpp"
 
 // Struct to return two or more strings. For Vertex and Fragment Shader Programs from the same file.
 struct ShaderPrograms
@@ -38,7 +39,8 @@ public:
     void SetBool(const std::string& name, bool value);
 	void SetInt(const std::string& name, int value);
 	void SetFloat(const std::string& name, float value);
-	void SetColor(const std::string& name, float value[4]);
+	void SetColor(const std::string& name, const glm::vec4& value);
+	void SetMatrix4fv(const std::string& name, const glm::mat4& matrix);
 
 
 private:
