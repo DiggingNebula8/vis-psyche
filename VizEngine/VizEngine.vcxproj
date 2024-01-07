@@ -108,6 +108,7 @@
     <ClCompile Include="src\VizEngine\OpenGL\VertexArray.cpp" />
     <ClCompile Include="src\VizEngine\OpenGL\VertexBuffer.cpp" />
     <ClCompile Include="vendor\stb_image\stb_image.cpp" />
+    <ClCompile Include="src\Platform\WindowsWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\VizEngine\Events\AppEvent.h" />
@@ -124,6 +125,7 @@
     <ClInclude Include="src\VizEngine\OpenGL\Texture.h" />
     <ClInclude Include="src\VizEngine.h" />
     <ClInclude Include="src\VizEngine\EntryPoint.h" />
+    <ClInclude Include="src\VizEngine\Window.h" />
     <ClInclude Include="vendor\imgui\backends\imgui_impl_glfw.h" />
     <ClInclude Include="vendor\imgui\backends\imgui_impl_opengl3.h" />
     <ClInclude Include="vendor\imgui\backends\imgui_impl_opengl3_loader.h" />
@@ -140,6 +142,7 @@
     <ClInclude Include="src\VizEngine\OpenGL\VertexBuffer.h" />
     <ClInclude Include="src\VizEngine\OpenGL\VertexBufferLayout.h" />
     <ClInclude Include="vendor\stb_image\stb_image.h" />
+    <ClInclude Include="src\Platform\WindowsWindow.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\resources\shaders\default.shader" />
