@@ -87,6 +87,9 @@
     <ClCompile Include="src\VizEngine\Log.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Platform\WindowsWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="vendor\imgui\imconfig.h">
@@ -177,6 +180,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\VizEngine\Events\AppEvent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\VizEngine\Window.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\WindowsWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
