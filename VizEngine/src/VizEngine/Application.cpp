@@ -14,7 +14,6 @@
 #include"gtc//matrix_transform.hpp"
 #include"gtc/type_ptr.hpp"
 
-#include"Events/AppEvent.h"
 #include"Log.h"
 
 
@@ -29,7 +28,15 @@ namespace VizEngine
 
     void Application::OnEvent(Event& e)
     {
+        EventDispatcher dispatcher(e);
+        dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FUNCTION(Application::OnWindowClose));
+        VE_CORE_TRACE("{0}", e);
+    }
 
+    bool Application::OnWindowClose(WindowCloseEvent& e)
+    {
+        m_Running = false;
+        return true;
     }
 
 	Application::~Application()
