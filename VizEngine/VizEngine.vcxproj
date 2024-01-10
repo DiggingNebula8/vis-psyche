@@ -88,6 +88,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\VizEngine\LayerStack.cpp" />
+    <ClCompile Include="src\VizEngine\Layer.cpp" />
     <ClCompile Include="src\VizEngine\Log.cpp" />
     <ClCompile Include="src\VizEngine\Application.cpp" />
     <ClCompile Include="src\VizEngine\OpenGL\ErrorHandling.cpp" />
@@ -111,6 +113,8 @@
     <ClCompile Include="src\Platform\WindowsWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\VizEngine\LayerStack.h" />
+    <ClInclude Include="src\VizEngine\Layer.h" />
     <ClInclude Include="src\VizEngine\Events\AppEvent.h" />
     <ClInclude Include="src\VizEngine\Events\Event.h" />
     <ClInclude Include="src\VizEngine\Events\KeyEvent.h" />
