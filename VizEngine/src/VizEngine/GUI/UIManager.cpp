@@ -1,3 +1,4 @@
+#include "vepch.h"
 #include "UIManager.h"
 
 UIManager::UIManager(GLFWwindow* window) {

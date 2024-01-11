@@ -1,6 +1,7 @@
+#include "vepch.h"
+
 #include"Application.h"
 
-#include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -14,8 +15,6 @@
 #include"gtc//matrix_transform.hpp"
 #include"gtc/type_ptr.hpp"
 #include"../Platform/WindowsWindow.h"
-
-#include"Log.h"
 
 
 namespace VizEngine

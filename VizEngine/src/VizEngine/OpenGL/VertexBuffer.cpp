@@ -1,3 +1,4 @@
+#include "vepch.h"
 #include"VertexBuffer.h"
 
 // Constructor that generates a Vertex Buffer Object and links it to vertices

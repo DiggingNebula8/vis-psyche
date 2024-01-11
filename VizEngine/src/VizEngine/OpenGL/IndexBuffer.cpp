@@ -1,3 +1,5 @@
+#include "vepch.h"
+
 #include"IndexBuffer.h"
 
 // Constructor that generates a Elements Buffer Object and links it to indices
