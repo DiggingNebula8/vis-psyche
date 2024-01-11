@@ -61,7 +61,9 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>VP_PLATFORM_WINDOWS;VP_BUILD_DLL;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)VizEngine\vendor\imgui;$(SolutionDir)VizEngine\vendor\imgui\backends;$(SolutionDir)VizEngine\vendor\spdlog\include;$(SolutionDir)VizEngine\vendor\glm\glm;$(SolutionDir)VizEngine\vendor\stb_image;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)VizEngine\vendor\imgui;$(SolutionDir)VizEngine\vendor\imgui\backends;$(SolutionDir)VizEngine\vendor\spdlog\include;$(SolutionDir)VizEngine\vendor\glm\glm;$(SolutionDir)VizEngine\vendor\stb_image;$(SolutionDir)VizEngine\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>vepch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -77,7 +79,9 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>VP_PLATFORM_WINDOWS;VP_BUILD_DLL;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)VizEngine\vendor\imgui;$(SolutionDir)VizEngine\vendor\imgui\backends;$(SolutionDir)VizEngine\vendor\spdlog\include;$(SolutionDir)VizEngine\vendor\glm\glm;$(SolutionDir)VizEngine\vendor\stb_image;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)VizEngine\vendor\imgui;$(SolutionDir)VizEngine\vendor\imgui\backends;$(SolutionDir)VizEngine\vendor\spdlog\include;$(SolutionDir)VizEngine\vendor\glm\glm;$(SolutionDir)VizEngine\vendor\stb_image;$(SolutionDir)VizEngine\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>vepch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -95,7 +99,10 @@
     <ClCompile Include="src\VizEngine\OpenGL\ErrorHandling.cpp" />
     <ClCompile Include="src\VizEngine\OpenGL\GLFWManager.cpp" />
     <ClCompile Include="src\VizEngine\OpenGL\IndexBuffer.cpp" />
-    <ClCompile Include="src\VizEngine\OpenGL\glad.c" />
+    <ClCompile Include="src\VizEngine\OpenGL\glad.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="src\VizEngine\OpenGL\Texture.cpp" />
     <ClCompile Include="vendor\imgui\backends\imgui_impl_glfw.cpp" />
     <ClCompile Include="vendor\imgui\backends\imgui_impl_opengl3.cpp" />
@@ -111,6 +118,12 @@
     <ClCompile Include="src\VizEngine\OpenGL\VertexBuffer.cpp" />
     <ClCompile Include="vendor\stb_image\stb_image.cpp" />
     <ClCompile Include="src\Platform\WindowsWindow.cpp" />
+    <ClCompile Include="src\vepch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">vepch.h</PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">vepch.h</PrecompiledHeaderFile>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\VizEngine\LayerStack.h" />
@@ -147,6 +160,7 @@
     <ClInclude Include="src\VizEngine\OpenGL\VertexBufferLayout.h" />
     <ClInclude Include="vendor\stb_image\stb_image.h" />
     <ClInclude Include="src\Platform\WindowsWindow.h" />
+    <ClInclude Include="src\vepch.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\resources\shaders\default.shader" />

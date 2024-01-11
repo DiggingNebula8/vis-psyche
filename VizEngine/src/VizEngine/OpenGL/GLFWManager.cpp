@@ -1,3 +1,5 @@
+#include "vepch.h"
+
 #include"GLFWManager.h"
 
 

@@ -1,3 +1,5 @@
+#include "vepch.h"
+
 #include"ErrorHandling.h"
 
 // Error handling for OpenGL 4.3 and above https://docs.gl/gl4/glDebugMessageCallback

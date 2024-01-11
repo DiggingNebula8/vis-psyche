@@ -1,8 +1,6 @@
 #pragma once
 
-#include"Core.h"
 #include"Layer.h"
-#include<vector>
 
 namespace VizEngine
 {

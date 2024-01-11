@@ -1,5 +1,6 @@
+#include "vepch.h"
+
 #include "WindowsWindow.h"
-#include"../VizEngine/Log.h"
 
 #include"../VizEngine/Events/AppEvent.h"
 #include"../VizEngine/Events/KeyEvent.h"

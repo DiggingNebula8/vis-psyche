@@ -1,3 +1,5 @@
+#include "vepch.h"
+
 #include"VertexArray.h"
 
 // Constructor that generates a VertexArray ID

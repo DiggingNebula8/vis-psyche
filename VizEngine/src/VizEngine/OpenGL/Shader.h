@@ -1,12 +1,6 @@
 #pragma once
 
 #include<glad/glad.h>
-#include<string>
-#include<fstream>
-#include<sstream>
-#include<iostream>
-#include<cerrno>
-#include<unordered_map>
 #include"glm.hpp"
 
 // Struct to return two or more strings. For Vertex and Fragment Shader Programs from the same file.
