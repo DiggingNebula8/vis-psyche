@@ -29,6 +29,11 @@ target_include_directories(VizEngine PUBLIC
     vendor/glm/glm
 )
 
+target_precompile_headers(VizEngine PRIVATE
+
+    "$<$<COMPILE_LANGUAGE:CXX>:vepch.h>"
+)
+
 # Add definitions and link libraries as needed
 target_compile_definitions(VizEngine PRIVATE
     VP_PLATFORM_WINDOWS
