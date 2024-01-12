@@ -1,7 +1,8 @@
 #pragma once
 
-#include"../VizEngine/Window.h"
-#include <GLFW/glfw3.h>
+#include"VizEngine/Window.h"
+
+struct GLFWwindow;
 
 namespace VizEngine
 {

@@ -1,27 +1,33 @@
 #include "vepch.h"
 
 #include"Application.h"
-
+//
 #include <glad/glad.h>
-#include <GLFW/glfw3.h>
+//#include <GLFW/glfw3.h>
 
-#include"GUI/UIManager.h"
+//#include"GUI/UIManager.h"
 
-#include"OpenGL/GLFWManager.h"
-#include"OpenGL/Renderer.h"
-#include"OpenGL/Texture.h"
-#include"OpenGL/ErrorHandling.h"
-#include"glm.hpp"
-#include"gtc//matrix_transform.hpp"
-#include"gtc/type_ptr.hpp"
+//#include"OpenGL/GLFWManager.h"
+//#include"OpenGL/Renderer.h"
+//#include"OpenGL/Texture.h"
+//#include"OpenGL/ErrorHandling.h"
+//#include"glm.hpp"
+//#include"gtc//matrix_transform.hpp"
+//#include"gtc/type_ptr.hpp"
 #include"../Platform/WindowsWindow.h"
 
 
 namespace VizEngine
 {
 #define BIND_EVENT_FUNCTION(x) std::bind(&x, this, std::placeholders::_1)
+
+    Application* Application::s_Instance = nullptr;
+
 	Application::Application()
 	{
+        VE_CORE_ASSERT(!s_Instance, "Application already exists!");
+        s_Instance = this;
+
         m_Window = std::unique_ptr<Window>(Window::Create());
         m_Window->SetEventCallback(BIND_EVENT_FUNCTION(Application::OnEvent));
 	}
@@ -34,11 +40,13 @@ namespace VizEngine
     void Application::PushLayer(Layer* layer)
     {
         m_LayerStack.PushLayer(layer);
+        layer->OnAttach();
     }
 
     void Application::PushOverlay(Layer* layer)
     {
         m_LayerStack.PushOverlay(layer);
+        layer->OnAttach();
     }
 
     void Application::OnEvent(Event& e)
@@ -61,33 +69,33 @@ namespace VizEngine
         return true;
     }
 
-    // settings
-    const unsigned int SCR_WIDTH = 800;
-    const unsigned int SCR_HEIGHT = 800;
+    //// settings
+    //const unsigned int SCR_WIDTH = 800;
+    //const unsigned int SCR_HEIGHT = 800;
 
-    // set up vertex data (and buffer(s)) and configure vertex attributes
-    // ------------------------------------------------------------------
-    float vertices[] = {
-        // Base of the Pyramid
-        // Position             Color                   Texture Coords
-        -0.5f, 0.0f,  0.5f, 1.0f, /**/ 1.0f, 1.0f, 1.0f, 1.0f, /**/ 0.0f, 0.0f, // Bottom Left
-        -0.5f, 0.0f, -0.5f, 1.0f, /**/ 1.0f, 1.0f, 1.0f, 1.0f, /**/ 0.0f, 2.0f, // Top Left
-         0.5f, 0.0f, -0.5f, 1.0f, /**/ 1.0f, 1.0f, 1.0f, 1.0f, /**/ 2.0f, 2.0f, // Top Right
-         0.5f, 0.0f,  0.5f, 1.0f, /**/ 1.0f, 1.0f, 1.0f, 1.0f, /**/ 2.0f, 0.0f, // Bottom Right
+    //// set up vertex data (and buffer(s)) and configure vertex attributes
+    //// ------------------------------------------------------------------
+    //float vertices[] = {
+    //    // Base of the Pyramid
+    //    // Position             Color                   Texture Coords
+    //    -0.5f, 0.0f,  0.5f, 1.0f, /**/ 1.0f, 1.0f, 1.0f, 1.0f, /**/ 0.0f, 0.0f, // Bottom Left
+    //    -0.5f, 0.0f, -0.5f, 1.0f, /**/ 1.0f, 1.0f, 1.0f, 1.0f, /**/ 0.0f, 2.0f, // Top Left
+    //     0.5f, 0.0f, -0.5f, 1.0f, /**/ 1.0f, 1.0f, 1.0f, 1.0f, /**/ 2.0f, 2.0f, // Top Right
+    //     0.5f, 0.0f,  0.5f, 1.0f, /**/ 1.0f, 1.0f, 1.0f, 1.0f, /**/ 2.0f, 0.0f, // Bottom Right
 
-         // Tip of the Pyramid
-         0.0f, 0.8f,  0.0f, 1.0f, /**/ 1.0f, 1.0f, 1.0f, 1.0f, /**/ 1.0f, 1.0f  // Tip
-    };
+    //     // Tip of the Pyramid
+    //     0.0f, 0.8f,  0.0f, 1.0f, /**/ 1.0f, 1.0f, 1.0f, 1.0f, /**/ 1.0f, 1.0f  // Tip
+    //};
 
 
-    unsigned int indices[] = {
-        0, 1, 2,   // base
-        0, 2, 3,
-        0, 1, 4,   // sides
-        1, 2, 4,
-        2, 3, 4,
-        3, 0, 4
-    };
+    //unsigned int indices[] = {
+    //    0, 1, 2,   // base
+    //    0, 2, 3,
+    //    0, 1, 4,   // sides
+    //    1, 2, 4,
+    //    2, 3, 4,
+    //    3, 0, 4
+    //};
 
 
 	int Application::Run()
