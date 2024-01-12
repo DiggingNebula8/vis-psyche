@@ -2,9 +2,12 @@
 
 #include "WindowsWindow.h"
 
-#include"../VizEngine/Events/AppEvent.h"
-#include"../VizEngine/Events/KeyEvent.h"
-#include"../VizEngine/Events/MouseEvent.h"
+#include"VizEngine/Events/AppEvent.h"
+#include"VizEngine/Events/KeyEvent.h"
+#include"VizEngine/Events/MouseEvent.h"
+
+#include<glad/glad.h>
+#include <GLFW/glfw3.h>
 
 
 namespace VizEngine
@@ -48,6 +51,8 @@ namespace VizEngine
 
 		m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
 		glfwMakeContextCurrent(m_Window);
+		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+		VE_CORE_ASSERT(status, "Failed to initialise Glad!")
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 		SetVSync(true);
 
