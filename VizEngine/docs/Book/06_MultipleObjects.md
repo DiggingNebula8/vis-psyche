@@ -38,6 +38,22 @@ Problems:
 
 ---
 
+## A Note on Simplicity
+
+**What we're building in this chapter is intentionally simple.**
+
+Production game engines like Unity and Unreal use sophisticated patterns like Entity Component Systems (ECS). We're not doing that yet. Instead, we're building a basic "object list" approach that's easy to understand and implement.
+
+Why start simple?
+
+- **Learn the fundamentals first** - Understand what problems arise before learning their solutions
+- **See the pain points** - You'll naturally feel *why* ECS exists by hitting the walls of this approach
+- **Working code > Perfect architecture** - Get something running, then improve it
+
+By the end of this chapter, you'll have a working multi-object scene. You'll also understand the limitations that motivate more sophisticated architectures. We'll revisit this topic later when we implement ECS.
+
+---
+
 ## The SceneObject Concept
 
 We need a struct that bundles everything that makes an "object" in our scene:
@@ -296,6 +312,92 @@ int Application::Run()
 
 ---
 
+## ImGui: Immediate Mode GUI
+
+Before diving into object selection UI, let's understand the GUI library we're using.
+
+### What is Dear ImGui?
+
+**Dear ImGui** (often just "ImGui") is an **immediate mode** GUI library. This is different from traditional "retained mode" GUIs:
+
+| Retained Mode (Qt, WinForms) | Immediate Mode (ImGui) |
+|------------------------------|------------------------|
+| Create widgets once, update them | Describe widgets every frame |
+| Widgets maintain their own state | You maintain state in your variables |
+| Complex event callbacks | Simple if-statement logic |
+| Heavy, feature-rich | Lightweight, programmer-friendly |
+
+### How It Works
+
+Every frame, you tell ImGui what to draw:
+
+```cpp
+// This runs every frame in your render loop
+if (ImGui::Button("Click Me"))
+{
+    // Button was clicked THIS frame
+    DoSomething();
+}
+
+ImGui::DragFloat("Speed", &mySpeed, 0.1f);  // Directly modifies mySpeed
+```
+
+There's no "create button, attach callback" setup. You just describe the UI and ImGui handles input, rendering, and state.
+
+### Common Widgets We'll Use
+
+```cpp
+// Windows - container for widgets
+ImGui::Begin("My Window");   // Start window
+// ... widgets go here ...
+ImGui::End();                // End window
+
+// Input widgets - directly modify your variables
+ImGui::DragFloat3("Position", &transform.Position.x, 0.1f);
+ImGui::DragFloat("Speed", &speed, 0.01f);
+ImGui::Checkbox("Enabled", &isEnabled);
+ImGui::ColorEdit4("Color", &color.x);
+
+// Selection
+if (ImGui::Selectable("Item 1", isSelected))
+{
+    // Item was clicked
+}
+
+// Buttons
+if (ImGui::Button("Do Thing"))
+{
+    // Button clicked this frame
+}
+
+// Layout helpers
+ImGui::Separator();          // Horizontal line
+ImGui::SameLine();           // Next widget on same line
+ImGui::Text("Label: %d", value);  // Static text
+```
+
+### Our UIManager Wrapper
+
+We wrap ImGui setup/teardown in `UIManager`:
+
+```cpp
+// UIManager handles ImGui initialization and per-frame boilerplate
+UIManager ui(window.GetWindow());
+
+// In render loop:
+ui.BeginFrame();           // Starts ImGui frame
+
+ui.StartWindow("Controls"); // Our wrapper for ImGui::Begin
+// ... ImGui widgets ...
+ui.EndWindow();            // Our wrapper for ImGui::End
+
+ui.Render();               // Renders all ImGui draw data
+```
+
+This keeps OpenGL/GLFW integration details out of your application code.
+
+---
+
 ## UI for Object Selection
 
 With multiple objects, we need UI to select and manipulate them:
@@ -358,6 +460,85 @@ ui.EndWindow();
 
 ---
 
+## Limitations of This Approach
+
+Let's be honest about what our simple `SceneObject` can't do.
+
+### The "God Struct" Problem
+
+Our `SceneObject` bundles everything together:
+
+```cpp
+struct SceneObject
+{
+    std::shared_ptr<Mesh> MeshPtr;
+    Transform ObjectTransform;
+    glm::vec4 Color;
+    bool Active;
+};
+```
+
+What happens when we need more features?
+
+```cpp
+// This gets ugly fast...
+struct SceneObject
+{
+    std::shared_ptr<Mesh> MeshPtr;
+    Transform ObjectTransform;
+    glm::vec4 Color;
+    bool Active;
+    
+    // Physics? Add it here...
+    glm::vec3 Velocity;
+    float Mass;
+    bool IsStatic;
+    
+    // AI? Add it here too...
+    AIBehavior* Behavior;
+    float DetectionRadius;
+    
+    // Audio? Sure, why not...
+    AudioSource* Sound;
+    
+    // Health system?
+    float Health;
+    float MaxHealth;
+    
+    // And on and on...
+};
+```
+
+**Problems:**
+
+| Issue | Why It's Bad |
+|-------|--------------|
+| **Wasted memory** | A static rock has `Velocity`, `AIBehavior`, `Health`... all unused |
+| **Rigid structure** | Adding features means changing `SceneObject` everywhere |
+| **No composition** | Can't mix-and-match capabilities per object |
+| **Hard to iterate** | Want all objects with physics? Loop through everything, check each one |
+
+### What We Can't Easily Do
+
+With our current approach:
+
+- **Different object types** - A "player" and a "tree" are the same struct
+- **Behaviors** - No way to attach scripts or AI to specific objects
+- **Physics** - Would need to add physics fields to *every* object
+- **Parent-child relationships** - No scene hierarchy
+- **Querying** - "Give me all objects with health < 50" requires full scan
+
+### This Is Fine (For Now)
+
+For a learning engine with < 100 objects, this approach works. It's:
+- Easy to understand
+- Easy to debug
+- Sufficient for visualization
+
+But when you find yourself adding `if (object.hasPhysics)` checks everywhere, it's time for a better architecture.
+
+---
+
 ## Performance Considerations
 
 ### Draw Calls
@@ -382,6 +563,108 @@ The shared approach uses ~100× less GPU memory for geometry!
 
 ---
 
+## Looking Ahead: Entity Component System (ECS)
+
+The limitations we discussed aren't unique to our engine. Every game developer hits these walls, which is why the industry converged on a powerful pattern: **Entity Component System**.
+
+### The ECS Concept
+
+Instead of objects owning all their data, ECS separates concerns:
+
+| Concept | What It Is | Example |
+|---------|-----------|---------|
+| **Entity** | Just an ID (integer) | `Entity player = 42;` |
+| **Component** | Pure data, no logic | `Transform`, `Health`, `Velocity` |
+| **System** | Logic that operates on components | `PhysicsSystem`, `RenderSystem` |
+
+### Our Approach vs ECS
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                        OUR CURRENT APPROACH                         │
+│                                                                     │
+│   SceneObject 1          SceneObject 2          SceneObject 3      │
+│   ┌───────────┐          ┌───────────┐          ┌───────────┐      │
+│   │ Mesh      │          │ Mesh      │          │ Mesh      │      │
+│   │ Transform │          │ Transform │          │ Transform │      │
+│   │ Color     │          │ Color     │          │ Color     │      │
+│   │ Active    │          │ Active    │          │ Active    │      │
+│   └───────────┘          └───────────┘          └───────────┘      │
+│                                                                     │
+│   All objects have the same shape. Want health? Add it to ALL.     │
+└─────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                           ECS APPROACH                              │
+│                                                                     │
+│   Entity 1 (Player)      Entity 2 (Rock)       Entity 3 (Enemy)    │
+│   ┌─────────────────┐    ┌─────────────────┐   ┌─────────────────┐ │
+│   │ + Transform     │    │ + Transform     │   │ + Transform     │ │
+│   │ + Mesh          │    │ + Mesh          │   │ + Mesh          │ │
+│   │ + Health        │    │                 │   │ + Health        │ │
+│   │ + Velocity      │    │                 │   │ + Velocity      │ │
+│   │ + PlayerInput   │    │                 │   │ + AIBehavior    │ │
+│   └─────────────────┘    └─────────────────┘   └─────────────────┘ │
+│                                                                     │
+│   Each entity has only the components it needs. Rock has no health.│
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Why ECS Wins
+
+1. **Composition over inheritance** - Mix and match components freely
+2. **Memory efficiency** - Only store what's needed per entity
+3. **Cache-friendly** - Systems iterate over contiguous component arrays
+4. **Parallel-friendly** - Systems can run on different threads
+5. **Flexible queries** - "All entities with Transform + Velocity" is fast
+
+### ECS in the Wild
+
+Real engines using ECS or similar patterns:
+
+- **Unity DOTS** - Data-Oriented Technology Stack with full ECS
+- **Unreal Mass Entity** - ECS-like system for large crowds
+- **EnTT** - Popular C++ ECS library (header-only, fast)
+- **Flecs** - Another excellent C++ ECS library
+
+### Future Direction
+
+In a future chapter, we'll implement a basic ECS:
+
+```cpp
+// Future API preview
+class World
+{
+public:
+    Entity CreateEntity();
+    
+    template<typename T>
+    T& AddComponent(Entity e);
+    
+    template<typename T>
+    T& GetComponent(Entity e);
+    
+    template<typename... Components>
+    View<Components...> Query();  // Get all entities with these components
+};
+
+// Usage
+Entity player = world.CreateEntity();
+world.AddComponent<Transform>(player);
+world.AddComponent<Health>(player);
+world.AddComponent<Velocity>(player);
+
+// Systems iterate efficiently
+for (auto [entity, transform, velocity] : world.Query<Transform, Velocity>())
+{
+    transform.Position += velocity.Direction * velocity.Speed * deltaTime;
+}
+```
+
+For now, our simple approach gets us rendering multiple objects. That's the foundation we need before adding complexity.
+
+---
+
 ## Key Takeaways
 
 1. **SceneObject bundles rendering data** - Mesh + Transform + Color + Active flag
@@ -389,6 +672,7 @@ The shared approach uses ~100× less GPU memory for geometry!
 3. **Scene manages the collection** - Add, remove, update, render
 4. **MVP per object** - Each object needs its own Model-View-Projection matrix
 5. **UI enables editing** - Select, modify, delete objects at runtime
+6. **This is a stepping stone** - Simple and effective for learning, but ECS is the production-grade solution
 
 ---
 

@@ -9,6 +9,7 @@ set(VIZENGINE_SOURCES
     src/VizEngine/Log.cpp
     src/VizEngine/Core/Camera.cpp
     src/VizEngine/Core/Mesh.cpp
+    src/VizEngine/Core/Scene.cpp
     
     # OpenGL
     src/VizEngine/OpenGL/glad.c
@@ -37,6 +38,8 @@ set(VIZENGINE_HEADERS
     src/VizEngine/Core/Camera.h
     src/VizEngine/Core/Mesh.h
     src/VizEngine/Core/Transform.h
+    src/VizEngine/Core/Scene.h
+    src/VizEngine/Core/SceneObject.h
     
     # OpenGL headers
     src/VizEngine/OpenGL/Commons.h
