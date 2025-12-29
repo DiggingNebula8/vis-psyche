@@ -84,6 +84,7 @@ struct VizEngine_API Transform
 
 ### Why Transform Order Matters
 
+We want transformations applied in this order:
 ```
 Scale → Rotate → Translate
 ```
@@ -94,6 +95,21 @@ Think about it:
 3. **Translate** - Move it to final position
 
 If you translate first, the object rotates around the world origin, not itself!
+
+**But the code looks backwards:**
+```cpp
+model = glm::translate(model, Position);  // Last in code = Applied last
+model = glm::rotate(model, ...);          // Middle
+model = glm::scale(model, Scale);         // First in code = Applied first
+```
+
+**Why?** Matrix math is applied right-to-left:
+```
+Final = Translate * Rotate * Scale * Vertex
+        ←───────── read this way ──────────
+```
+
+So even though `translate` is written first in code, it's applied last to the vertex!
 
 ---
 

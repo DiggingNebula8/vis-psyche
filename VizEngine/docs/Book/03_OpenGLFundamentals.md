@@ -156,6 +156,11 @@ glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 40, (void*)32);  // Offset: 8 fl
 
 Shaders are programs that run on the GPU.
 
+> **Our Custom Format:** We combine vertex and fragment shaders in one `.shader` file,
+> separated by `#shader vertex` and `#shader fragment` markers. This is NOT standard 
+> OpenGL - it's our engine's convention for convenience. Our `Shader` class parses 
+> this format.
+
 ### Vertex Shader
 
 Runs once per vertex. Transforms positions:

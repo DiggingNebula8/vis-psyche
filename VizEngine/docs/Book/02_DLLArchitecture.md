@@ -127,7 +127,11 @@ Games have a special startup sequence. We handle this in `EntryPoint.h`:
 
 #ifdef VP_PLATFORM_WINDOWS
 
-extern VizEngine::Application* VizEngine::CreateApplication();
+namespace VizEngine
+{
+    // Implemented by the client application (e.g., Sandbox)
+    extern Application* CreateApplication();
+}
 
 int main(int argc, char** argv)
 {
@@ -139,6 +143,10 @@ int main(int argc, char** argv)
 
 #endif
 ```
+
+> **Note:** `CreateApplication()` is declared inside `VizEngine` namespace with `extern`. 
+> The `extern` keyword tells the compiler "this function exists somewhere else" - in this 
+> case, it will be defined by the user in their application (Sandbox).
 
 ### How It Works
 

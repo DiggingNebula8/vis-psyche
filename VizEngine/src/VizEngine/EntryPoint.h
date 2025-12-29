@@ -2,9 +2,13 @@
 
 #ifdef VP_PLATFORM_WINDOWS
 
-extern VizEngine::Application* CreateApplication();
+namespace VizEngine
+{
+	// Implemented by the client application (e.g., Sandbox)
+	extern Application* CreateApplication();
+}
 
-int  main(int argc, char** argv)
+int main(int argc, char** argv)
 {
 	VizEngine::Log::Init();
 	auto app = VizEngine::CreateApplication();
