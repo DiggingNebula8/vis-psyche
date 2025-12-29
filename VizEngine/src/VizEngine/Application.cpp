@@ -1,187 +1,160 @@
-#include"Application.h"
+#include "Application.h"
 
 #include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include"GUI/UIManager.h"
+#include "GUI/UIManager.h"
+#include "Core/Camera.h"
+#include "Core/Mesh.h"
+#include "Core/Transform.h"
 
-#include"OpenGL/GLFWManager.h"
-#include"OpenGL/Renderer.h"
-#include"OpenGL/Texture.h"
-#include"OpenGL/ErrorHandling.h"
-#include"glm.hpp"
-#include"gtc//matrix_transform.hpp"
-#include"gtc/type_ptr.hpp"
+#include "OpenGL/GLFWManager.h"
+#include "OpenGL/Renderer.h"
+#include "OpenGL/Texture.h"
+#include "OpenGL/ErrorHandling.h"
+
+#include "glm.hpp"
+#include "gtc/matrix_transform.hpp"
+#include "gtc/type_ptr.hpp"
 
 namespace VizEngine
 {
 	Application::Application()
 	{
-
 	}
 
 	Application::~Application()
 	{
-
 	}
 
-    // settings
-    const unsigned int SCR_WIDTH = 800;
-    const unsigned int SCR_HEIGHT = 800;
-
-    // set up vertex data (and buffer(s)) and configure vertex attributes
-    // ------------------------------------------------------------------
-    float vertices[] = {
-        // Base of the Pyramid
-        // Position             Color                   Texture Coords
-        -0.5f, 0.0f,  0.5f, 1.0f, /**/ 1.0f, 1.0f, 1.0f, 1.0f, /**/ 0.0f, 0.0f, // Bottom Left
-        -0.5f, 0.0f, -0.5f, 1.0f, /**/ 1.0f, 1.0f, 1.0f, 1.0f, /**/ 0.0f, 2.0f, // Top Left
-         0.5f, 0.0f, -0.5f, 1.0f, /**/ 1.0f, 1.0f, 1.0f, 1.0f, /**/ 2.0f, 2.0f, // Top Right
-         0.5f, 0.0f,  0.5f, 1.0f, /**/ 1.0f, 1.0f, 1.0f, 1.0f, /**/ 2.0f, 0.0f, // Bottom Right
-
-         // Tip of the Pyramid
-         0.0f, 0.8f,  0.0f, 1.0f, /**/ 1.0f, 1.0f, 1.0f, 1.0f, /**/ 1.0f, 1.0f  // Tip
-    };
-
-
-    unsigned int indices[] = {
-        0, 1, 2,   // base
-        0, 2, 3,
-        0, 1, 4,   // sides
-        1, 2, 4,
-        2, 3, 4,
-        3, 0, 4
-    };
-
+	// Window settings
+	static const unsigned int SCR_WIDTH = 800;
+	static const unsigned int SCR_HEIGHT = 800;
 
 	int Application::Run()
 	{
-        GLFWManager glfw(SCR_WIDTH, SCR_HEIGHT, "Viz Psyche");
+		// =========================================================================
+		// Initialization
+		// =========================================================================
+		GLFWManager window(SCR_WIDTH, SCR_HEIGHT, "Viz Psyche");
 
-        // glad: load all OpenGL function pointers
-        // ---------------------------------------
-        if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-        {
-            std::cout << "Failed to initialize GLAD" << std::endl;
-            return -1;
-        }
+		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+		{
+			std::cout << "Failed to initialize GLAD" << std::endl;
+			return -1;
+		}
 
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glEnable(GL_DEPTH_TEST);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_DEPTH_TEST);
 
-        // Generates Vertex Array Object and binds it
-        VertexArray vertexArray;
-        // Generates Vertex Buffer Object and links it to vertices
-        VertexBuffer vertexBuffer(vertices, 5 * 10 * sizeof(float));
+		// =========================================================================
+		// Create Scene Objects
+		// =========================================================================
+		
+		// Camera
+		Camera camera(45.0f, static_cast<float>(SCR_WIDTH) / static_cast<float>(SCR_HEIGHT), 0.1f, 100.0f);
+		camera.SetPosition(glm::vec3(0.0f, 4.0f, -15.0f));
 
-        VertexBufferLayout layout;
-        layout.Push<float>(4);
-        layout.Push<float>(4);
-        layout.Push<float>(2);
-        // Links VertexBuffer to VertexArray
-        vertexArray.LinkVertexBuffer(vertexBuffer, layout);
-        // Generates Element Buffer Object and links it to indices
-        IndexBuffer indexBuffer(indices, 18);
+		// Mesh (using factory method)
+		auto pyramidMesh = Mesh::CreatePyramid();
 
-        // Generates Shader object
-        Shader shader("src/resources/shaders/default.shader");
+		// Transform for the pyramid
+		Transform pyramidTransform;
+		pyramidTransform.Position = glm::vec3(0.0f, 0.0f, 0.0f);
+		pyramidTransform.Scale = glm::vec3(5.0f, 10.0f, 5.0f);
 
-        shader.Bind();
-        glm::mat4 model = glm::mat4(1.0f);
-        glm::mat4 view = glm::mat4(1.0f);
-        glm::mat4 proj = glm::mat4(1.0f);
-        view = glm::translate(view, glm::vec3(0.0f, -0.5f, -2.0f));
-        proj = glm::perspective(glm::radians(45.0f), static_cast<float>(SCR_WIDTH) / static_cast<float>(SCR_HEIGHT), 0.1f, 100.0f);
-        glm::mat4 u_MVP = proj * view * model;
-        shader.SetMatrix4fv("u_MVP", u_MVP);
+		// =========================================================================
+		// Load Assets
+		// =========================================================================
+		Shader shader("src/resources/shaders/default.shader");
+		Texture texture("src/resources/textures/uvchecker.png");
+		texture.Bind();
 
+		// =========================================================================
+		// UI & Renderer
+		// =========================================================================
+		UIManager uiManager(window.GetWindow());
+		Renderer renderer;
 
-        Texture texture("src/resources/textures/uvchecker.png");
-        texture.Bind();
+		// =========================================================================
+		// Runtime Variables
+		// =========================================================================
+		float clearColor[4] = { 0.05f, 0.02f, 0.01f, 1.0f };
+		glm::vec4 objectColor = { 0.2f, 0.3f, 0.8f, 1.0f };
+		float rotationSpeed = 0.5f;
+		double prevTime = glfwGetTime();
 
-        // Initialize UI
-        UIManager uiManager(glfw.GetWindow());
+		// Enable OpenGL debug output
+		ErrorHandling::HandleErrors();
 
-        // Variables to be changed in the ImGUI window
-        float clearColor[4] = { 0.05f, 0.02f, 0.01f, 1.0f };
-        glm::vec4 color = { 0.2f, 0.3f, 0.8f, 1.0f };
-        float rotation = 0.0f;
-        float rotationSpeed = 0.1f;
-        double prevTime = glfwGetTime();
-        shader.SetColor("u_Color", color);
-        // Unbind all to prevent accidentally modifying them
-        shader.Unbind();
-        vertexArray.Unbind();
-        vertexBuffer.Unbind();
-        indexBuffer.Unbind();
+		// =========================================================================
+		// Main Render Loop
+		// =========================================================================
+		while (!window.WindowShouldClose())
+		{
+			// --- Input ---
+			window.ProcessInput();
+			uiManager.BeginFrame();
 
+			// --- Update ---
+			double currentTime = glfwGetTime();
+			float deltaTime = static_cast<float>(currentTime - prevTime);
+			prevTime = currentTime;
 
-        Renderer renderer;
+			// Rotate the pyramid
+			pyramidTransform.Rotation.y += rotationSpeed * deltaTime;
 
+			// Calculate MVP matrix
+			glm::mat4 model = pyramidTransform.GetModelMatrix();
+			glm::mat4 mvp = camera.GetViewProjectionMatrix() * model;
 
-        // Error handling for OpenGL 4.3
-        ErrorHandling::HandleErrors();
+			// --- Render ---
+			renderer.Clear(clearColor);
 
-        // render loop
-        // -----------
-        while (!glfw.WindowShouldClose())
-        {
-            // Inputs
-            glfw.ProcessInput();
-            uiManager.BeginFrame();
+			shader.Bind();
+			shader.SetMatrix4fv("u_MVP", mvp);
+			shader.SetColor("u_Color", objectColor);
 
-            // Rendering
-            renderer.Clear(clearColor);
+			pyramidMesh->Bind();
+			renderer.Draw(pyramidMesh->GetVertexArray(), pyramidMesh->GetIndexBuffer(), shader);
 
-            // Binding
-            shader.Bind();
+			// --- UI ---
+			uiManager.StartWindow("Scene Controls");
+			
+			ImGui::Text("Background");
+			ImGui::ColorEdit4("Clear Color", clearColor);
+			ImGui::Separator();
+			
+			ImGui::Text("Object");
+			ImGui::SliderFloat("Rotation Speed", &rotationSpeed, 0.0f, 5.0f);
+			ImGui::ColorEdit4("Object Color", glm::value_ptr(objectColor));
+			ImGui::Separator();
+			
+			ImGui::Text("Transform");
+			ImGui::DragFloat3("Position", glm::value_ptr(pyramidTransform.Position), 0.1f);
+			glm::vec3 rotDegrees = pyramidTransform.GetRotationDegrees();
+			if (ImGui::DragFloat3("Rotation", glm::value_ptr(rotDegrees), 1.0f))
+			{
+				pyramidTransform.SetRotationDegrees(rotDegrees);
+			}
+			ImGui::DragFloat3("Scale", glm::value_ptr(pyramidTransform.Scale), 0.1f, 0.1f, 10.0f);
+			ImGui::Separator();
 
-            double crntTime = glfwGetTime();
-            if (crntTime - prevTime >= 1 / 60)
-            {
-                rotation += rotationSpeed;
-                prevTime = crntTime;
-            }
-            glm::mat4 model = glm::mat4(1.0f);
-            glm::mat4 view = glm::mat4(1.0f);
-            glm::mat4 proj = glm::mat4(1.0f);
-            model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
-            view = glm::translate(view, glm::vec3(0.0f, -0.5f, -2.0f));
-            proj = glm::perspective(glm::radians(45.0f), static_cast<float>(SCR_WIDTH) / static_cast<float>(SCR_HEIGHT), 0.1f, 100.0f);
-            glm::mat4 u_MVP = proj * view * model;
-            shader.SetMatrix4fv("u_MVP", u_MVP);
-            vertexArray.Bind();
-            indexBuffer.Bind();
+			ImGui::Text("Camera");
+			glm::vec3 camPos = camera.GetPosition();
+			if (ImGui::DragFloat3("Camera Pos", glm::value_ptr(camPos), 0.1f))
+			{
+				camera.SetPosition(camPos);
+			}
 
-            //Drawcall
-            renderer.Draw(vertexArray, indexBuffer, shader);
+			uiManager.EndWindow();
 
+			uiManager.Render();
+			window.SwapBuffersAndPollEvents();
+		}
 
-            // ImGUI window creation
-            uiManager.StartWindow("Simple UI Window");
-            // Text that appears in the window
-            ImGui::Text("Background Parameters");
-            ImGui::Spacing();
-            ImGui::ColorEdit4("Clear Color", clearColor);
-            ImGui::Spacing();
-            ImGui::Spacing();
-            ImGui::Text("Parameters");
-            ImGui::Spacing();
-            ImGui::SliderFloat("Rotation Speed", &rotationSpeed, 0.0f, 1.0f);
-            ImGui::ColorEdit4("Colour", glm::value_ptr(color));
-            // Ends the window
-            uiManager.EndWindow();
-
-            //// Export variables to shader
-            shader.SetColor("u_Color", color);
-
-            // Renders the ImGUI elements
-            uiManager.Render();
-
-            glfw.SwapBuffersAndPollEvents();
-        }
-        return 0;
+		return 0;
 	}
 }
