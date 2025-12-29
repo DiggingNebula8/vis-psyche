@@ -9,15 +9,60 @@ void GLAPIENTRY ErrorHandling::ErrorHandler(GLenum source,
     const GLchar* message,
     const void* userParam)
 {
-    std::cout << "OpenGL Error:\n"
-        << "Source: 0x" << std::hex << source << "\n"
-        << "Type: 0x" << std::hex << type << "\n"
-        << "Id: 0x" << std::hex << id << "\n"
-        << "Severity: 0x" << std::hex << severity << "\n";
-    std::cout << message << "\n";
+    // Ignore notifications - they're just informational messages
+    if (severity == GL_DEBUG_SEVERITY_NOTIFICATION)
+        return;
 
-    exit(-1); // shut down the program gracefully (it does cleanup stuff too)
-    // without exit(), OpenGL will constantly print the error message... make sure to kill your program.
+    // Determine severity label
+    const char* severityStr;
+    switch (severity)
+    {
+        case GL_DEBUG_SEVERITY_HIGH:         severityStr = "HIGH";   break;
+        case GL_DEBUG_SEVERITY_MEDIUM:       severityStr = "MEDIUM"; break;
+        case GL_DEBUG_SEVERITY_LOW:          severityStr = "LOW";    break;
+        default:                             severityStr = "UNKNOWN"; break;
+    }
+
+    // Determine source label
+    const char* sourceStr;
+    switch (source)
+    {
+        case GL_DEBUG_SOURCE_API:             sourceStr = "API";             break;
+        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:   sourceStr = "Window System";   break;
+        case GL_DEBUG_SOURCE_SHADER_COMPILER: sourceStr = "Shader Compiler"; break;
+        case GL_DEBUG_SOURCE_THIRD_PARTY:     sourceStr = "Third Party";     break;
+        case GL_DEBUG_SOURCE_APPLICATION:     sourceStr = "Application";     break;
+        case GL_DEBUG_SOURCE_OTHER:           sourceStr = "Other";           break;
+        default:                              sourceStr = "Unknown";         break;
+    }
+
+    // Determine type label
+    const char* typeStr;
+    switch (type)
+    {
+        case GL_DEBUG_TYPE_ERROR:               typeStr = "Error";               break;
+        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: typeStr = "Deprecated Behavior"; break;
+        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  typeStr = "Undefined Behavior";  break;
+        case GL_DEBUG_TYPE_PORTABILITY:         typeStr = "Portability";         break;
+        case GL_DEBUG_TYPE_PERFORMANCE:         typeStr = "Performance";         break;
+        case GL_DEBUG_TYPE_MARKER:              typeStr = "Marker";              break;
+        case GL_DEBUG_TYPE_OTHER:               typeStr = "Other";               break;
+        default:                                typeStr = "Unknown";             break;
+    }
+
+    std::cout << "OpenGL Debug Message:\n"
+        << "  Source:   " << sourceStr << "\n"
+        << "  Type:     " << typeStr << "\n"
+        << "  Id:       " << id << "\n"
+        << "  Severity: " << severityStr << "\n"
+        << "  Message:  " << message << "\n";
+
+    // Only exit on high severity errors
+    if (severity == GL_DEBUG_SEVERITY_HIGH)
+    {
+        std::cerr << "Fatal OpenGL error - shutting down.\n";
+        exit(-1);
+    }
 }
 
 void ErrorHandling::HandleErrors()
