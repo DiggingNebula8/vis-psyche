@@ -334,3 +334,7 @@ gl_Position = u_MVP * aPos;
 2. Try drawing with `GL_LINES` instead of `GL_TRIANGLES`
 3. Modify the fragment shader to output a solid red color
 
+---
+
+> **Reference:** For a complete list of all OpenGL wrapper classes and their methods, see [Appendix A: Code Reference](A_Reference.md#opengl).
+

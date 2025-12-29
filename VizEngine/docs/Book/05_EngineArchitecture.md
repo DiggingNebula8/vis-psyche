@@ -434,3 +434,7 @@ The current architecture is good for learning. A production engine would add:
 3. Add a second pyramid with a different transform
 4. Create a simple Material class that bundles Shader + Texture
 
+---
+
+> **Reference:** For a complete file reference and memory ownership table, see [Appendix A: Code Reference](A_Reference.md).
+

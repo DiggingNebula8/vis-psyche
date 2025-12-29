@@ -422,3 +422,7 @@ renderer.Draw(vao, ibo, shader);
 2. Create a wrapper for OpenGL Framebuffers
 3. Add mipmap support to the Texture class
 
+---
+
+> **Reference:** For the full class diagram showing all abstractions, see [Appendix A: Code Reference](A_Reference.md#class-diagram).
+

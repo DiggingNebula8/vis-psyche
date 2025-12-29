@@ -1,4 +1,4 @@
-# Chapter 6: Current State & Code Reference
+# Appendix A: Code Reference
 
 ## What We've Built
 
@@ -10,7 +10,7 @@ As of now, VizPsyche has:
 - Logging system (spdlog)
 - Entry point abstraction
 
-### OpenGL Abstractions
+### OpenGL Abstractions {#opengl}
 - VertexBuffer (VBO wrapper)
 - IndexBuffer (IBO wrapper)
 - VertexArray (VAO wrapper)
@@ -89,7 +89,7 @@ As of now, VizPsyche has:
 
 ---
 
-## Class Diagram
+## Class Diagram {#class-diagram}
 
 ```
 VizEngine (namespace)
@@ -158,7 +158,7 @@ All OpenGL wrappers have `Bind()`/`Unbind()` to manage OpenGL's state machine.
 
 ---
 
-## Memory Management
+## Memory Management {#memory}
 
 ### Ownership Rules
 
@@ -198,7 +198,7 @@ We use:
 
 ---
 
-## Debugging Tips
+## Debugging Tips {#debugging}
 
 ### OpenGL Errors
 Debug output is enabled. Check console for messages like:
@@ -239,23 +239,6 @@ cmake --build build --config Debug
 # Run
 ./build/bin/Debug/Sandbox.exe
 ```
-
----
-
-## What's Not Implemented Yet
-
-Future chapters will cover:
-
-- [ ] Scene graph (parent-child transforms)
-- [ ] Multiple objects in scene
-- [ ] Model loading (.obj, .fbx)
-- [ ] Lighting (Phong, PBR)
-- [ ] Shadow mapping
-- [ ] Framebuffers and post-processing
-- [ ] Input system abstraction
-- [ ] Audio
-- [ ] Physics integration
-- [ ] Entity Component System
 
 ---
 

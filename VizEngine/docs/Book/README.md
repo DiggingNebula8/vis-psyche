@@ -15,7 +15,10 @@ A hands-on guide to building a 3D rendering engine from scratch.
 
 ### Part 3: Engine
 6. **[Engine Architecture](05_EngineArchitecture.md)** - Camera, Transform, Mesh, separation of concerns
-7. **[Current State](06_CurrentState.md)** - Code reference, class diagram, what's next
+7. **[Multiple Objects](06_MultipleObjects.md)** - Scene management, shared resources, object selection
+
+### Appendices
+- **[Appendix A: Code Reference](A_Reference.md)** - Class diagrams, file reference, debugging tips
 
 ---
 
@@ -36,7 +39,9 @@ Read chapters in order. Each builds on the previous:
       ↓
 05 Engine Architecture ←── Understand how it all fits
       ↓
-06 Current State ←── Reference and exercises
+06 Multiple Objects ←── Manage complex scenes
+      ↓
+Appendix A ←── Reference material
 ```
 
 ---
@@ -50,7 +55,7 @@ Keep the book open alongside the code. When you see a class, find its section.
 Work through exercises at the end of each chapter.
 
 ### To Review
-Use Chapter 6 (Current State) as a quick reference.
+Use [Appendix A](A_Reference.md) as a quick reference for class diagrams and file locations.
 
 ---
 
@@ -60,7 +65,6 @@ This is a **living document**. As the engine grows, new chapters will be added:
 
 - [ ] Lighting and Materials
 - [ ] Model Loading
-- [ ] Scene Management
 - [ ] Input System
 - [ ] Audio
 - [ ] Physics
@@ -88,4 +92,3 @@ cmake --build build --config Debug
 ```
 
 Then start reading from [Chapter 0](00_Introduction.md)!
-
