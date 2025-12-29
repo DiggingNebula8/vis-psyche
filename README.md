@@ -37,7 +37,6 @@ VizPsyche is an open-source 3D graphics engine written in C++17 using OpenGL 4.6
 VizPsyche/
 ├── CMakeLists.txt              # Root CMake configuration
 ├── build.bat                   # Build script (supports debug/release/clean)
-├── debug_build.bat             # Quick debug build script
 │
 ├── VizEngine/                  # Core engine (builds as shared library)
 │   ├── CMakeLists.txt
@@ -95,23 +94,18 @@ VizPsyche/
 
 ## Building
 
-### Option 1: Build Scripts (Recommended)
+### Option 1: Build Script (Recommended)
 
 Open a terminal in the repository root and run:
 
 ```
-.\debug_build.bat
-```
-
-For release builds or clean rebuilds:
-
-```
+.\build.bat debug
 .\build.bat release
 .\build.bat clean debug
 .\build.bat clean release
 ```
 
-The scripts automatically detect your installed Visual Studio version.
+The script automatically detects your installed Visual Studio version.
 
 ### Option 2: Manual CMake
 
