@@ -1,45 +1,54 @@
-project(SandboxApp)
+project(Sandbox)
 
-# Add source files for the Sandbox application
-set(SANDBOX_SOURCES "src/SandboxApp.cpp")
+# =============================================================================
+# Source Files
+# =============================================================================
+set(SANDBOX_SOURCES
+    src/SandboxApp.cpp
+)
 
-# Create an executable
+# =============================================================================
+# Executable Target
+# =============================================================================
 add_executable(Sandbox ${SANDBOX_SOURCES})
 
-# Link with the VizEngine engine
+# =============================================================================
+# Link Libraries
+# =============================================================================
+# VizEngine propagates its PUBLIC include directories automatically
 target_link_libraries(Sandbox PRIVATE VizEngine)
 
-# Include directories from the engine
+# =============================================================================
+# Include Directories (only what's not already from VizEngine)
+# =============================================================================
 target_include_directories(Sandbox PRIVATE
-    ../../VizEngine/include
-    ../../VizEngine/vendor/spdlog/include
-    ../../VizEngine/vendor/imgui
+    ${CMAKE_SOURCE_DIR}/VizEngine/vendor/imgui  # For ImGui usage in app
 )
 
+# =============================================================================
+# Compile Definitions
+# =============================================================================
 target_compile_definitions(Sandbox PRIVATE
-    VP_PLATFORM_WINDOWS
+    $<$<PLATFORM_ID:Windows>:VP_PLATFORM_WINDOWS>
 )
 
-# Post-build command to copy the src directory to the Sandbox solution directory
-add_custom_command(TARGET Sandbox POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/VizEngine/src" "${CMAKE_CURRENT_BINARY_DIR}/src"
-)
+# =============================================================================
+# Compiler Warnings
+# =============================================================================
+if(MSVC)
+    target_compile_options(Sandbox PRIVATE /W4)
+else()
+    target_compile_options(Sandbox PRIVATE -Wall -Wextra -Wpedantic)
+endif()
 
-# Post-build command to copy shader files
+# =============================================================================
+# Post-Build: Copy Resources
+# =============================================================================
+# Copy shaders and textures to output directory
 add_custom_command(TARGET Sandbox POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:Sandbox>/src/resources/shaders/"
-    COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/VizEngine/src/resources/shaders" "$<TARGET_FILE_DIR:Sandbox>/src/resources/shaders"
-)
-
-# Post-build command to copy texture files
-add_custom_command(TARGET Sandbox POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:Sandbox>/src/resources/textures/"
-    COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/VizEngine/src/resources/textures" "$<TARGET_FILE_DIR:Sandbox>/src/resources/textures"
-)
-
-# Post-build command to copy VizEngine.dll to Sandbox executable directory
-add_custom_command(TARGET Sandbox POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    "$<TARGET_FILE:VizEngine>"
-    "$<TARGET_FILE_DIR:Sandbox>"
+    COMMENT "Copying resources to output directory..."
+    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:Sandbox>/src/resources"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory 
+        "${CMAKE_SOURCE_DIR}/VizEngine/src/resources" 
+        "$<TARGET_FILE_DIR:Sandbox>/src/resources"
 )
