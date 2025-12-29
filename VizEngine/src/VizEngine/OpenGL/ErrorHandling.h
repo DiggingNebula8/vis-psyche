@@ -1,20 +1,23 @@
 #pragma once
 
-#include"Commons.h"
+#include "Commons.h"
+#include "VizEngine/Core.h"
 
-#define ASSERT(x) if (!(x)) __debugbreak();
+#define VP_ASSERT(x) if (!(x)) __debugbreak();
 
-class ErrorHandling
+namespace VizEngine
 {
-public:
-    static void GLAPIENTRY ErrorHandler(GLenum source,
-        GLenum type,
-        GLuint id,
-        GLenum severity,
-        GLsizei length,
-        const GLchar* message,
-        const void* userParam);
+	class VizEngine_API ErrorHandling
+	{
+	public:
+		static void GLAPIENTRY ErrorHandler(GLenum source,
+			GLenum type,
+			GLuint id,
+			GLenum severity,
+			GLsizei length,
+			const GLchar* message,
+			const void* userParam);
 
-    static void HandleErrors();
-
-};
+		static void HandleErrors();
+	};
+}

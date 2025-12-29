@@ -1,77 +1,89 @@
-#include"GLFWManager.h"
+#include "GLFWManager.h"
 
+namespace VizEngine
+{
+	GLFWManager::GLFWManager(unsigned int width, unsigned int height, const std::string& title)
+	{
+		Init(width, height, title);
+	}
 
-GLFWManager::GLFWManager(unsigned int width, unsigned int height, const std::string& title) {
-    Init(width, height, title.c_str());
-}
+	GLFWManager::~GLFWManager()
+	{
+		Shutdown();
+	}
 
-GLFWManager::~GLFWManager() {
-    Shutdown();
-}
-
-void GLFWManager::Init(unsigned int width, unsigned int height, const std::string& title) {
-    if (!glfwInit()) {
-        std::cerr << "Failed to initialize GLFW\n";
-        exit(EXIT_FAILURE);
-    }
-    // Set window hints
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	void GLFWManager::Init(unsigned int width, unsigned int height, const std::string& title)
+	{
+		if (!glfwInit())
+		{
+			std::cerr << "Failed to initialize GLFW\n";
+			exit(EXIT_FAILURE);
+		}
+		// Set window hints
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // Uncomment this for MacOS compatibility
+		glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
-    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE); // For error handling
+		glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 
-    window = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
-    if (!window) {
-        std::cerr << "Failed to create GLFW window\n";
-        glfwTerminate();
-        exit(EXIT_FAILURE);
-    }
+		m_Window = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
+		if (!m_Window)
+		{
+			std::cerr << "Failed to create GLFW window\n";
+			glfwTerminate();
+			exit(EXIT_FAILURE);
+		}
 
-    glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, FramebufferSizeCallback);
-    glfwSetKeyCallback(window, KeyCallback);
+		glfwMakeContextCurrent(m_Window);
+		glfwSetFramebufferSizeCallback(m_Window, FramebufferSizeCallback);
+		glfwSetKeyCallback(m_Window, KeyCallback);
+	}
 
-}
+	void GLFWManager::Shutdown()
+	{
+		glfwDestroyWindow(m_Window);
+		glfwTerminate();
+	}
 
-void GLFWManager::Shutdown() 
-{
-    glfwDestroyWindow(window);
-    glfwTerminate();
-}
+	bool GLFWManager::WindowShouldClose()
+	{
+		return glfwWindowShouldClose(m_Window);
+	}
 
-bool GLFWManager::WindowShouldClose() 
-{
-    return glfwWindowShouldClose(window);
-}
+	void GLFWManager::SwapBuffersAndPollEvents()
+	{
+		glfwSwapBuffers(m_Window);
+		glfwPollEvents();
+	}
 
-void GLFWManager::SwapBuffersAndPollEvents() 
-{
-    glfwSwapBuffers(window);
-    glfwPollEvents();
-}
+	GLFWwindow* GLFWManager::GetWindow() const
+	{
+		return m_Window;
+	}
 
-GLFWwindow* GLFWManager::GetWindow() const 
-{
-    return window;
-}
+	void GLFWManager::FramebufferSizeCallback(GLFWwindow* window, int width, int height)
+	{
+		(void)window;
+		glViewport(0, 0, width, height);
+	}
 
-void GLFWManager::FramebufferSizeCallback(GLFWwindow* window, int width, int height) 
-{
-    // make sure the viewport matches the new window dimensions; note that width and 
-    // height will be significantly larger than specified on retina displays.
-    glViewport(0, 0, width, height);
-}
+	void GLFWManager::ProcessInput()
+	{
+		if (glfwGetKey(m_Window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+		{
+			glfwSetWindowShouldClose(m_Window, true);
+		}
+	}
 
-void GLFWManager::ProcessInput() {
-    // You can handle continuous key presses here
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-        glfwSetWindowShouldClose(window, true);
-    }
-}
-
-void GLFWManager::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    // Handle single key events here
+	void GLFWManager::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+	{
+		(void)window;
+		(void)key;
+		(void)scancode;
+		(void)action;
+		(void)mods;
+		// Handle single key events here
+	}
 }
