@@ -20,6 +20,7 @@ namespace VizEngine
 		std::shared_ptr<Mesh> MeshPtr;              // Geometry (shared - many objects can use same mesh)
 		Transform ObjectTransform;                   // Position, rotation, scale (unique per object)
 		glm::vec4 Color = glm::vec4(1.0f);          // Per-object tint color
+		float Shininess = 32.0f;                     // Material shininess (higher = glossier)
 		bool Active = true;                          // Enable/disable rendering
 		std::string Name = "Object";                 // Display name for UI
 

@@ -308,7 +308,7 @@ int Application::Run()
     // ═══════════════════════════════════════════════════
     // Load Assets
     // ═══════════════════════════════════════════════════
-    Shader shader("src/resources/shaders/default.shader");
+    Shader shader("src/resources/shaders/lit.shader");
     Texture texture("src/resources/textures/uvchecker.png");
     texture.Bind();
     

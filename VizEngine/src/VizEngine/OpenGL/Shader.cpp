@@ -156,6 +156,16 @@ namespace VizEngine
 		glUniform1f(GetUniformLocation(name), value);
 	}
 
+	void Shader::SetVec3(const std::string& name, const glm::vec3& value)
+	{
+		glUniform3f(GetUniformLocation(name), value.x, value.y, value.z);
+	}
+
+	void Shader::SetVec4(const std::string& name, const glm::vec4& value)
+	{
+		glUniform4f(GetUniformLocation(name), value.x, value.y, value.z, value.w);
+	}
+
 	void Shader::SetColor(const std::string& name, const glm::vec4& value)
 	{
 		glUniform4f(GetUniformLocation(name), value.x, value.y, value.z, value.w);

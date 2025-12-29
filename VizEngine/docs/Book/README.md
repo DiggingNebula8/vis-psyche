@@ -17,6 +17,9 @@ A hands-on guide to building a 3D rendering engine from scratch.
 6. **[Engine Architecture](05_EngineArchitecture.md)** - Camera, Transform, Mesh, separation of concerns
 7. **[Multiple Objects](06_MultipleObjects.md)** - Scene management, shared resources, object selection
 
+### Part 4: Graphics II
+8. **[Lighting](07_Lighting.md)** - Phong model, normals, directional lights
+
 ### Appendices
 - **[Appendix A: Code Reference](A_Reference.md)** - Class diagrams, file reference, debugging tips
 
@@ -40,6 +43,8 @@ Read chapters in order. Each builds on the previous:
 05 Engine Architecture ←── Understand how it all fits
       ↓
 06 Multiple Objects ←── Manage complex scenes
+      ↓
+07 Lighting ←── Make it look 3D
       ↓
 Appendix A ←── Reference material
 ```

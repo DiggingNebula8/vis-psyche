@@ -45,12 +45,16 @@ namespace VizEngine
 			if (!obj.Active) continue;
 			if (!obj.MeshPtr) continue;
 
-			// Calculate MVP matrix for this object
-			glm::mat4 mvp = camera.GetViewProjectionMatrix() * obj.ObjectTransform.GetModelMatrix();
+			// Calculate matrices
+			glm::mat4 model = obj.ObjectTransform.GetModelMatrix();
+			glm::mat4 mvp = camera.GetViewProjectionMatrix() * model;
 
-			// Set uniforms
+			// Set uniforms - both MVP and Model (for lighting)
 			shader.SetMatrix4fv("u_MVP", mvp);
-			shader.SetColor("u_Color", obj.Color);
+			shader.SetMatrix4fv("u_Model", model);
+			shader.SetVec4("u_ObjectColor", obj.Color);
+			shader.SetColor("u_Color", obj.Color);  // Legacy support
+			shader.SetFloat("u_Shininess", obj.Shininess);
 
 			// Draw the object
 			obj.MeshPtr->Bind();

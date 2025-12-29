@@ -397,7 +397,7 @@ layout.Push<float>(2);  // TexCoord
 vao.LinkVertexBuffer(vbo, layout);
 IndexBuffer ibo(indices, indexCount);
 
-Shader shader("shaders/default.shader");
+Shader shader("shaders/lit.shader");
 Texture texture("textures/uvchecker.png");
 
 // Render

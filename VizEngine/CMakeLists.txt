@@ -40,6 +40,7 @@ set(VIZENGINE_HEADERS
     src/VizEngine/Core/Transform.h
     src/VizEngine/Core/Scene.h
     src/VizEngine/Core/SceneObject.h
+    src/VizEngine/Core/Light.h
     
     # OpenGL headers
     src/VizEngine/OpenGL/Commons.h

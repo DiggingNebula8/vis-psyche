@@ -11,16 +11,23 @@
 
 namespace VizEngine
 {
-	// Vertex structure with position, color, and texture coordinates
+	// Vertex structure with position, normal, color, and texture coordinates
 	struct Vertex
 	{
 		glm::vec4 Position;
+		glm::vec3 Normal;
 		glm::vec4 Color;
 		glm::vec2 TexCoords;
 
 		Vertex() = default;
+		
+		// Constructor with normal
+		Vertex(const glm::vec4& pos, const glm::vec3& norm, const glm::vec4& col, const glm::vec2& tex)
+			: Position(pos), Normal(norm), Color(col), TexCoords(tex) {}
+
+		// Legacy constructor (defaults normal to up)
 		Vertex(const glm::vec4& pos, const glm::vec4& col, const glm::vec2& tex)
-			: Position(pos), Color(col), TexCoords(tex) {}
+			: Position(pos), Normal(0.0f, 1.0f, 0.0f), Color(col), TexCoords(tex) {}
 	};
 
 	class VizEngine_API Mesh

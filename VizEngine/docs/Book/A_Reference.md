@@ -58,6 +58,9 @@ As of now, VizPsyche has:
 | `Core/Camera.h` | View/projection matrix management |
 | `Core/Transform.h` | Position, rotation, scale struct |
 | `Core/Mesh.h` | Geometry abstraction with factories |
+| `Core/Scene.h` | Scene object collection manager |
+| `Core/SceneObject.h` | Mesh + Transform + Color bundle |
+| `Core/Light.h` | DirectionalLight, PointLight, Material |
 
 ### OpenGL
 
@@ -84,7 +87,8 @@ As of now, VizPsyche has:
 
 | File | Purpose |
 |------|---------|
-| `resources/shaders/default.shader` | Combined vertex/fragment shader |
+| `resources/shaders/unlit.shader` | Unlit shader (no lighting) |
+| `resources/shaders/lit.shader` | Blinn-Phong lighting shader |
 | `resources/textures/uvchecker.png` | Test texture |
 
 ---
@@ -116,6 +120,19 @@ VizEngine (namespace)
 │   ├── Bind(), Unbind()
 │   ├── GetVertexArray(), GetIndexBuffer()
 │   └── CreatePyramid(), CreateCube(), CreatePlane() [static factories]
+│
+├── Scene
+│   ├── AddObject(), RemoveObject(), Clear()
+│   ├── Update(), Render()
+│   └── GetObjects(), GetObjectCount()
+│
+├── SceneObject (struct)
+│   ├── MeshPtr, ObjectTransform, Color, Active, Name
+│   └── Bundles mesh + transform for rendering
+│
+├── DirectionalLight (struct)
+│   ├── Direction, Ambient, Diffuse, Specular
+│   └── GetDirection() → normalized
 │
 ├── OpenGL Wrappers
 │   ├── VertexBuffer: Bind(), Unbind(), GetID()
