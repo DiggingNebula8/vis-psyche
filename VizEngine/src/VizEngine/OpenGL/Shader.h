@@ -20,30 +20,37 @@ struct ShaderPrograms
 // Shader Class
 class Shader
 {
-private:
-	std::string m_shaderPath;
-	unsigned int m_RendererID;
-	std::unordered_map<std::string, int> m_LocationCache;
 public:
 	// Constructor that build the Shader Program
 	Shader(const std::string& shaderFile);
 	// Destructor
 	~Shader();
 
+	// Prevent copying (Rule of 5)
+	Shader(const Shader&) = delete;
+	Shader& operator=(const Shader&) = delete;
+
+	// Allow moving
+	Shader(Shader&& other) noexcept;
+	Shader& operator=(Shader&& other) noexcept;
+
 	// Binds the Shader Program
 	void Bind() const;
-	// Unvinds the Shader Program
+	// Unbinds the Shader Program
 	void Unbind() const;
 
-    // utility uniform functions
-    void SetBool(const std::string& name, bool value);
+	// Utility uniform functions
+	void SetBool(const std::string& name, bool value);
 	void SetInt(const std::string& name, int value);
 	void SetFloat(const std::string& name, float value);
 	void SetColor(const std::string& name, const glm::vec4& value);
 	void SetMatrix4fv(const std::string& name, const glm::mat4& matrix);
 
-
 private:
+	std::string m_shaderPath;
+	unsigned int m_RendererID;
+	std::unordered_map<std::string, int> m_LocationCache;
+
 	// Shader parser with a return type of ShaderPrograms
 	ShaderPrograms ShaderParser(const std::string& shaderFile);
 	// Shader compiler
@@ -52,6 +59,6 @@ private:
 	unsigned int CreateShader(const std::string& vert, const std::string& frag);
 	// Get uniform location for the set shader uniforms
 	int GetUniformLocation(const std::string& name);
-    // utility function for checking shader compilation/linking errors.
+	// Utility function for checking shader compilation/linking errors.
 	void CheckCompileErrors(unsigned int shader, std::string type);
 };

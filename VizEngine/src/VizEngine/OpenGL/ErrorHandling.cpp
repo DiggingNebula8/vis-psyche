@@ -9,6 +9,10 @@ void GLAPIENTRY ErrorHandling::ErrorHandler(GLenum source,
     const GLchar* message,
     const void* userParam)
 {
+    // Suppress unused parameter warnings
+    (void)length;
+    (void)userParam;
+
     // Ignore notifications - they're just informational messages
     if (severity == GL_DEBUG_SEVERITY_NOTIFICATION)
         return;

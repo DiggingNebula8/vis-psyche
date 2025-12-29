@@ -2,13 +2,39 @@
 
 // Constructor that generates a VertexArray ID
 VertexArray::VertexArray()
+	: m_ID(0)
 {
-	glGenVertexArrays(1, &ID);
+	glGenVertexArrays(1, &m_ID);
 }
 
 VertexArray::~VertexArray()
 {
-	glDeleteVertexArrays(1, &ID);
+	if (m_ID != 0)
+	{
+		glDeleteVertexArrays(1, &m_ID);
+	}
+}
+
+// Move constructor
+VertexArray::VertexArray(VertexArray&& other) noexcept
+	: m_ID(other.m_ID)
+{
+	other.m_ID = 0;
+}
+
+// Move assignment operator
+VertexArray& VertexArray::operator=(VertexArray&& other) noexcept
+{
+	if (this != &other)
+	{
+		if (m_ID != 0)
+		{
+			glDeleteVertexArrays(1, &m_ID);
+		}
+		m_ID = other.m_ID;
+		other.m_ID = 0;
+	}
+	return *this;
 }
 
 // Links a VertexBuffer to the VertexArray using a certain layout
@@ -25,23 +51,16 @@ void VertexArray::LinkVertexBuffer(const VertexBuffer& vertexBuffer, const Verte
 		glVertexAttribPointer(i, element.count, element.type, element.normalised, layout.GetStride(), reinterpret_cast<const void*>(static_cast<size_t>(offset)));
 		offset += element.count * VertexBufferElement::GetSizeOfType(element.type);
 	}
-	//vertexBuffer.Unbind();
 }
 
 // Binds the VertexArray
 void VertexArray::Bind() const
 {
-	glBindVertexArray(ID);
+	glBindVertexArray(m_ID);
 }
 
 // Unbinds the VertexArray
 void VertexArray::Unbind() const
 {
 	glBindVertexArray(0);
-}
-
-// Deletes the VertexArray
-void VertexArray::Delete() const
-{
-	glDeleteVertexArrays(1, &ID);
 }

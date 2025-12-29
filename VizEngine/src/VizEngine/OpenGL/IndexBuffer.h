@@ -5,18 +5,28 @@
 class IndexBuffer
 {
 public:
-	// ID reference of Elements Buffer Object
-	unsigned int ID;
-	unsigned int count;
 	// Constructor that generates a Elements Buffer Object and links it to indices
 	IndexBuffer(const unsigned int* indices, unsigned int count);
 	~IndexBuffer();
+
+	// Prevent copying (Rule of 5)
+	IndexBuffer(const IndexBuffer&) = delete;
+	IndexBuffer& operator=(const IndexBuffer&) = delete;
+
+	// Allow moving
+	IndexBuffer(IndexBuffer&& other) noexcept;
+	IndexBuffer& operator=(IndexBuffer&& other) noexcept;
+
 	// Binds the IndexBuffer
 	void Bind() const;
 	// Unbinds the IndexBuffer
 	void Unbind() const;
-	// Deletes the IndexBuffer
-	void Delete() const;
 
-	inline unsigned int GetCount() const { return count; }
+	// Getters
+	inline unsigned int GetID() const { return m_ID; }
+	inline unsigned int GetCount() const { return m_Count; }
+
+private:
+	unsigned int m_ID;
+	unsigned int m_Count;
 };

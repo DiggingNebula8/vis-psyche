@@ -7,9 +7,8 @@
 
 class Renderer
 {
-private:
 public:
-	void Clear(float clearColour[4]);
+	void Clear(float clearColor[4]);
+	void ClearDepth();
 	void Draw(const VertexArray& va, const IndexBuffer& ib, const Shader& shader) const;
-
 };

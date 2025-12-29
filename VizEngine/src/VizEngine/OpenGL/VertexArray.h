@@ -7,11 +7,17 @@
 class VertexArray
 {
 public:
-	// ID reference for the Vertex Array Object
-	unsigned int ID;
 	// Constructor that generates a VertexArray ID
 	VertexArray();
 	~VertexArray();
+
+	// Prevent copying (Rule of 5)
+	VertexArray(const VertexArray&) = delete;
+	VertexArray& operator=(const VertexArray&) = delete;
+
+	// Allow moving
+	VertexArray(VertexArray&& other) noexcept;
+	VertexArray& operator=(VertexArray&& other) noexcept;
 
 	// Links a VertexBuffer to the VertexArray using a certain layout
 	void LinkVertexBuffer(const VertexBuffer& vertexBuffer, const VertexBufferLayout& layout) const;
@@ -19,6 +25,10 @@ public:
 	void Bind() const;
 	// Unbinds the VertexArray
 	void Unbind() const;
-	// Deletes the VertexArray
-	void Delete() const;
+
+	// Getter for ID
+	inline unsigned int GetID() const { return m_ID; }
+
+private:
+	unsigned int m_ID;
 };

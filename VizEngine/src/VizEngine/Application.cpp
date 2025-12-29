@@ -93,7 +93,7 @@ namespace VizEngine
         glm::mat4 view = glm::mat4(1.0f);
         glm::mat4 proj = glm::mat4(1.0f);
         view = glm::translate(view, glm::vec3(0.0f, -0.5f, -2.0f));
-        proj = glm::perspective(glm::radians(45.0f), (float)(SCR_WIDTH / SCR_HEIGHT), 0.1f, 100.0f);
+        proj = glm::perspective(glm::radians(45.0f), static_cast<float>(SCR_WIDTH) / static_cast<float>(SCR_HEIGHT), 0.1f, 100.0f);
         glm::mat4 u_MVP = proj * view * model;
         shader.SetMatrix4fv("u_MVP", u_MVP);
 
@@ -134,7 +134,6 @@ namespace VizEngine
 
             // Rendering
             renderer.Clear(clearColor);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             // Binding
             shader.Bind();
@@ -150,7 +149,7 @@ namespace VizEngine
             glm::mat4 proj = glm::mat4(1.0f);
             model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
             view = glm::translate(view, glm::vec3(0.0f, -0.5f, -2.0f));
-            proj = glm::perspective(glm::radians(45.0f), (float)(SCR_WIDTH / SCR_HEIGHT), 0.1f, 100.0f);
+            proj = glm::perspective(glm::radians(45.0f), static_cast<float>(SCR_WIDTH) / static_cast<float>(SCR_HEIGHT), 0.1f, 100.0f);
             glm::mat4 u_MVP = proj * view * model;
             shader.SetMatrix4fv("u_MVP", u_MVP);
             vertexArray.Bind();

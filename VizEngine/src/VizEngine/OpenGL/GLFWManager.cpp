@@ -10,7 +10,6 @@ GLFWManager::~GLFWManager() {
 }
 
 void GLFWManager::Init(unsigned int width, unsigned int height, const std::string& title) {
-    glfwInit();
     if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW\n";
         exit(EXIT_FAILURE);

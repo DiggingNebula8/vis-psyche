@@ -9,32 +9,37 @@ ShaderPrograms Shader::ShaderParser(const std::string& shaderFile)
 	};
 
 	std::ifstream input(shaderFile, std::ios::binary);
-	if (input)
+	if (!input)
 	{
-		std::string contents;
-		std::stringstream ss[2];
-		ShaderType shaderType = ShaderType::NONE;
-		while (getline(input, contents))
+		std::cerr << "Failed to open shader file: " << shaderFile << std::endl;
+		return {"", ""};
+	}
+
+	std::string contents;
+	std::stringstream ss[2];
+	ShaderType shaderType = ShaderType::NONE;
+	while (getline(input, contents))
+	{
+		if (contents.find("#shader") != std::string::npos)
 		{
-			if (contents.find("#shader") != std::string::npos)
+			if (contents.find("vertex") != std::string::npos)
 			{
-				if (contents.find("vertex") != std::string::npos)
-				{
-					shaderType = ShaderType::VERTEX;
-				}
-				else if (contents.find("fragment") != std::string::npos)
-				{
-					shaderType = ShaderType::FRAGMENT;
-				}
+				shaderType = ShaderType::VERTEX;
 			}
-			else
+			else if (contents.find("fragment") != std::string::npos)
 			{
-				ss[(int)shaderType] << contents << '\n';
+				shaderType = ShaderType::FRAGMENT;
 			}
 		}
-		return {ss[0].str(), ss[1].str()};
+		else
+		{
+			if (shaderType != ShaderType::NONE)
+			{
+				ss[static_cast<int>(shaderType)] << contents << '\n';
+			}
+		}
 	}
-	throw(errno);
+	return {ss[0].str(), ss[1].str()};
 }
 
 // Constructor that builds the final Shader
@@ -48,7 +53,36 @@ Shader::Shader(const std::string& shaderFile)
 
 Shader::~Shader()
 {
-	glDeleteProgram(m_RendererID);
+	if (m_RendererID != 0)
+	{
+		glDeleteProgram(m_RendererID);
+	}
+}
+
+// Move constructor
+Shader::Shader(Shader&& other) noexcept
+	: m_shaderPath(std::move(other.m_shaderPath)),
+	  m_RendererID(other.m_RendererID),
+	  m_LocationCache(std::move(other.m_LocationCache))
+{
+	other.m_RendererID = 0;
+}
+
+// Move assignment operator
+Shader& Shader::operator=(Shader&& other) noexcept
+{
+	if (this != &other)
+	{
+		if (m_RendererID != 0)
+		{
+			glDeleteProgram(m_RendererID);
+		}
+		m_shaderPath = std::move(other.m_shaderPath);
+		m_RendererID = other.m_RendererID;
+		m_LocationCache = std::move(other.m_LocationCache);
+		other.m_RendererID = 0;
+	}
+	return *this;
 }
 
 // Bind the Shader Program
@@ -85,10 +119,10 @@ unsigned int Shader::CreateShader(const std::string& vert, const std::string& fr
 	unsigned int program = glCreateProgram();
 
 	unsigned int vs = CompileShader(GL_VERTEX_SHADER, vert);
-	CheckCompileErrors(vs, "VERTEX: ");
+	CheckCompileErrors(vs, "VERTEX");
 
 	unsigned int fs = CompileShader(GL_FRAGMENT_SHADER, frag);
-	CheckCompileErrors(fs, "FRAGMENT: ");
+	CheckCompileErrors(fs, "FRAGMENT");
 
 	// Attach the Vertex and Fragment Shaders to the Shader Program
 	glAttachShader(program, vs);
@@ -96,7 +130,7 @@ unsigned int Shader::CreateShader(const std::string& vert, const std::string& fr
 	// Wrap-up/Link all the shaders together into the Shader Program
 	glLinkProgram(program);
 	glValidateProgram(program);
-	CheckCompileErrors(program, "LINK:");
+	CheckCompileErrors(program, "PROGRAM");
 	// Delete the now useless Vertex and Fragment Shader objects
 	glDeleteShader(vs);
 	glDeleteShader(fs);
