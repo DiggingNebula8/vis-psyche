@@ -124,6 +124,7 @@ target_compile_definitions(VizEngine
 if(MSVC)
     target_compile_options(VizEngine PRIVATE 
         /W4           # High warning level
+        /utf-8        # Required for spdlog/fmt Unicode support
         /wd4251       # DLL-interface warning (expected with spdlog)
         /wd4275       # Non-DLL-interface base class
     )
