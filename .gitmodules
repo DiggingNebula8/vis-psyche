@@ -13,3 +13,6 @@
 [submodule "VizEngine/docs/vis-psyche-docs"]
 	path = VizEngine/docs/vis-psyche-docs
 	url = git@github.com:DiggingNebula8/vis-psyche-docs.git
+[submodule "VizEngine/vendor/tinygltf"]
+	path = VizEngine/vendor/tinygltf
+	url = git@github.com:syoyo/tinygltf.git
