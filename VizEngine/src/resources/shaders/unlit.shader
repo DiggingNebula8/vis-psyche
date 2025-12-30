@@ -36,3 +36,4 @@ void main()
 	FragColor = vec4(combinedColor, texColor.a * u_ObjectColor.a);
 }
 
+

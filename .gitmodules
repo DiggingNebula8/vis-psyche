@@ -10,3 +10,6 @@
 [submodule "VizEngine/vendor/glm"]
 	path = VizEngine/vendor/glm
 	url = https://github.com/icaven/glm.git
+[submodule "VizEngine/docs/vis-psyche-docs"]
+	path = VizEngine/docs/vis-psyche-docs
+	url = git@github.com:DiggingNebula8/vis-psyche-docs.git
