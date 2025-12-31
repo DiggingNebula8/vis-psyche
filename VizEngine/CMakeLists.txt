@@ -10,6 +10,8 @@ set(VIZENGINE_SOURCES
     src/VizEngine/Core/Camera.cpp
     src/VizEngine/Core/Mesh.cpp
     src/VizEngine/Core/Scene.cpp
+    src/VizEngine/Core/Model.cpp
+    src/VizEngine/Core/TinyGLTF.cpp
     
     # OpenGL
     src/VizEngine/OpenGL/glad.c
@@ -41,6 +43,8 @@ set(VIZENGINE_HEADERS
     src/VizEngine/Core/Scene.h
     src/VizEngine/Core/SceneObject.h
     src/VizEngine/Core/Light.h
+    src/VizEngine/Core/Material.h
+    src/VizEngine/Core/Model.h
     
     # OpenGL headers
     src/VizEngine/OpenGL/Commons.h
@@ -104,6 +108,7 @@ target_include_directories(VizEngine
         ${CMAKE_CURRENT_SOURCE_DIR}/vendor/imgui
         ${CMAKE_CURRENT_SOURCE_DIR}/vendor/imgui/backends
         ${CMAKE_CURRENT_SOURCE_DIR}/vendor/stb_image
+        ${CMAKE_CURRENT_SOURCE_DIR}/vendor/tinygltf
 )
 
 # =============================================================================

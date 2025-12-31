@@ -3,7 +3,6 @@
 #include <iostream>
 #include <string>
 #include <glad/glad.h>
-#include "stb_image.h"
 #include "VizEngine/Core.h"
 
 namespace VizEngine
@@ -11,7 +10,12 @@ namespace VizEngine
 	class VizEngine_API Texture
 	{
 	public:
+		// Load from file
 		Texture(const std::string& path);
+		
+		// Create from raw pixel data (for embedded textures in glTF)
+		Texture(const unsigned char* data, int width, int height, int channels = 4);
+		
 		~Texture();
 
 		// Prevent copying (Rule of 5)
