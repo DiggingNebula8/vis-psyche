@@ -67,18 +67,18 @@ namespace VizEngine
 		Scene scene;
 
 		// Add a ground plane
-		auto& ground = scene.AddObject(planeMesh, "Ground");
+		auto& ground = scene.Add(planeMesh, "Ground");
 		ground.ObjectTransform.Position = glm::vec3(0.0f, -1.0f, 0.0f);
 		ground.Color = glm::vec4(0.3f, 0.3f, 0.35f, 1.0f);
 
 		// Add a pyramid
-		auto& pyramid = scene.AddObject(pyramidMesh, "Pyramid");
+		auto& pyramid = scene.Add(pyramidMesh, "Pyramid");
 		pyramid.ObjectTransform.Position = glm::vec3(-3.0f, 0.0f, 0.0f);
 		pyramid.ObjectTransform.Scale = glm::vec3(2.0f, 4.0f, 2.0f);
 		pyramid.Color = glm::vec4(0.3f, 0.5f, 0.9f, 1.0f);
 
 		// Add a cube
-		auto& cube = scene.AddObject(cubeMesh, "Cube");
+		auto& cube = scene.Add(cubeMesh, "Cube");
 		cube.ObjectTransform.Position = glm::vec3(3.0f, 0.0f, 0.0f);
 		cube.ObjectTransform.Scale = glm::vec3(2.0f);
 		cube.Color = glm::vec4(0.9f, 0.5f, 0.3f, 1.0f);
@@ -86,13 +86,13 @@ namespace VizEngine
 		// =========================================================================
 		// Load glTF Model (testing tinygltf)
 		// =========================================================================
-		auto duckModel = Model::LoadFromFile("VizEngine/assets/gltf-samples/Models/Duck/glTF-Binary/Duck.glb");
+		auto duckModel = Model::LoadFromFile("assets/gltf-samples/Models/Duck/glTF-Binary/Duck.glb");
 		if (duckModel)
 		{
 			VP_CORE_INFO("Duck model loaded: {} meshes", duckModel->GetMeshCount());
 			for (size_t i = 0; i < duckModel->GetMeshCount(); i++)
 			{
-				auto& duckObj = scene.AddObject(duckModel->GetMeshes()[i], "Duck");
+				auto& duckObj = scene.Add(duckModel->GetMeshes()[i], "Duck");
 				duckObj.ObjectTransform.Position = glm::vec3(0.0f, 0.0f, 3.0f);
 				duckObj.ObjectTransform.Scale = glm::vec3(0.02f);
 				duckObj.Color = glm::vec4(1.0f, 0.9f, 0.0f, 1.0f);
@@ -121,8 +121,8 @@ namespace VizEngine
 		// =========================================================================
 		// Load Assets
 		// =========================================================================
-		Shader litShader("VizEngine/src/resources/shaders/lit.shader");
-		Texture texture("VizEngine/src/resources/textures/uvchecker.png");
+		Shader litShader("resources/shaders/lit.shader");
+		Texture texture("resources/textures/uvchecker.png");
 		texture.Bind();
 
 		// =========================================================================
@@ -157,9 +157,9 @@ namespace VizEngine
 			prevTime = currentTime;
 
 			// Rotate objects (skip ground plane at index 0)
-			for (size_t i = 1; i < scene.GetObjectCount(); i++)
+			for (size_t i = 1; i < scene.Size(); i++)
 			{
-				auto& obj = scene.GetSceneObject(i);
+				auto& obj = scene[i];
 				obj.ObjectTransform.Rotation.y += rotationSpeed * deltaTime;
 			}
 
@@ -179,14 +179,13 @@ namespace VizEngine
 			uiManager.StartWindow("Scene Objects");
 
 			// Object list
-			auto& objects = scene.GetObjects();
-			ImGui::Text("Objects (%zu)", objects.size());
+			ImGui::Text("Objects (%zu)", scene.Size());
 			ImGui::Separator();
 
-			for (size_t i = 0; i < objects.size(); i++)
+			for (size_t i = 0; i < scene.Size(); i++)
 			{
 				bool isSelected = (selectedObject == static_cast<int>(i));
-				if (ImGui::Selectable(objects[i].Name.c_str(), isSelected))
+				if (ImGui::Selectable(scene[i].Name.c_str(), isSelected))
 				{
 					selectedObject = static_cast<int>(i);
 				}
@@ -195,9 +194,9 @@ namespace VizEngine
 			ImGui::Separator();
 
 			// Edit selected object
-			if (selectedObject >= 0 && selectedObject < static_cast<int>(objects.size()))
+			if (selectedObject >= 0 && selectedObject < static_cast<int>(scene.Size()))
 			{
-				auto& obj = objects[static_cast<size_t>(selectedObject)];
+				auto& obj = scene[static_cast<size_t>(selectedObject)];
 
 				ImGui::Text("Selected: %s", obj.Name.c_str());
 				ImGui::Checkbox("Active", &obj.Active);
@@ -222,8 +221,8 @@ namespace VizEngine
 				ImGui::Separator();
 				if (ImGui::Button("Delete Object"))
 				{
-					scene.RemoveObject(static_cast<size_t>(selectedObject));
-					selectedObject = std::min(selectedObject, static_cast<int>(scene.GetObjectCount()) - 1);
+					scene.Remove(static_cast<size_t>(selectedObject));
+					selectedObject = std::min(selectedObject, static_cast<int>(scene.Size()) - 1);
 					if (selectedObject < 0) selectedObject = 0;
 				}
 			}
@@ -233,14 +232,14 @@ namespace VizEngine
 			// Add new objects
 			if (ImGui::Button("Add Pyramid"))
 			{
-				auto& newObj = scene.AddObject(pyramidMesh, "Pyramid " + std::to_string(scene.GetObjectCount() + 1));
+				auto& newObj = scene.Add(pyramidMesh, "Pyramid " + std::to_string(scene.Size() + 1));
 				newObj.ObjectTransform.Scale = glm::vec3(2.0f, 4.0f, 2.0f);
 				newObj.Color = glm::vec4(0.5f, 0.5f, 0.9f, 1.0f);
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("Add Cube"))
 			{
-				auto& newObj = scene.AddObject(cubeMesh, "Cube " + std::to_string(scene.GetObjectCount() + 1));
+				auto& newObj = scene.Add(cubeMesh, "Cube " + std::to_string(scene.Size() + 1));
 				newObj.ObjectTransform.Scale = glm::vec3(2.0f);
 				newObj.Color = glm::vec4(0.9f, 0.5f, 0.3f, 1.0f);
 			}

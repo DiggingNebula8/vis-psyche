@@ -47,8 +47,14 @@ endif()
 # Copy shaders and textures to output directory
 add_custom_command(TARGET Sandbox POST_BUILD
     COMMENT "Copying resources to output directory..."
-    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:Sandbox>/src/resources"
+    # Copy shaders and textures
+    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:Sandbox>/resources"
     COMMAND ${CMAKE_COMMAND} -E copy_directory 
         "${CMAKE_SOURCE_DIR}/VizEngine/src/resources" 
-        "$<TARGET_FILE_DIR:Sandbox>/src/resources"
+        "$<TARGET_FILE_DIR:Sandbox>/resources"
+    # Copy glTF sample assets (only Duck for now to save space)
+    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:Sandbox>/assets/gltf-samples/Models/Duck/glTF-Binary"
+    COMMAND ${CMAKE_COMMAND} -E copy
+        "${CMAKE_SOURCE_DIR}/VizEngine/assets/gltf-samples/Models/Duck/glTF-Binary/Duck.glb"
+        "$<TARGET_FILE_DIR:Sandbox>/assets/gltf-samples/Models/Duck/glTF-Binary/"
 )

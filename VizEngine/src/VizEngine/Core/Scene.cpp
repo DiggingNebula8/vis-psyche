@@ -2,7 +2,7 @@
 
 namespace VizEngine
 {
-	SceneObject& Scene::AddObject(std::shared_ptr<Mesh> mesh, const std::string& name)
+	SceneObject& Scene::Add(std::shared_ptr<Mesh> mesh, const std::string& name)
 	{
 		SceneObject obj;
 		obj.MeshPtr = mesh;
@@ -15,7 +15,7 @@ namespace VizEngine
 		return m_Objects.back();
 	}
 
-	void Scene::RemoveObject(size_t index)
+	void Scene::Remove(size_t index)
 	{
 		if (index < m_Objects.size())
 		{
