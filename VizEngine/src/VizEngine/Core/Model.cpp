@@ -118,6 +118,13 @@ namespace VizEngine
 	{
 		VP_CORE_INFO("Loading model: {}", filepath);
 
+		// Check if file exists first for clearer error messages
+		if (!std::filesystem::exists(filepath))
+		{
+			VP_CORE_ERROR("Model file not found: {}", filepath);
+			return nullptr;
+		}
+
 		tinygltf::Model gltfModel;
 		tinygltf::TinyGLTF loader;
 		std::string err, warn;
