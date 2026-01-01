@@ -21,7 +21,7 @@ namespace VizEngine
 	 * Example:
 	 *   auto model = Model::LoadFromFile("assets/helmet.glb");
 	 *   for (auto& mesh : model->GetMeshes()) {
-	 *       scene.Add(mesh);
+	 *       scene.Add(mesh, name);
 	 *   }
 	 */
 	class VizEngine_API Model
