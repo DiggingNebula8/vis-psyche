@@ -64,6 +64,15 @@ namespace VizEngine
 	{
 		const auto& bufferView = model.bufferViews[accessor.bufferView];
 		const auto& buffer = model.buffers[bufferView.buffer];
+		
+		// Warn if byteStride is set and doesn't match expected tight packing
+		// This indicates interleaved vertex data which we don't fully support yet
+		if (bufferView.byteStride != 0 && bufferView.byteStride != sizeof(T))
+		{
+			VP_CORE_WARN("glTF buffer has non-zero byteStride ({}), interleaved data may not load correctly", 
+				bufferView.byteStride);
+		}
+		
 		return reinterpret_cast<const T*>(
 			buffer.data.data() + bufferView.byteOffset + accessor.byteOffset
 		);
