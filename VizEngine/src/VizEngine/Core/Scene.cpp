@@ -1,4 +1,5 @@
 #include "Scene.h"
+#include <glad/glad.h>
 
 namespace VizEngine
 {
@@ -61,6 +62,11 @@ namespace VizEngine
 			if (obj.TexturePtr)
 			{
 				obj.TexturePtr->Bind();
+			}
+			else
+			{
+				// Unbind texture for objects without textures
+				glBindTexture(GL_TEXTURE_2D, 0);
 			}
 			obj.MeshPtr->Bind();
 			renderer.Draw(obj.MeshPtr->GetVertexArray(), obj.MeshPtr->GetIndexBuffer(), shader);
