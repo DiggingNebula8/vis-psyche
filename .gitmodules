@@ -16,3 +16,6 @@
 [submodule "VizEngine/vendor/tinygltf"]
 	path = VizEngine/vendor/tinygltf
 	url = git@github.com:syoyo/tinygltf.git
+[submodule "VizEngine/assets/gltf-samples"]
+	path = VizEngine/assets/gltf-samples
+	url = https://github.com/KhronosGroup/glTF-Sample-Assets
