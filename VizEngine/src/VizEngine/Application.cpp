@@ -10,6 +10,8 @@
 #include "Core/Transform.h"
 #include "Core/Scene.h"
 #include "Core/Light.h"
+#include "Core/Model.h"
+#include "Log.h"
 
 #include "OpenGL/GLFWManager.h"
 #include "OpenGL/Renderer.h"
@@ -82,6 +84,26 @@ namespace VizEngine
 		cube.Color = glm::vec4(0.9f, 0.5f, 0.3f, 1.0f);
 
 		// =========================================================================
+		// Load glTF Model (testing tinygltf)
+		// =========================================================================
+		auto duckModel = Model::LoadFromFile("VizEngine/assets/gltf-samples/Models/Duck/glTF-Binary/Duck.glb");
+		if (duckModel)
+		{
+			VP_CORE_INFO("Duck model loaded: {} meshes", duckModel->GetMeshCount());
+			for (size_t i = 0; i < duckModel->GetMeshCount(); i++)
+			{
+				auto& duckObj = scene.AddObject(duckModel->GetMeshes()[i], "Duck");
+				duckObj.ObjectTransform.Position = glm::vec3(0.0f, 0.0f, 3.0f);
+				duckObj.ObjectTransform.Scale = glm::vec3(0.02f);
+				duckObj.Color = glm::vec4(1.0f, 0.9f, 0.0f, 1.0f);
+			}
+		}
+		else
+		{
+			VP_CORE_ERROR("Failed to load Duck model!");
+		}
+
+		// =========================================================================
 		// Lighting
 		// =========================================================================
 		DirectionalLight light;
@@ -99,8 +121,8 @@ namespace VizEngine
 		// =========================================================================
 		// Load Assets
 		// =========================================================================
-		Shader litShader("src/resources/shaders/lit.shader");
-		Texture texture("src/resources/textures/uvchecker.png");
+		Shader litShader("VizEngine/src/resources/shaders/lit.shader");
+		Texture texture("VizEngine/src/resources/textures/uvchecker.png");
 		texture.Bind();
 
 		// =========================================================================
@@ -137,7 +159,7 @@ namespace VizEngine
 			// Rotate objects (skip ground plane at index 0)
 			for (size_t i = 1; i < scene.GetObjectCount(); i++)
 			{
-				auto& obj = scene.GetObject(i);
+				auto& obj = scene.GetSceneObject(i);
 				obj.ObjectTransform.Rotation.y += rotationSpeed * deltaTime;
 			}
 

@@ -68,8 +68,8 @@ namespace VizEngine
 		const std::vector<SceneObject>& GetObjects() const { return m_Objects; }
 		size_t GetObjectCount() const { return m_Objects.size(); }
 
-		SceneObject& GetObject(size_t index) { return m_Objects[index]; }
-		const SceneObject& GetObject(size_t index) const { return m_Objects[index]; }
+		SceneObject& GetSceneObject(size_t index) { return m_Objects[index]; }
+		const SceneObject& GetSceneObject(size_t index) const { return m_Objects[index]; }
 
 	private:
 		std::vector<SceneObject> m_Objects;
