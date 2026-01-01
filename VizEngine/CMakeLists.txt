@@ -114,9 +114,14 @@ target_include_directories(VizEngine
 # =============================================================================
 # Compile Definitions
 # =============================================================================
+# Platform detection - use WIN32 for reliable Windows detection
+if(WIN32)
+    set(PLATFORM_DEFINITIONS VP_PLATFORM_WINDOWS)
+endif()
+
 target_compile_definitions(VizEngine
     PUBLIC
-        $<$<PLATFORM_ID:Windows>:VP_PLATFORM_WINDOWS>
+        ${PLATFORM_DEFINITIONS}
     PRIVATE
         VP_BUILD_DLL
         # Silence MSVC warnings in vendor code
