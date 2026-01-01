@@ -86,16 +86,39 @@ namespace VizEngine
 		// =========================================================================
 		// Load glTF Model (testing tinygltf)
 		// =========================================================================
+		std::shared_ptr<Mesh> duckMesh = nullptr;
+		std::shared_ptr<Texture> duckTexture = nullptr;
+		
 		auto duckModel = Model::LoadFromFile("assets/gltf-samples/Models/Duck/glTF-Binary/Duck.glb");
 		if (duckModel)
 		{
 			VP_CORE_INFO("Duck model loaded: {} meshes", duckModel->GetMeshCount());
+			
+			// Store mesh and texture for reuse (Add Duck button)
+			if (duckModel->GetMeshCount() > 0)
+			{
+				duckMesh = duckModel->GetMeshes()[0];
+				const auto& material = duckModel->GetMaterialForMesh(0);
+				if (material.BaseColorTexture)
+				{
+					duckTexture = material.BaseColorTexture;
+				}
+			}
+			
+			// Add initial duck to scene
 			for (size_t i = 0; i < duckModel->GetMeshCount(); i++)
 			{
 				auto& duckObj = scene.Add(duckModel->GetMeshes()[i], "Duck");
 				duckObj.ObjectTransform.Position = glm::vec3(0.0f, 0.0f, 3.0f);
 				duckObj.ObjectTransform.Scale = glm::vec3(0.02f);
-				duckObj.Color = glm::vec4(1.0f, 0.9f, 0.0f, 1.0f);
+				duckObj.Color = glm::vec4(1.0f);  // Don't tint, use texture colors
+				
+				// Use the model's own texture if available
+				const auto& material = duckModel->GetMaterialForMesh(i);
+				if (material.BaseColorTexture)
+				{
+					duckObj.TexturePtr = material.BaseColorTexture;
+				}
 			}
 		}
 		else
@@ -122,8 +145,17 @@ namespace VizEngine
 		// Load Assets
 		// =========================================================================
 		Shader litShader("resources/shaders/lit.shader");
-		Texture texture("resources/textures/uvchecker.png");
-		texture.Bind();
+		auto defaultTexture = std::make_shared<Texture>("resources/textures/uvchecker.png");
+		defaultTexture->Bind();
+
+		// Assign default texture to basic objects (created before this point)
+		for (size_t i = 0; i < scene.Size(); i++)
+		{
+			if (!scene[i].TexturePtr)
+			{
+				scene[i].TexturePtr = defaultTexture;
+			}
+		}
 
 		// =========================================================================
 		// UI & Renderer
@@ -235,6 +267,7 @@ namespace VizEngine
 				auto& newObj = scene.Add(pyramidMesh, "Pyramid " + std::to_string(scene.Size() + 1));
 				newObj.ObjectTransform.Scale = glm::vec3(2.0f, 4.0f, 2.0f);
 				newObj.Color = glm::vec4(0.5f, 0.5f, 0.9f, 1.0f);
+				newObj.TexturePtr = defaultTexture;
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("Add Cube"))
@@ -242,6 +275,18 @@ namespace VizEngine
 				auto& newObj = scene.Add(cubeMesh, "Cube " + std::to_string(scene.Size() + 1));
 				newObj.ObjectTransform.Scale = glm::vec3(2.0f);
 				newObj.Color = glm::vec4(0.9f, 0.5f, 0.3f, 1.0f);
+				newObj.TexturePtr = defaultTexture;
+			}
+			if (duckMesh)  // Only show if duck model loaded successfully
+			{
+				ImGui::SameLine();
+				if (ImGui::Button("Add Duck"))
+				{
+					auto& newObj = scene.Add(duckMesh, "Duck " + std::to_string(scene.Size() + 1));
+					newObj.ObjectTransform.Scale = glm::vec3(0.02f);
+					newObj.Color = glm::vec4(1.0f);
+					newObj.TexturePtr = duckTexture;
+				}
 			}
 
 			uiManager.EndWindow();

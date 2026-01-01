@@ -57,6 +57,11 @@ namespace VizEngine
 			shader.SetFloat("u_Shininess", obj.Shininess);
 
 			// Draw the object
+			// Bind per-object texture if available
+			if (obj.TexturePtr)
+			{
+				obj.TexturePtr->Bind();
+			}
 			obj.MeshPtr->Bind();
 			renderer.Draw(obj.MeshPtr->GetVertexArray(), obj.MeshPtr->GetIndexBuffer(), shader);
 		}
