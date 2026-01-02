@@ -379,18 +379,7 @@ namespace VizEngine
 				}
 				size_t vertexCount = posAccessor.count;
 
-				// Validate buffer bounds to prevent overrun from malformed files
-				{
-					const auto& posBufferView = gltfModel.bufferViews[posAccessor.bufferView];
-					const auto& posBuffer = gltfModel.buffers[posBufferView.buffer];
-					size_t requiredBytes = vertexCount * 3 * sizeof(float);
-					size_t availableBytes = posBuffer.data.size() - posBufferView.byteOffset - posAccessor.byteOffset;
-					if (requiredBytes > availableBytes)
-					{
-						VP_CORE_ERROR("Position buffer too small for accessor.count, skipping primitive");
-						continue;
-					}
-				}
+
 
 				const float* normals = nullptr;  // nullptr check deferred to vertex loop
 				if (primitive.attributes.find("NORMAL") != primitive.attributes.end())
