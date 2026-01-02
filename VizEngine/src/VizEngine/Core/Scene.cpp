@@ -1,8 +1,9 @@
 #include "Scene.h"
+#include <glad/glad.h>
 
 namespace VizEngine
 {
-	SceneObject& Scene::AddObject(std::shared_ptr<Mesh> mesh, const std::string& name)
+	SceneObject& Scene::Add(std::shared_ptr<Mesh> mesh, const std::string& name)
 	{
 		SceneObject obj;
 		obj.MeshPtr = mesh;
@@ -15,7 +16,7 @@ namespace VizEngine
 		return m_Objects.back();
 	}
 
-	void Scene::RemoveObject(size_t index)
+	void Scene::Remove(size_t index)
 	{
 		if (index < m_Objects.size())
 		{
@@ -57,6 +58,16 @@ namespace VizEngine
 			shader.SetFloat("u_Shininess", obj.Shininess);
 
 			// Draw the object
+			// Bind per-object texture if available
+			if (obj.TexturePtr)
+			{
+				obj.TexturePtr->Bind();
+			}
+			else
+			{
+				// Unbind texture for objects without textures
+				glBindTexture(GL_TEXTURE_2D, 0);
+			}
 			obj.MeshPtr->Bind();
 			renderer.Draw(obj.MeshPtr->GetVertexArray(), obj.MeshPtr->GetIndexBuffer(), shader);
 		}

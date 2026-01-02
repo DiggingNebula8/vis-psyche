@@ -3,8 +3,8 @@
 #include <glad/glad.h>
 #include <vector>
 #include <type_traits>
-#include <iostream>
 #include "VizEngine/Core.h"
+#include "VizEngine/Log.h"
 
 namespace VizEngine
 {
@@ -37,7 +37,6 @@ namespace VizEngine
 		{
 			static_assert(std::is_same<T, float>::value || std::is_same<T, unsigned int>::value || std::is_same<T, unsigned char>::value,
 				"Unsupported type for VertexBufferLayout::Push");
-			std::cerr << "Type not supported yet!\n";
 		}
 
 		template<>

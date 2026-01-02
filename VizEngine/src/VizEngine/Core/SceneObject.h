@@ -3,6 +3,7 @@
 #include "VizEngine/Core.h"
 #include "VizEngine/Core/Transform.h"
 #include "VizEngine/Core/Mesh.h"
+#include "VizEngine/OpenGL/Texture.h"
 #include "glm.hpp"
 #include <memory>
 
@@ -18,6 +19,7 @@ namespace VizEngine
 	struct VizEngine_API SceneObject
 	{
 		std::shared_ptr<Mesh> MeshPtr;              // Geometry (shared - many objects can use same mesh)
+		std::shared_ptr<Texture> TexturePtr;        // Optional per-object texture (nullptr = use default)
 		Transform ObjectTransform;                   // Position, rotation, scale (unique per object)
 		glm::vec4 Color = glm::vec4(1.0f);          // Per-object tint color
 		float Shininess = 32.0f;                     // Material shininess (higher = glossier)

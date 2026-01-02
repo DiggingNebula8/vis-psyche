@@ -1,4 +1,5 @@
 #include "GLFWManager.h"
+#include "VizEngine/Log.h"
 
 namespace VizEngine
 {
@@ -16,7 +17,7 @@ namespace VizEngine
 	{
 		if (!glfwInit())
 		{
-			std::cerr << "Failed to initialize GLFW\n";
+			VP_CORE_ERROR("Failed to initialize GLFW");
 			exit(EXIT_FAILURE);
 		}
 		// Set window hints
@@ -31,7 +32,7 @@ namespace VizEngine
 		m_Window = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
 		if (!m_Window)
 		{
-			std::cerr << "Failed to create GLFW window\n";
+			VP_CORE_ERROR("Failed to create GLFW window");
 			glfwTerminate();
 			exit(EXIT_FAILURE);
 		}

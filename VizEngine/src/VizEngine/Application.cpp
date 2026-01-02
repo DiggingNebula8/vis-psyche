@@ -10,6 +10,8 @@
 #include "Core/Transform.h"
 #include "Core/Scene.h"
 #include "Core/Light.h"
+#include "Core/Model.h"
+#include "Log.h"
 
 #include "OpenGL/GLFWManager.h"
 #include "OpenGL/Renderer.h"
@@ -43,7 +45,7 @@ namespace VizEngine
 
 		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 		{
-			std::cout << "Failed to initialize GLAD" << std::endl;
+			VP_CORE_ERROR("Failed to initialize GLAD");
 			return -1;
 		}
 
@@ -65,21 +67,64 @@ namespace VizEngine
 		Scene scene;
 
 		// Add a ground plane
-		auto& ground = scene.AddObject(planeMesh, "Ground");
+		auto& ground = scene.Add(planeMesh, "Ground");
 		ground.ObjectTransform.Position = glm::vec3(0.0f, -1.0f, 0.0f);
 		ground.Color = glm::vec4(0.3f, 0.3f, 0.35f, 1.0f);
 
 		// Add a pyramid
-		auto& pyramid = scene.AddObject(pyramidMesh, "Pyramid");
+		auto& pyramid = scene.Add(pyramidMesh, "Pyramid");
 		pyramid.ObjectTransform.Position = glm::vec3(-3.0f, 0.0f, 0.0f);
 		pyramid.ObjectTransform.Scale = glm::vec3(2.0f, 4.0f, 2.0f);
 		pyramid.Color = glm::vec4(0.3f, 0.5f, 0.9f, 1.0f);
 
 		// Add a cube
-		auto& cube = scene.AddObject(cubeMesh, "Cube");
+		auto& cube = scene.Add(cubeMesh, "Cube");
 		cube.ObjectTransform.Position = glm::vec3(3.0f, 0.0f, 0.0f);
 		cube.ObjectTransform.Scale = glm::vec3(2.0f);
 		cube.Color = glm::vec4(0.9f, 0.5f, 0.3f, 1.0f);
+
+		// =========================================================================
+		// Load glTF Model (testing tinygltf)
+		// =========================================================================
+		std::shared_ptr<Mesh> duckMesh = nullptr;
+		std::shared_ptr<Texture> duckTexture = nullptr;
+		
+		auto duckModel = Model::LoadFromFile("assets/gltf-samples/Models/Duck/glTF-Binary/Duck.glb");
+		if (duckModel)
+		{
+			VP_CORE_INFO("Duck model loaded: {} meshes", duckModel->GetMeshCount());
+			
+			// Store mesh and texture for reuse (Add Duck button)
+			if (duckModel->GetMeshCount() > 0)
+			{
+				duckMesh = duckModel->GetMeshes()[0];
+				const auto& material = duckModel->GetMaterialForMesh(0);
+				if (material.BaseColorTexture)
+				{
+					duckTexture = material.BaseColorTexture;
+				}
+			}
+			
+			// Add initial duck to scene
+			for (size_t i = 0; i < duckModel->GetMeshCount(); i++)
+			{
+				auto& duckObj = scene.Add(duckModel->GetMeshes()[i], "Duck");
+				duckObj.ObjectTransform.Position = glm::vec3(0.0f, 0.0f, 3.0f);
+				duckObj.ObjectTransform.Scale = glm::vec3(0.02f);
+				duckObj.Color = glm::vec4(1.0f);  // Don't tint, use texture colors
+				
+				// Use the model's own texture if available
+				const auto& material = duckModel->GetMaterialForMesh(i);
+				if (material.BaseColorTexture)
+				{
+					duckObj.TexturePtr = material.BaseColorTexture;
+				}
+			}
+		}
+		else
+		{
+			VP_CORE_ERROR("Failed to load Duck model!");
+		}
 
 		// =========================================================================
 		// Lighting
@@ -99,9 +144,18 @@ namespace VizEngine
 		// =========================================================================
 		// Load Assets
 		// =========================================================================
-		Shader litShader("src/resources/shaders/lit.shader");
-		Texture texture("src/resources/textures/uvchecker.png");
-		texture.Bind();
+		Shader litShader("resources/shaders/lit.shader");
+		auto defaultTexture = std::make_shared<Texture>("resources/textures/uvchecker.png");
+		defaultTexture->Bind();
+
+		// Assign default texture to basic objects (created before this point)
+		for (size_t i = 0; i < scene.Size(); i++)
+		{
+			if (!scene[i].TexturePtr)
+			{
+				scene[i].TexturePtr = defaultTexture;
+			}
+		}
 
 		// =========================================================================
 		// UI & Renderer
@@ -135,9 +189,9 @@ namespace VizEngine
 			prevTime = currentTime;
 
 			// Rotate objects (skip ground plane at index 0)
-			for (size_t i = 1; i < scene.GetObjectCount(); i++)
+			for (size_t i = 1; i < scene.Size(); i++)
 			{
-				auto& obj = scene.GetObject(i);
+				auto& obj = scene[i];
 				obj.ObjectTransform.Rotation.y += rotationSpeed * deltaTime;
 			}
 
@@ -157,14 +211,13 @@ namespace VizEngine
 			uiManager.StartWindow("Scene Objects");
 
 			// Object list
-			auto& objects = scene.GetObjects();
-			ImGui::Text("Objects (%zu)", objects.size());
+			ImGui::Text("Objects (%zu)", scene.Size());
 			ImGui::Separator();
 
-			for (size_t i = 0; i < objects.size(); i++)
+			for (size_t i = 0; i < scene.Size(); i++)
 			{
 				bool isSelected = (selectedObject == static_cast<int>(i));
-				if (ImGui::Selectable(objects[i].Name.c_str(), isSelected))
+				if (ImGui::Selectable(scene[i].Name.c_str(), isSelected))
 				{
 					selectedObject = static_cast<int>(i);
 				}
@@ -173,9 +226,9 @@ namespace VizEngine
 			ImGui::Separator();
 
 			// Edit selected object
-			if (selectedObject >= 0 && selectedObject < static_cast<int>(objects.size()))
+			if (selectedObject >= 0 && selectedObject < static_cast<int>(scene.Size()))
 			{
-				auto& obj = objects[static_cast<size_t>(selectedObject)];
+				auto& obj = scene[static_cast<size_t>(selectedObject)];
 
 				ImGui::Text("Selected: %s", obj.Name.c_str());
 				ImGui::Checkbox("Active", &obj.Active);
@@ -200,8 +253,8 @@ namespace VizEngine
 				ImGui::Separator();
 				if (ImGui::Button("Delete Object"))
 				{
-					scene.RemoveObject(static_cast<size_t>(selectedObject));
-					selectedObject = std::min(selectedObject, static_cast<int>(scene.GetObjectCount()) - 1);
+					scene.Remove(static_cast<size_t>(selectedObject));
+					selectedObject = std::min(selectedObject, static_cast<int>(scene.Size()) - 1);
 					if (selectedObject < 0) selectedObject = 0;
 				}
 			}
@@ -211,16 +264,31 @@ namespace VizEngine
 			// Add new objects
 			if (ImGui::Button("Add Pyramid"))
 			{
-				auto& newObj = scene.AddObject(pyramidMesh, "Pyramid " + std::to_string(scene.GetObjectCount() + 1));
+				auto& newObj = scene.Add(pyramidMesh, "Pyramid " + std::to_string(scene.Size() + 1));
 				newObj.ObjectTransform.Scale = glm::vec3(2.0f, 4.0f, 2.0f);
 				newObj.Color = glm::vec4(0.5f, 0.5f, 0.9f, 1.0f);
+				newObj.TexturePtr = defaultTexture;
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("Add Cube"))
 			{
-				auto& newObj = scene.AddObject(cubeMesh, "Cube " + std::to_string(scene.GetObjectCount() + 1));
+				auto& newObj = scene.Add(cubeMesh, "Cube " + std::to_string(scene.Size() + 1));
 				newObj.ObjectTransform.Scale = glm::vec3(2.0f);
 				newObj.Color = glm::vec4(0.9f, 0.5f, 0.3f, 1.0f);
+				newObj.TexturePtr = defaultTexture;
+			}
+			if (duckMesh)  // Only show if duck model loaded successfully
+			{
+				ImGui::SameLine();
+				if (ImGui::Button("Add Duck"))
+				{
+					// Note: For simplicity, button spawns only the first mesh of the model.
+					// Multi-mesh models would need a parent object or spawn all meshes together.
+					auto& newObj = scene.Add(duckMesh, "Duck " + std::to_string(scene.Size() + 1));
+					newObj.ObjectTransform.Scale = glm::vec3(0.02f);
+					newObj.Color = glm::vec4(1.0f);
+					newObj.TexturePtr = duckTexture;
+				}
 			}
 
 			uiManager.EndWindow();
