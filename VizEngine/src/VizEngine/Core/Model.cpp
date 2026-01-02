@@ -94,6 +94,26 @@ namespace VizEngine
 		);
 	}
 
+	// Helper function to validate buffer bounds for vertex attributes
+	static bool ValidateAttributeBuffer(
+		const tinygltf::Model& gltfModel,
+		const tinygltf::Accessor& accessor,
+		size_t vertexCount,
+		size_t componentsPerVertex,
+		const std::string& attributeName)
+	{
+		const auto& bufferView = gltfModel.bufferViews[accessor.bufferView];
+		const auto& buffer = gltfModel.buffers[bufferView.buffer];
+		size_t requiredBytes = vertexCount * componentsPerVertex * sizeof(float);
+		size_t availableBytes = buffer.data.size() - bufferView.byteOffset - accessor.byteOffset;
+		if (requiredBytes > availableBytes)
+		{
+			VP_CORE_WARN("{} buffer too small, skipping attribute", attributeName);
+			return false;
+		}
+		return true;
+	}
+
 	//==========================================================================
 	// Model public interface
 	//==========================================================================
@@ -320,36 +340,36 @@ namespace VizEngine
 				const float* normals = nullptr;  // nullptr check deferred to vertex loop
 				if (primitive.attributes.find("NORMAL") != primitive.attributes.end())
 				{
-					const auto& normAccessor = gltfModel.accessors[primitive.attributes.at("NORMAL")];
-					const auto& normBufferView = gltfModel.bufferViews[normAccessor.bufferView];
-					const auto& normBuffer = gltfModel.buffers[normBufferView.buffer];
-					size_t requiredBytes = vertexCount * 3 * sizeof(float);
-					size_t availableBytes = normBuffer.data.size() - normBufferView.byteOffset - normAccessor.byteOffset;
-					if (requiredBytes > availableBytes)
+					int normAccessorIndex = primitive.attributes.at("NORMAL");
+					if (normAccessorIndex >= 0 && normAccessorIndex < static_cast<int>(gltfModel.accessors.size()))
 					{
-						VP_CORE_WARN("Normal buffer too small, skipping normals");
+						const auto& normAccessor = gltfModel.accessors[normAccessorIndex];
+						if (ValidateAttributeBuffer(gltfModel, normAccessor, vertexCount, 3, "Normal"))
+						{
+							normals = GetBufferData<float>(gltfModel, normAccessor);
+						}
 					}
 					else
 					{
-						normals = GetBufferData<float>(gltfModel, normAccessor);
+						VP_CORE_WARN("NORMAL accessor index {} out of range", normAccessorIndex);
 					}
 				}
 
 				const float* texCoords = nullptr;  // nullptr check deferred to vertex loop
 				if (primitive.attributes.find("TEXCOORD_0") != primitive.attributes.end())
 				{
-					const auto& uvAccessor = gltfModel.accessors[primitive.attributes.at("TEXCOORD_0")];
-					const auto& uvBufferView = gltfModel.bufferViews[uvAccessor.bufferView];
-					const auto& uvBuffer = gltfModel.buffers[uvBufferView.buffer];
-					size_t requiredBytes = vertexCount * 2 * sizeof(float);
-					size_t availableBytes = uvBuffer.data.size() - uvBufferView.byteOffset - uvAccessor.byteOffset;
-					if (requiredBytes > availableBytes)
+					int uvAccessorIndex = primitive.attributes.at("TEXCOORD_0");
+					if (uvAccessorIndex >= 0 && uvAccessorIndex < static_cast<int>(gltfModel.accessors.size()))
 					{
-						VP_CORE_WARN("TexCoord buffer too small, skipping texcoords");
+						const auto& uvAccessor = gltfModel.accessors[uvAccessorIndex];
+						if (ValidateAttributeBuffer(gltfModel, uvAccessor, vertexCount, 2, "TexCoord"))
+						{
+							texCoords = GetBufferData<float>(gltfModel, uvAccessor);
+						}
 					}
 					else
 					{
-						texCoords = GetBufferData<float>(gltfModel, uvAccessor);
+						VP_CORE_WARN("TEXCOORD_0 accessor index {} out of range", uvAccessorIndex);
 					}
 				}
 
@@ -357,27 +377,27 @@ namespace VizEngine
 				int colorComponents = 0;
 				if (primitive.attributes.find("COLOR_0") != primitive.attributes.end())
 				{
-					const auto& colorAccessor = gltfModel.accessors[primitive.attributes.at("COLOR_0")];
-					colorComponents = (colorAccessor.type == TINYGLTF_TYPE_VEC4) ? 4 : 3;
-					if (colorAccessor.componentType == TINYGLTF_COMPONENT_TYPE_FLOAT)
+					int colorAccessorIndex = primitive.attributes.at("COLOR_0");
+					if (colorAccessorIndex >= 0 && colorAccessorIndex < static_cast<int>(gltfModel.accessors.size()))
 					{
-						const auto& colorBufferView = gltfModel.bufferViews[colorAccessor.bufferView];
-						const auto& colorBuffer = gltfModel.buffers[colorBufferView.buffer];
-						size_t requiredBytes = vertexCount * colorComponents * sizeof(float);
-						size_t availableBytes = colorBuffer.data.size() - colorBufferView.byteOffset - colorAccessor.byteOffset;
-						if (requiredBytes > availableBytes)
+						const auto& colorAccessor = gltfModel.accessors[colorAccessorIndex];
+						colorComponents = (colorAccessor.type == TINYGLTF_TYPE_VEC4) ? 4 : 3;
+						if (colorAccessor.componentType == TINYGLTF_COMPONENT_TYPE_FLOAT)
 						{
-							VP_CORE_WARN("Color buffer too small, skipping vertex colors");
+							if (ValidateAttributeBuffer(gltfModel, colorAccessor, vertexCount, colorComponents, "Color"))
+							{
+								colors = GetBufferData<float>(gltfModel, colorAccessor);
+							}
 						}
-						else
+						else if (colorAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE ||
+						         colorAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT)
 						{
-							colors = GetBufferData<float>(gltfModel, colorAccessor);
+							VP_CORE_WARN("Normalized integer COLOR_0 not yet supported, using default color");
 						}
 					}
-					else if (colorAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE ||
-					         colorAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT)
+					else
 					{
-						VP_CORE_WARN("Normalized integer COLOR_0 not yet supported, using default color");
+						VP_CORE_WARN("COLOR_0 accessor index {} out of range", colorAccessorIndex);
 					}
 				}
 
@@ -437,8 +457,20 @@ namespace VizEngine
 
 				if (primitive.indices >= 0)
 				{
-					const auto& indexAccessor = gltfModel.accessors[primitive.indices];
-					LoadIndices(gltfModel, indexAccessor, indices);
+					if (primitive.indices < static_cast<int>(gltfModel.accessors.size()))
+					{
+						const auto& indexAccessor = gltfModel.accessors[primitive.indices];
+						LoadIndices(gltfModel, indexAccessor, indices);
+					}
+					else
+					{
+						VP_CORE_ERROR("Index accessor {} out of range, generating sequential indices", primitive.indices);
+						indices.reserve(vertexCount);
+						for (size_t i = 0; i < vertexCount; i++)
+						{
+							indices.push_back(static_cast<unsigned int>(i));
+						}
+					}
 				}
 				else
 				{
