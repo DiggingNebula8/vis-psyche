@@ -177,6 +177,11 @@ namespace VizEngine
 		double prevTime = glfwGetTime();
 		int selectedObject = 0;
 
+		// Camera controller settings
+		float moveSpeed = 5.0f;
+		float sprintMultiplier = 2.5f;
+		float lookSensitivity = 0.003f;
+
 		// Enable OpenGL debug output
 		ErrorHandling::HandleErrors();
 
@@ -187,27 +192,43 @@ namespace VizEngine
 		{
 			// --- Input ---
 			window.ProcessInput();
-
-			// --- Debug: Test Input System ---
-			if (Input::IsKeyPressed(KeyCode::Space))
-				VP_INFO("Space PRESSED!");
-
-			if (Input::IsKeyHeld(KeyCode::W))
-				VP_INFO("W held...");
-
-			if (Input::IsMouseButtonPressed(MouseCode::Left))
-				VP_INFO("Left click at: ({}, {})", Input::GetMousePosition().x, Input::GetMousePosition().y);
-
-			float scroll = Input::GetScrollDelta();
-			if (scroll != 0.0f)
-				VP_INFO("Scroll: {}", scroll);
-
 			uiManager.BeginFrame();
 
 			// --- Update ---
 			double currentTime = glfwGetTime();
 			float deltaTime = static_cast<float>(currentTime - prevTime);
 			prevTime = currentTime;
+
+			// --- Camera Controller ---
+			float speed = moveSpeed * deltaTime;
+			if (Input::IsKeyHeld(KeyCode::LeftShift))
+				speed *= sprintMultiplier;
+
+			// WASD movement
+			if (Input::IsKeyHeld(KeyCode::W)) camera.MoveForward(speed);
+			if (Input::IsKeyHeld(KeyCode::S)) camera.MoveForward(-speed);
+			if (Input::IsKeyHeld(KeyCode::A)) camera.MoveRight(-speed);
+			if (Input::IsKeyHeld(KeyCode::D)) camera.MoveRight(speed);
+			if (Input::IsKeyHeld(KeyCode::E)) camera.MoveUp(speed);
+			if (Input::IsKeyHeld(KeyCode::Q)) camera.MoveUp(-speed);
+
+			// Mouse look (hold right mouse button)
+			if (Input::IsMouseButtonHeld(MouseCode::Right))
+			{
+				glm::vec2 delta = Input::GetMouseDelta();
+				float yaw = camera.GetYaw() - delta.x * lookSensitivity;
+				float pitch = camera.GetPitch() - delta.y * lookSensitivity;
+				pitch = glm::clamp(pitch, -1.5f, 1.5f);
+				camera.SetRotation(pitch, yaw);
+			}
+
+			// Scroll zoom
+			float scroll = Input::GetScrollDelta();
+			if (scroll != 0.0f)
+			{
+				float fov = camera.GetFOV() - scroll * 2.0f;
+				camera.SetFOV(glm::clamp(fov, 10.0f, 90.0f));
+			}
 
 			// Rotate objects (skip ground plane at index 0)
 			for (size_t i = 1; i < scene.Size(); i++)
