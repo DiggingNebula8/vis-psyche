@@ -21,7 +21,7 @@ VizPsyche is an open-source 3D graphics engine written in C++17 using OpenGL 4.6
 
 ## Documentation
 
-The full documentation for VizPsyche is available as a submodule in `docs/vis-psyche-docs`. To clone it:
+The full documentation for VizPsyche is available as a submodule in `docs/vis-psyche-docs`. To clone it separately:
 
 ```bash
 git clone --recursive git@github.com:DiggingNebula8/vis-psyche-docs.git
