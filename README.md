@@ -27,8 +27,6 @@ The full documentation for VizPsyche is available as a submodule in `docs/vis-ps
 git clone --recursive git@github.com:DiggingNebula8/vis-psyche-docs.git
 ```
 
-Or read the [online chapters](docs/vis-psyche-docs/chapters/00_Intro.md).
-
 ---
 
 ## Features
