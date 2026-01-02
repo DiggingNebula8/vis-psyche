@@ -69,18 +69,21 @@ namespace VizEngine
 	bool Input::IsKeyPressed(KeyCode key)
 	{
 		int k = static_cast<int>(key);
+		if (k < 0 || k >= 512) return false;
 		return s_CurrentKeys[k] && !s_PreviousKeys[k];
 	}
 
 	bool Input::IsKeyHeld(KeyCode key)
 	{
 		int k = static_cast<int>(key);
+		if (k < 0 || k >= 512) return false;
 		return s_CurrentKeys[k];
 	}
 
 	bool Input::IsKeyReleased(KeyCode key)
 	{
 		int k = static_cast<int>(key);
+		if (k < 0 || k >= 512) return false;
 		return !s_CurrentKeys[k] && s_PreviousKeys[k];
 	}
 
@@ -89,18 +92,21 @@ namespace VizEngine
 	bool Input::IsMouseButtonPressed(MouseCode button)
 	{
 		int b = static_cast<int>(button);
+		if (b < 0 || b >= 8) return false;
 		return s_CurrentMouseButtons[b] && !s_PreviousMouseButtons[b];
 	}
 
 	bool Input::IsMouseButtonHeld(MouseCode button)
 	{
 		int b = static_cast<int>(button);
+		if (b < 0 || b >= 8) return false;
 		return s_CurrentMouseButtons[b];
 	}
 
 	bool Input::IsMouseButtonReleased(MouseCode button)
 	{
 		int b = static_cast<int>(button);
+		if (b < 0 || b >= 8) return false;
 		return !s_CurrentMouseButtons[b] && s_PreviousMouseButtons[b];
 	}
 
