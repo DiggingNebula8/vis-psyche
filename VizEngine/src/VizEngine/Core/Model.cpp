@@ -116,10 +116,34 @@ namespace VizEngine
 		size_t componentsPerVertex,
 		const std::string& attributeName)
 	{
+		// Validate bufferView index
+		if (accessor.bufferView < 0 || accessor.bufferView >= static_cast<int>(gltfModel.bufferViews.size()))
+		{
+			VP_CORE_WARN("{} bufferView index out of range, skipping attribute", attributeName);
+			return false;
+		}
+		
 		const auto& bufferView = gltfModel.bufferViews[accessor.bufferView];
+		
+		// Validate buffer index
+		if (bufferView.buffer < 0 || bufferView.buffer >= static_cast<int>(gltfModel.buffers.size()))
+		{
+			VP_CORE_WARN("{} buffer index out of range, skipping attribute", attributeName);
+			return false;
+		}
+		
 		const auto& buffer = gltfModel.buffers[bufferView.buffer];
 		size_t requiredBytes = vertexCount * componentsPerVertex * sizeof(float);
-		size_t availableBytes = buffer.data.size() - bufferView.byteOffset - accessor.byteOffset;
+		
+		// Check for underflow before calculating available bytes
+		size_t totalOffset = bufferView.byteOffset + accessor.byteOffset;
+		if (totalOffset > buffer.data.size())
+		{
+			VP_CORE_WARN("{} buffer offset exceeds buffer size, skipping attribute", attributeName);
+			return false;
+		}
+		
+		size_t availableBytes = buffer.data.size() - totalOffset;
 		if (requiredBytes > availableBytes)
 		{
 			VP_CORE_WARN("{} buffer too small, skipping attribute", attributeName);
