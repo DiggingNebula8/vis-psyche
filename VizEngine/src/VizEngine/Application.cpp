@@ -11,6 +11,7 @@
 #include "Core/Scene.h"
 #include "Core/Light.h"
 #include "Core/Model.h"
+#include "Core/Input.h"
 #include "Log.h"
 
 #include "OpenGL/GLFWManager.h"
@@ -186,6 +187,21 @@ namespace VizEngine
 		{
 			// --- Input ---
 			window.ProcessInput();
+
+			// --- Debug: Test Input System ---
+			if (Input::IsKeyPressed(KeyCode::Space))
+				VP_INFO("Space PRESSED!");
+
+			if (Input::IsKeyHeld(KeyCode::W))
+				VP_INFO("W held...");
+
+			if (Input::IsMouseButtonPressed(MouseCode::Left))
+				VP_INFO("Left click at: ({}, {})", Input::GetMousePosition().x, Input::GetMousePosition().y);
+
+			float scroll = Input::GetScrollDelta();
+			if (scroll != 0.0f)
+				VP_INFO("Scroll: {}", scroll);
+
 			uiManager.BeginFrame();
 
 			// --- Update ---

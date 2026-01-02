@@ -1,5 +1,6 @@
 #include "GLFWManager.h"
 #include "VizEngine/Log.h"
+#include "VizEngine/Core/Input.h"
 
 namespace VizEngine
 {
@@ -40,6 +41,9 @@ namespace VizEngine
 		glfwMakeContextCurrent(m_Window);
 		glfwSetFramebufferSizeCallback(m_Window, FramebufferSizeCallback);
 		glfwSetKeyCallback(m_Window, KeyCallback);
+		
+		// Initialize input system
+		Input::Init(m_Window);
 	}
 
 	void GLFWManager::Shutdown()
@@ -72,7 +76,11 @@ namespace VizEngine
 
 	void GLFWManager::ProcessInput()
 	{
-		if (glfwGetKey(m_Window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+		// Update input state first
+		Input::Update();
+		
+		// Handle escape key to close window
+		if (Input::IsKeyPressed(KeyCode::Escape))
 		{
 			glfwSetWindowShouldClose(m_Window, true);
 		}

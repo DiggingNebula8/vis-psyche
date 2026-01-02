@@ -12,6 +12,7 @@ set(VIZENGINE_SOURCES
     src/VizEngine/Core/Scene.cpp
     src/VizEngine/Core/Model.cpp
     src/VizEngine/Core/TinyGLTF.cpp
+    src/VizEngine/Core/Input.cpp
     
     # OpenGL
     src/VizEngine/OpenGL/glad.c
@@ -45,6 +46,7 @@ set(VIZENGINE_HEADERS
     src/VizEngine/Core/Light.h
     src/VizEngine/Core/Material.h
     src/VizEngine/Core/Model.h
+    src/VizEngine/Core/Input.h
     
     # OpenGL headers
     src/VizEngine/OpenGL/Commons.h
