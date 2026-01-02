@@ -111,6 +111,15 @@ namespace VizEngine
 			return nullptr;
 		}
 		
+		// Validate that the entire data range is within bounds
+		size_t requiredBytes = accessor.count * elementSize;
+		if (totalOffset + requiredBytes > buffer.data.size())
+		{
+			VP_CORE_ERROR("Buffer data range (offset {} + {} bytes) exceeds buffer size ({})", 
+				totalOffset, requiredBytes, buffer.data.size());
+			return nullptr;
+		}
+		
 		return reinterpret_cast<const T*>(
 			buffer.data.data() + totalOffset
 		);
@@ -570,6 +579,14 @@ namespace VizEngine
 		
 		const auto& buffer = gltfModel.buffers[bufferView.buffer];
 		
+		// Check offsets don't exceed buffer size to prevent underflow
+		size_t totalOffset = static_cast<size_t>(bufferView.byteOffset) + static_cast<size_t>(accessor.byteOffset);
+		if (totalOffset > buffer.data.size())
+		{
+			VP_CORE_ERROR("Index buffer offsets ({}) exceed buffer size ({})", totalOffset, buffer.data.size());
+			return;
+		}
+		
 		// Validate buffer bounds based on component type
 		size_t componentSize = 0;
 		switch (accessor.componentType)
@@ -583,7 +600,7 @@ namespace VizEngine
 		}
 		
 		size_t requiredBytes = accessor.count * componentSize;
-		size_t availableBytes = buffer.data.size() - bufferView.byteOffset - accessor.byteOffset;
+		size_t availableBytes = buffer.data.size() - totalOffset;
 		if (requiredBytes > availableBytes)
 		{
 			VP_CORE_ERROR("Index buffer too small for accessor.count");
@@ -591,7 +608,7 @@ namespace VizEngine
 		}
 		
 		// Note: Indices are not interleaved, so byteStride is not checked here
-		const void* dataPtr = buffer.data.data() + bufferView.byteOffset + accessor.byteOffset;
+		const void* dataPtr = buffer.data.data() + totalOffset;
 
 		indices.reserve(accessor.count);
 
