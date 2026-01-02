@@ -283,21 +283,34 @@ namespace VizEngine
 				}
 				size_t vertexCount = posAccessor.count;
 
-				const float* normals = nullptr;
+				// Validate buffer bounds to prevent overrun from malformed files
+				{
+					const auto& posBufferView = gltfModel.bufferViews[posAccessor.bufferView];
+					const auto& posBuffer = gltfModel.buffers[posBufferView.buffer];
+					size_t requiredBytes = vertexCount * 3 * sizeof(float);
+					size_t availableBytes = posBuffer.data.size() - posBufferView.byteOffset - posAccessor.byteOffset;
+					if (requiredBytes > availableBytes)
+					{
+						VP_CORE_ERROR("Position buffer too small for accessor.count, skipping primitive");
+						continue;
+					}
+				}
+
+				const float* normals = nullptr;  // nullptr check deferred to vertex loop
 				if (primitive.attributes.find("NORMAL") != primitive.attributes.end())
 				{
 					const auto& normAccessor = gltfModel.accessors[primitive.attributes.at("NORMAL")];
 					normals = GetBufferData<float>(gltfModel, normAccessor);
 				}
 
-				const float* texCoords = nullptr;
+				const float* texCoords = nullptr;  // nullptr check deferred to vertex loop
 				if (primitive.attributes.find("TEXCOORD_0") != primitive.attributes.end())
 				{
 					const auto& uvAccessor = gltfModel.accessors[primitive.attributes.at("TEXCOORD_0")];
 					texCoords = GetBufferData<float>(gltfModel, uvAccessor);
 				}
 
-				const float* colors = nullptr;
+				const float* colors = nullptr;  // nullptr check deferred to vertex loop
 				int colorComponents = 0;
 				if (primitive.attributes.find("COLOR_0") != primitive.attributes.end())
 				{
@@ -409,6 +422,7 @@ namespace VizEngine
 	{
 		const auto& bufferView = gltfModel.bufferViews[accessor.bufferView];
 		const auto& buffer = gltfModel.buffers[bufferView.buffer];
+		// Note: Indices are not interleaved, so byteStride is not checked here
 		const void* dataPtr = buffer.data.data() + bufferView.byteOffset + accessor.byteOffset;
 
 		indices.reserve(accessor.count);

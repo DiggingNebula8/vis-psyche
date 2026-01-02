@@ -1,4 +1,5 @@
 #include "ErrorHandling.h"
+#include "VizEngine/Log.h"
 
 namespace VizEngine
 {
@@ -56,17 +57,13 @@ namespace VizEngine
 			default:                                typeStr = "Unknown";             break;
 		}
 
-		std::cout << "OpenGL Debug Message:\n"
-			<< "  Source:   " << sourceStr << "\n"
-			<< "  Type:     " << typeStr << "\n"
-			<< "  Id:       " << id << "\n"
-			<< "  Severity: " << severityStr << "\n"
-			<< "  Message:  " << message << "\n";
+		VP_CORE_WARN("OpenGL Debug [{}, {}]: {} (Severity: {}): {}", 
+			sourceStr, typeStr, id, severityStr, message);
 
 		// Only exit on high severity errors
 		if (severity == GL_DEBUG_SEVERITY_HIGH)
 		{
-			std::cerr << "Fatal OpenGL error - shutting down.\n";
+			VP_CORE_ERROR("Fatal OpenGL error - shutting down.");
 			exit(-1);
 		}
 	}

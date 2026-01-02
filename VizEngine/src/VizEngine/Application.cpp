@@ -45,7 +45,7 @@ namespace VizEngine
 
 		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 		{
-			std::cout << "Failed to initialize GLAD" << std::endl;
+			VP_CORE_ERROR("Failed to initialize GLAD");
 			return -1;
 		}
 

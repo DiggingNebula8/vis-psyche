@@ -1,4 +1,5 @@
 #include "Texture.h"
+#include "VizEngine/Log.h"
 #include "stb_image.h"
 
 namespace VizEngine
@@ -12,7 +13,7 @@ namespace VizEngine
 
 		if (!m_LocalBuffer)
 		{
-			std::cerr << "Failed to load texture: " << path << std::endl;
+			VP_CORE_ERROR("Failed to load texture: {}", path);
 			return;
 		}
 
@@ -36,9 +37,9 @@ namespace VizEngine
 		: m_RendererID(0), m_FilePath("embedded"), m_LocalBuffer(nullptr),
 		  m_Width(width), m_Height(height), m_BPP(channels)
 	{
-		if (!data || width <= 0 || height <= 0)
+		if (!data || width <= 0 || height <= 0 || channels <= 0)
 		{
-			std::cerr << "Failed to create texture from raw data: invalid parameters" << std::endl;
+			VP_CORE_ERROR("Failed to create texture from raw data: invalid parameters (data, width, height, or channels)");
 			return;
 		}
 
@@ -71,7 +72,7 @@ namespace VizEngine
 		}
 		else if (channels != 4)
 		{
-			std::cerr << "Unsupported channel count: " << channels << ", defaulting to RGBA" << std::endl;
+			VP_CORE_WARN("Unsupported channel count: {}, defaulting to RGBA", channels);
 		}
 
 		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, m_Width, m_Height, 0, dataFormat, GL_UNSIGNED_BYTE, data);

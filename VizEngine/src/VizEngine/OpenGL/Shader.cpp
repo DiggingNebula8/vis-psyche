@@ -1,4 +1,5 @@
 #include "Shader.h"
+#include "VizEngine/Log.h"
 
 namespace VizEngine
 {
@@ -13,7 +14,7 @@ namespace VizEngine
 		std::ifstream input(shaderFile, std::ios::binary);
 		if (!input)
 		{
-			std::cerr << "Failed to open shader file: " << shaderFile << std::endl;
+			VP_CORE_ERROR("Failed to open shader file: {}", shaderFile);
 			return {"", ""};
 		}
 
@@ -183,7 +184,7 @@ namespace VizEngine
 
 		int location = glGetUniformLocation(m_RendererID, name.c_str());
 		if (location == -1)
-			std::cout << "Warning: Shader Uniform " << name << " doesn't exist!" << std::endl;
+			VP_CORE_WARN("Shader Uniform {} doesn't exist!", name);
 
 		m_LocationCache[name] = location;
 		return location;
@@ -200,7 +201,7 @@ namespace VizEngine
 			if (!success)
 			{
 				glGetShaderInfoLog(shader, 1024, NULL, infoLog);
-				std::cout << "SHADER ERROR::COMPILATION ERROR: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
+				VP_CORE_ERROR("SHADER COMPILATION ERROR ({}): {}", type, infoLog);
 			}
 		}
 		else
@@ -209,7 +210,7 @@ namespace VizEngine
 			if (!success)
 			{
 				glGetProgramInfoLog(shader, 1024, NULL, infoLog);
-				std::cout << "SHADER ERROR::LINKING ERROR: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
+				VP_CORE_ERROR("SHADER LINKING ERROR ({}): {}", type, infoLog);
 			}
 		}
 	}
