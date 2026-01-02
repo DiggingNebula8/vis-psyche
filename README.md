@@ -152,6 +152,7 @@ All dependencies are included as git submodules in `VizEngine/vendor/`.
 | Dear ImGui | Immediate mode graphical user interface |
 | spdlog | Fast C++ logging library |
 | stb_image | Single-header image loading |
+| tinygltf | glTF 2.0 Model Loading |
 
 To update submodules manually:
 
