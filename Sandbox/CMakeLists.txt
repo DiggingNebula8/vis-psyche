@@ -42,6 +42,14 @@ else()
 endif()
 
 # =============================================================================
+# Visual Studio Debugger Configuration
+# =============================================================================
+# Set working directory to where the executable and resources are located
+set_target_properties(Sandbox PROPERTIES
+    VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:Sandbox>"
+)
+
+# =============================================================================
 # Post-Build: Copy Resources
 # =============================================================================
 # Copy shaders and textures to output directory
