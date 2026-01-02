@@ -2,14 +2,13 @@
 
 VizPsyche is an open-source 3D graphics engine written in C++17 using OpenGL 4.6. Designed for learning graphics programming, it provides clean abstractions over OpenGL primitives and includes an ImGui-based interface for real-time parameter editing.
 
-[![Demo Video](https://img.youtube.com/vi/_n3hrrPEjSM/maxresdefault.jpg)](https://youtu.be/_n3hrrPEjSM)
+[![Demo Video](https://img.youtube.com/vi/-xGmiWWSl5c/maxresdefault.jpg)](https://youtu.be/-xGmiWWSl5c)
 
 ---
 
 ## Table of Contents
 
 - [Features](#features)
-- [Project Structure](#project-structure)
 - [Prerequisites](#prerequisites)
 - [Building](#building)
 - [Running](#running)
@@ -20,10 +19,24 @@ VizPsyche is an open-source 3D graphics engine written in C++17 using OpenGL 4.6
 
 ---
 
+## Documentation
+
+The full documentation for VizPsyche is available as a submodule in `docs/vis-psyche-docs`. To clone it:
+
+```bash
+git clone --recursive git@github.com:DiggingNebula8/vis-psyche-docs.git
+```
+
+Or read the [online chapters](docs/vis-psyche-docs/chapters/00_Intro.md).
+
+---
+
 ## Features
 
 - Modern OpenGL 4.6 rendering pipeline
 - Abstraction classes: VertexBuffer, IndexBuffer, VertexArray, Shader, Texture, Renderer
+- glTF 2.0 Model Loading
+- Texture Support
 - Unified shader format (vertex and fragment shaders in a single file)
 - ImGui integration for runtime parameter adjustment
 - spdlog-based logging with separate core and client loggers
@@ -31,54 +44,6 @@ VizPsyche is an open-source 3D graphics engine written in C++17 using OpenGL 4.6
 
 ---
 
-## Project Structure
-
-```
-VizPsyche/
-├── CMakeLists.txt              # Root CMake configuration
-├── build.bat                   # Build script (supports debug/release/clean)
-│
-├── VizEngine/                  # Core engine (builds as shared library)
-│   ├── CMakeLists.txt
-│   ├── include/                # Public headers (GLAD)
-│   │   ├── glad/
-│   │   └── KHR/
-│   ├── src/
-│   │   ├── VizEngine.h         # Main include header
-│   │   ├── VizEngine/
-│   │   │   ├── Application.cpp/h
-│   │   │   ├── Core.h          # DLL export macros
-│   │   │   ├── EntryPoint.h    # Main entry point
-│   │   │   ├── Log.cpp/h
-│   │   │   ├── GUI/
-│   │   │   │   └── UIManager.cpp/h
-│   │   │   └── OpenGL/
-│   │   │       ├── ErrorHandling.cpp/h
-│   │   │       ├── GLFWManager.cpp/h
-│   │   │       ├── IndexBuffer.cpp/h
-│   │   │       ├── Renderer.cpp/h
-│   │   │       ├── Shader.cpp/h
-│   │   │       ├── Texture.cpp/h
-│   │   │       ├── VertexArray.cpp/h
-│   │   │       ├── VertexBuffer.cpp/h
-│   │   │       └── VertexBufferLayout.h
-│   │   └── resources/
-│   │       ├── shaders/
-│   │       └── textures/
-│   └── vendor/                 # Third-party libraries (git submodules)
-│       ├── glfw/
-│       ├── glm/
-│       ├── imgui/
-│       ├── spdlog/
-│       └── stb_image/
-│
-└── Sandbox/                    # Example application
-    ├── CMakeLists.txt
-    └── src/
-        └── SandboxApp.cpp
-```
-
----
 
 ## Prerequisites
 
