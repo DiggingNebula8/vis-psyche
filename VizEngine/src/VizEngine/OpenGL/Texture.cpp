@@ -59,10 +59,19 @@ namespace VizEngine
 			internalFormat = GL_RGB8;
 			dataFormat = GL_RGB;
 		}
+		else if (channels == 2)
+		{
+			internalFormat = GL_RG8;
+			dataFormat = GL_RG;
+		}
 		else if (channels == 1)
 		{
 			internalFormat = GL_R8;
 			dataFormat = GL_RED;
+		}
+		else if (channels != 4)
+		{
+			std::cerr << "Unsupported channel count: " << channels << ", defaulting to RGBA" << std::endl;
 		}
 
 		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, m_Width, m_Height, 0, dataFormat, GL_UNSIGNED_BYTE, data);

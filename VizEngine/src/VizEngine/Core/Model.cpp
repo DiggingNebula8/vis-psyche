@@ -65,12 +65,13 @@ namespace VizEngine
 		const auto& bufferView = model.bufferViews[accessor.bufferView];
 		const auto& buffer = model.buffers[bufferView.buffer];
 		
-		// Warn if byteStride is set and doesn't match expected tight packing
-		// This indicates interleaved vertex data which we don't fully support yet
+		// Fail if byteStride indicates interleaved data we can't handle
+		// byteStride of 0 means tightly packed (default), sizeof(T) also works
 		if (bufferView.byteStride != 0 && bufferView.byteStride != sizeof(T))
 		{
-			VP_CORE_WARN("glTF buffer has non-zero byteStride ({}), interleaved data may not load correctly", 
+			VP_CORE_ERROR("glTF buffer has unsupported byteStride ({}), cannot load interleaved data", 
 				bufferView.byteStride);
+			return nullptr;
 		}
 		
 		return reinterpret_cast<const T*>(
@@ -275,6 +276,11 @@ namespace VizEngine
 
 				const auto& posAccessor = gltfModel.accessors[primitive.attributes.at("POSITION")];
 				const float* positions = GetBufferData<float>(gltfModel, posAccessor);
+				if (!positions)
+				{
+					VP_CORE_ERROR("Failed to load positions for mesh, skipping primitive");
+					continue;
+				}
 				size_t vertexCount = posAccessor.count;
 
 				const float* normals = nullptr;
@@ -300,6 +306,11 @@ namespace VizEngine
 					if (colorAccessor.componentType == TINYGLTF_COMPONENT_TYPE_FLOAT)
 					{
 						colors = GetBufferData<float>(gltfModel, colorAccessor);
+					}
+					else if (colorAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE ||
+					         colorAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT)
+					{
+						VP_CORE_WARN("Normalized integer COLOR_0 not yet supported, using default color");
 					}
 				}
 
@@ -374,9 +385,19 @@ namespace VizEngine
 				auto mesh = std::make_shared<Mesh>(vertices, indices);
 				m_Model->m_Meshes.push_back(mesh);
 
-				size_t materialIndex = (primitive.material >= 0)
-					? static_cast<size_t>(primitive.material)
-					: 0;
+				size_t materialIndex = 0;
+				if (primitive.material >= 0)
+				{
+					size_t matIdx = static_cast<size_t>(primitive.material);
+					if (matIdx < m_Model->m_Materials.size())
+					{
+						materialIndex = matIdx;
+					}
+					else
+					{
+						VP_CORE_WARN("Material index {} out of bounds, using default", matIdx);
+					}
+				}
 				m_Model->m_MeshMaterialIndices.push_back(materialIndex);
 			}
 		}

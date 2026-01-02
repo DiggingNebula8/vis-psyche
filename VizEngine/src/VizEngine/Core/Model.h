@@ -20,8 +20,8 @@ namespace VizEngine
 	 * 
 	 * Example:
 	 *   auto model = Model::LoadFromFile("assets/helmet.glb");
-	 *   for (auto& mesh : model->GetMeshes()) {
-	 *       scene.Add(mesh, name);
+	 *   for (size_t i = 0; i < model->GetMeshCount(); i++) {
+	 *       scene.Add(model->GetMeshes()[i], "Helmet_" + std::to_string(i));
 	 *   }
 	 */
 	class VizEngine_API Model
