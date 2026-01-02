@@ -103,8 +103,16 @@ namespace VizEngine
 			return nullptr;
 		}
 		
+		// Validate that offsets don't exceed buffer size
+		size_t totalOffset = bufferView.byteOffset + accessor.byteOffset;
+		if (totalOffset > buffer.data.size())
+		{
+			VP_CORE_ERROR("Buffer offset ({}) exceeds buffer size ({})", totalOffset, buffer.data.size());
+			return nullptr;
+		}
+		
 		return reinterpret_cast<const T*>(
-			buffer.data.data() + bufferView.byteOffset + accessor.byteOffset
+			buffer.data.data() + totalOffset
 		);
 	}
 
