@@ -80,12 +80,26 @@ namespace VizEngine
 		
 		const auto& buffer = model.buffers[bufferView.buffer];
 		
-		// Fail if byteStride indicates interleaved data we can't handle
-		// byteStride of 0 means tightly packed (default), sizeof(T) also works
-		if (bufferView.byteStride != 0 && bufferView.byteStride != sizeof(T))
+		// Calculate expected element size based on accessor type
+		// VEC3 = 3 components, VEC4 = 4 components, VEC2 = 2 components, SCALAR = 1 component
+		size_t componentsPerElement = 1;
+		switch (accessor.type)
 		{
-			VP_CORE_ERROR("glTF buffer has unsupported byteStride ({}), cannot load interleaved data", 
-				bufferView.byteStride);
+			case TINYGLTF_TYPE_SCALAR: componentsPerElement = 1; break;
+			case TINYGLTF_TYPE_VEC2:   componentsPerElement = 2; break;
+			case TINYGLTF_TYPE_VEC3:   componentsPerElement = 3; break;
+			case TINYGLTF_TYPE_VEC4:   componentsPerElement = 4; break;
+			case TINYGLTF_TYPE_MAT2:   componentsPerElement = 4; break;
+			case TINYGLTF_TYPE_MAT3:   componentsPerElement = 9; break;
+			case TINYGLTF_TYPE_MAT4:   componentsPerElement = 16; break;
+		}
+		size_t elementSize = componentsPerElement * sizeof(T);
+		
+		// Check for interleaved data - stride must be 0 (tightly packed) or match element size
+		if (bufferView.byteStride != 0 && bufferView.byteStride != elementSize)
+		{
+			VP_CORE_ERROR("glTF buffer has unsupported byteStride ({}), expected 0 or {}", 
+				bufferView.byteStride, elementSize);
 			return nullptr;
 		}
 		
