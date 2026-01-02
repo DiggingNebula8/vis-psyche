@@ -53,7 +53,7 @@ uniform vec4 u_ObjectColor;
 uniform sampler2D u_MainTex;
 
 // Material properties
-uniform float u_Shininess;
+uniform float u_Roughness;
 
 void main()
 {
@@ -82,7 +82,9 @@ void main()
 	// Blinn-Phong specular: uses half vector instead of reflection
 	vec3 viewDir = normalize(u_ViewPos - v_FragPos);
 	vec3 halfDir = normalize(lightDir + viewDir);
-	float spec = pow(max(dot(norm, halfDir), 0.0), u_Shininess);
+	// Convert roughness (0=shiny, 1=matte) to Blinn-Phong exponent
+	float shininess = mix(256.0, 8.0, u_Roughness);
+	float spec = pow(max(dot(norm, halfDir), 0.0), shininess);
 	vec3 specular = u_LightSpecular * spec;
 	
 	// Combine all lighting components

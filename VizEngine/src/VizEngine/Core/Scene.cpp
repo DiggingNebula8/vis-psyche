@@ -55,7 +55,7 @@ namespace VizEngine
 			shader.SetMatrix4fv("u_Model", model);
 			shader.SetVec4("u_ObjectColor", obj.Color);
 			shader.SetColor("u_Color", obj.Color);  // Legacy support
-			shader.SetFloat("u_Shininess", obj.Shininess);
+			shader.SetFloat("u_Roughness", obj.Roughness);
 
 			// Draw the object
 			// Bind per-object texture if available

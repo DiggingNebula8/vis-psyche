@@ -69,15 +69,15 @@ namespace VizEngine
 		glm::vec3 Ambient   = glm::vec3(1.0f);    // How much ambient light is reflected
 		glm::vec3 Diffuse   = glm::vec3(1.0f);    // Main surface color
 		glm::vec3 Specular  = glm::vec3(0.5f);    // Specular highlight color
-		float Shininess     = 32.0f;               // Specular exponent (higher = smaller highlight)
+		float Roughness     = 0.5f;               // Surface roughness (0 = shiny, 1 = matte)
 
 		Material() = default;
 
-		Material(const glm::vec3& color, float shininess = 32.0f)
+		Material(const glm::vec3& color, float roughness = 0.5f)
 			: Ambient(color)
 			, Diffuse(color)
 			, Specular(glm::vec3(0.5f))
-			, Shininess(shininess) {}
+			, Roughness(roughness) {}
 	};
 }
 

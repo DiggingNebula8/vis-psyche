@@ -88,17 +88,21 @@ namespace VizEngine
 		// =========================================================================
 		std::shared_ptr<Mesh> duckMesh = nullptr;
 		std::shared_ptr<Texture> duckTexture = nullptr;
+		glm::vec4 duckColor = glm::vec4(1.0f);
+		float duckRoughness = 0.5f;
 		
 		auto duckModel = Model::LoadFromFile("assets/gltf-samples/Models/Duck/glTF-Binary/Duck.glb");
 		if (duckModel)
 		{
 			VP_CORE_INFO("Duck model loaded: {} meshes", duckModel->GetMeshCount());
 			
-			// Store mesh and texture for reuse (Add Duck button)
+			// Store mesh and material properties for reuse (Add Duck button)
 			if (duckModel->GetMeshCount() > 0)
 			{
 				duckMesh = duckModel->GetMeshes()[0];
 				const auto& material = duckModel->GetMaterialForMesh(0);
+				duckColor = material.BaseColor;
+				duckRoughness = material.Roughness;
 				if (material.BaseColorTexture)
 				{
 					duckTexture = material.BaseColorTexture;
@@ -111,10 +115,11 @@ namespace VizEngine
 				auto& duckObj = scene.Add(duckModel->GetMeshes()[i], "Duck");
 				duckObj.ObjectTransform.Position = glm::vec3(0.0f, 0.0f, 3.0f);
 				duckObj.ObjectTransform.Scale = glm::vec3(0.02f);
-				duckObj.Color = glm::vec4(1.0f);  // Don't tint, use texture colors
 				
-				// Use the model's own texture if available
+				// Copy material properties from glTF
 				const auto& material = duckModel->GetMaterialForMesh(i);
+				duckObj.Color = material.BaseColor;
+				duckObj.Roughness = material.Roughness;
 				if (material.BaseColorTexture)
 				{
 					duckObj.TexturePtr = material.BaseColorTexture;
@@ -248,7 +253,7 @@ namespace VizEngine
 				ImGui::Separator();
 				ImGui::Text("Appearance");
 				ImGui::ColorEdit4("Color", glm::value_ptr(obj.Color));
-				ImGui::SliderFloat("Shininess", &obj.Shininess, 1.0f, 256.0f, "%.0f");
+				ImGui::SliderFloat("Roughness", &obj.Roughness, 0.0f, 1.0f);
 
 				ImGui::Separator();
 				if (ImGui::Button("Delete Object"))
@@ -286,7 +291,8 @@ namespace VizEngine
 					// Multi-mesh models would need a parent object or spawn all meshes together.
 					auto& newObj = scene.Add(duckMesh, "Duck " + std::to_string(scene.Size() + 1));
 					newObj.ObjectTransform.Scale = glm::vec3(0.02f);
-					newObj.Color = glm::vec4(1.0f);
+					newObj.Color = duckColor;
+					newObj.Roughness = duckRoughness;
 					newObj.TexturePtr = duckTexture;
 				}
 			}
