@@ -62,7 +62,22 @@ namespace VizEngine
 	template<typename T>
 	static const T* GetBufferData(const tinygltf::Model& model, const tinygltf::Accessor& accessor)
 	{
+		// Validate bufferView index
+		if (accessor.bufferView < 0 || accessor.bufferView >= static_cast<int>(model.bufferViews.size()))
+		{
+			VP_CORE_ERROR("Accessor bufferView index {} out of range", accessor.bufferView);
+			return nullptr;
+		}
+		
 		const auto& bufferView = model.bufferViews[accessor.bufferView];
+		
+		// Validate buffer index
+		if (bufferView.buffer < 0 || bufferView.buffer >= static_cast<int>(model.buffers.size()))
+		{
+			VP_CORE_ERROR("BufferView buffer index {} out of range", bufferView.buffer);
+			return nullptr;
+		}
+		
 		const auto& buffer = model.buffers[bufferView.buffer];
 		
 		// Fail if byteStride indicates interleaved data we can't handle
@@ -274,7 +289,13 @@ namespace VizEngine
 					continue;
 				}
 
-				const auto& posAccessor = gltfModel.accessors[primitive.attributes.at("POSITION")];
+				int posAccessorIndex = primitive.attributes.at("POSITION");
+				if (posAccessorIndex < 0 || posAccessorIndex >= static_cast<int>(gltfModel.accessors.size()))
+				{
+					VP_CORE_ERROR("POSITION accessor index {} out of range, skipping primitive", posAccessorIndex);
+					continue;
+				}
+				const auto& posAccessor = gltfModel.accessors[posAccessorIndex];
 				const float* positions = GetBufferData<float>(gltfModel, posAccessor);
 				if (!positions)
 				{
@@ -453,7 +474,22 @@ namespace VizEngine
 		const tinygltf::Accessor& accessor,
 		std::vector<unsigned int>& indices)
 	{
+		// Validate bufferView index
+		if (accessor.bufferView < 0 || accessor.bufferView >= static_cast<int>(gltfModel.bufferViews.size()))
+		{
+			VP_CORE_ERROR("Index accessor bufferView {} out of range", accessor.bufferView);
+			return;
+		}
+		
 		const auto& bufferView = gltfModel.bufferViews[accessor.bufferView];
+		
+		// Validate buffer index
+		if (bufferView.buffer < 0 || bufferView.buffer >= static_cast<int>(gltfModel.buffers.size()))
+		{
+			VP_CORE_ERROR("Index bufferView buffer {} out of range", bufferView.buffer);
+			return;
+		}
+		
 		const auto& buffer = gltfModel.buffers[bufferView.buffer];
 		
 		// Validate buffer bounds based on component type

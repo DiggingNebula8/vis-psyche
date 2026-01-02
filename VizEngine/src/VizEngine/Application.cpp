@@ -282,6 +282,8 @@ namespace VizEngine
 				ImGui::SameLine();
 				if (ImGui::Button("Add Duck"))
 				{
+					// Note: For simplicity, button spawns only the first mesh of the model.
+					// Multi-mesh models would need a parent object or spawn all meshes together.
 					auto& newObj = scene.Add(duckMesh, "Duck " + std::to_string(scene.Size() + 1));
 					newObj.ObjectTransform.Scale = glm::vec3(0.02f);
 					newObj.Color = glm::vec4(1.0f);

@@ -37,7 +37,6 @@ namespace VizEngine
 		{
 			static_assert(std::is_same<T, float>::value || std::is_same<T, unsigned int>::value || std::is_same<T, unsigned char>::value,
 				"Unsupported type for VertexBufferLayout::Push");
-			VP_CORE_ERROR("Type not supported yet!");
 		}
 
 		template<>
