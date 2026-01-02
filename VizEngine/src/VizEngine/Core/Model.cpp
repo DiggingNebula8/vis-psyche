@@ -300,14 +300,36 @@ namespace VizEngine
 				if (primitive.attributes.find("NORMAL") != primitive.attributes.end())
 				{
 					const auto& normAccessor = gltfModel.accessors[primitive.attributes.at("NORMAL")];
-					normals = GetBufferData<float>(gltfModel, normAccessor);
+					const auto& normBufferView = gltfModel.bufferViews[normAccessor.bufferView];
+					const auto& normBuffer = gltfModel.buffers[normBufferView.buffer];
+					size_t requiredBytes = vertexCount * 3 * sizeof(float);
+					size_t availableBytes = normBuffer.data.size() - normBufferView.byteOffset - normAccessor.byteOffset;
+					if (requiredBytes > availableBytes)
+					{
+						VP_CORE_WARN("Normal buffer too small, skipping normals");
+					}
+					else
+					{
+						normals = GetBufferData<float>(gltfModel, normAccessor);
+					}
 				}
 
 				const float* texCoords = nullptr;  // nullptr check deferred to vertex loop
 				if (primitive.attributes.find("TEXCOORD_0") != primitive.attributes.end())
 				{
 					const auto& uvAccessor = gltfModel.accessors[primitive.attributes.at("TEXCOORD_0")];
-					texCoords = GetBufferData<float>(gltfModel, uvAccessor);
+					const auto& uvBufferView = gltfModel.bufferViews[uvAccessor.bufferView];
+					const auto& uvBuffer = gltfModel.buffers[uvBufferView.buffer];
+					size_t requiredBytes = vertexCount * 2 * sizeof(float);
+					size_t availableBytes = uvBuffer.data.size() - uvBufferView.byteOffset - uvAccessor.byteOffset;
+					if (requiredBytes > availableBytes)
+					{
+						VP_CORE_WARN("TexCoord buffer too small, skipping texcoords");
+					}
+					else
+					{
+						texCoords = GetBufferData<float>(gltfModel, uvAccessor);
+					}
 				}
 
 				const float* colors = nullptr;  // nullptr check deferred to vertex loop
@@ -318,7 +340,18 @@ namespace VizEngine
 					colorComponents = (colorAccessor.type == TINYGLTF_TYPE_VEC4) ? 4 : 3;
 					if (colorAccessor.componentType == TINYGLTF_COMPONENT_TYPE_FLOAT)
 					{
-						colors = GetBufferData<float>(gltfModel, colorAccessor);
+						const auto& colorBufferView = gltfModel.bufferViews[colorAccessor.bufferView];
+						const auto& colorBuffer = gltfModel.buffers[colorBufferView.buffer];
+						size_t requiredBytes = vertexCount * colorComponents * sizeof(float);
+						size_t availableBytes = colorBuffer.data.size() - colorBufferView.byteOffset - colorAccessor.byteOffset;
+						if (requiredBytes > availableBytes)
+						{
+							VP_CORE_WARN("Color buffer too small, skipping vertex colors");
+						}
+						else
+						{
+							colors = GetBufferData<float>(gltfModel, colorAccessor);
+						}
 					}
 					else if (colorAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE ||
 					         colorAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT)
@@ -422,6 +455,27 @@ namespace VizEngine
 	{
 		const auto& bufferView = gltfModel.bufferViews[accessor.bufferView];
 		const auto& buffer = gltfModel.buffers[bufferView.buffer];
+		
+		// Validate buffer bounds based on component type
+		size_t componentSize = 0;
+		switch (accessor.componentType)
+		{
+			case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE: componentSize = 1; break;
+			case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT: componentSize = 2; break;
+			case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT: componentSize = 4; break;
+			default:
+				VP_CORE_ERROR("Unsupported index component type: {}", accessor.componentType);
+				return;
+		}
+		
+		size_t requiredBytes = accessor.count * componentSize;
+		size_t availableBytes = buffer.data.size() - bufferView.byteOffset - accessor.byteOffset;
+		if (requiredBytes > availableBytes)
+		{
+			VP_CORE_ERROR("Index buffer too small for accessor.count");
+			return;
+		}
+		
 		// Note: Indices are not interleaved, so byteStride is not checked here
 		const void* dataPtr = buffer.data.data() + bufferView.byteOffset + accessor.byteOffset;
 
