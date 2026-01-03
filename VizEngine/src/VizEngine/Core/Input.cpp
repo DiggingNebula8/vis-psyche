@@ -4,12 +4,16 @@
 
 namespace VizEngine
 {
+	// Array size constants
+	static constexpr int MAX_KEYS = 512;
+	static constexpr int MAX_MOUSE_BUTTONS = 8;
+
 	// Static member definitions
 	GLFWwindow* Input::s_Window = nullptr;
-	bool Input::s_CurrentKeys[512] = { false };
-	bool Input::s_PreviousKeys[512] = { false };
-	bool Input::s_CurrentMouseButtons[8] = { false };
-	bool Input::s_PreviousMouseButtons[8] = { false };
+	bool Input::s_CurrentKeys[MAX_KEYS] = { false };
+	bool Input::s_PreviousKeys[MAX_KEYS] = { false };
+	bool Input::s_CurrentMouseButtons[MAX_MOUSE_BUTTONS] = { false };
+	bool Input::s_PreviousMouseButtons[MAX_MOUSE_BUTTONS] = { false };
 	glm::vec2 Input::s_MousePosition = glm::vec2(0.0f);
 	glm::vec2 Input::s_LastMousePosition = glm::vec2(0.0f);
 	bool Input::s_FirstMouse = true;
@@ -36,13 +40,13 @@ namespace VizEngine
 		std::memcpy(s_PreviousMouseButtons, s_CurrentMouseButtons, sizeof(s_CurrentMouseButtons));
 		
 		// Update current key states
-		for (int key = 0; key < 512; key++)
+		for (int key = 0; key < MAX_KEYS; key++)
 		{
 			s_CurrentKeys[key] = (glfwGetKey(s_Window, key) == GLFW_PRESS);
 		}
 		
 		// Update current mouse button states
-		for (int button = 0; button < 8; button++)
+		for (int button = 0; button < MAX_MOUSE_BUTTONS; button++)
 		{
 			s_CurrentMouseButtons[button] = (glfwGetMouseButton(s_Window, button) == GLFW_PRESS);
 		}
@@ -69,21 +73,21 @@ namespace VizEngine
 	bool Input::IsKeyPressed(KeyCode key)
 	{
 		int k = static_cast<int>(key);
-		if (k < 0 || k >= 512) return false;
+		if (k < 0 || k >= MAX_KEYS) return false;
 		return s_CurrentKeys[k] && !s_PreviousKeys[k];
 	}
 
 	bool Input::IsKeyHeld(KeyCode key)
 	{
 		int k = static_cast<int>(key);
-		if (k < 0 || k >= 512) return false;
+		if (k < 0 || k >= MAX_KEYS) return false;
 		return s_CurrentKeys[k];
 	}
 
 	bool Input::IsKeyReleased(KeyCode key)
 	{
 		int k = static_cast<int>(key);
-		if (k < 0 || k >= 512) return false;
+		if (k < 0 || k >= MAX_KEYS) return false;
 		return !s_CurrentKeys[k] && s_PreviousKeys[k];
 	}
 
@@ -92,21 +96,21 @@ namespace VizEngine
 	bool Input::IsMouseButtonPressed(MouseCode button)
 	{
 		int b = static_cast<int>(button);
-		if (b < 0 || b >= 8) return false;
+		if (b < 0 || b >= MAX_MOUSE_BUTTONS) return false;
 		return s_CurrentMouseButtons[b] && !s_PreviousMouseButtons[b];
 	}
 
 	bool Input::IsMouseButtonHeld(MouseCode button)
 	{
 		int b = static_cast<int>(button);
-		if (b < 0 || b >= 8) return false;
+		if (b < 0 || b >= MAX_MOUSE_BUTTONS) return false;
 		return s_CurrentMouseButtons[b];
 	}
 
 	bool Input::IsMouseButtonReleased(MouseCode button)
 	{
 		int b = static_cast<int>(button);
-		if (b < 0 || b >= 8) return false;
+		if (b < 0 || b >= MAX_MOUSE_BUTTONS) return false;
 		return !s_CurrentMouseButtons[b] && s_PreviousMouseButtons[b];
 	}
 
