@@ -104,6 +104,13 @@ namespace VizEngine
 
 	bool Engine::Init(const EngineConfig& config)
 	{
+		// Guard against double initialization
+		if (m_Window)
+		{
+			VP_CORE_WARN("Engine::Init called while already initialized!");
+			return true;
+		}
+
 		VP_CORE_INFO("Initializing Engine...");
 
 		// Create window
