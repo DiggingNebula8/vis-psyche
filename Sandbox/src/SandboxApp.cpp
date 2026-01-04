@@ -110,6 +110,17 @@ public:
 	void OnUpdate(float deltaTime) override
 	{
 		// =========================================================================
+		// Engine Stats
+		// =========================================================================
+		m_FrameCount++;
+		m_FpsUpdateTimer += deltaTime;
+		if (m_FpsUpdateTimer >= 0.5f)
+		{
+			m_CurrentFPS = 1.0f / deltaTime;
+			m_FpsUpdateTimer = 0.0f;
+		}
+
+		// =========================================================================
 		// Camera Controller
 		// =========================================================================
 		float speed = m_MoveSpeed * deltaTime;
@@ -174,6 +185,24 @@ public:
 	{
 		auto& engine = VizEngine::Engine::Get();
 		auto& uiManager = engine.GetUIManager();
+
+		// =========================================================================
+		// Engine Stats Panel (toggle with F1)
+		// =========================================================================
+		if (m_ShowEngineStats)
+		{
+			uiManager.StartWindow("Engine Stats");
+
+			uiManager.Text("FPS: %.1f", m_CurrentFPS);
+			uiManager.Text("Delta: %.2f ms", engine.GetDeltaTime() * 1000.0f);
+			uiManager.Text("Frame: %llu", m_FrameCount);
+			uiManager.Separator();
+			uiManager.Text("Window: %d x %d", m_WindowWidth, m_WindowHeight);
+			uiManager.Separator();
+			uiManager.Text("Press F1 to toggle");
+
+			uiManager.EndWindow();
+		}
 
 		// =========================================================================
 		// Scene Objects Panel
@@ -301,25 +330,29 @@ public:
 	{
 		VizEngine::EventDispatcher dispatcher(e);
 
-		// Handle window resize - update camera aspect ratio
+		// Handle window resize - update camera and track dimensions
 		dispatcher.Dispatch<VizEngine::WindowResizeEvent>(
 			[this](VizEngine::WindowResizeEvent& event) {
-				if (event.GetWidth() > 0 && event.GetHeight() > 0)
+				m_WindowWidth = event.GetWidth();
+				m_WindowHeight = event.GetHeight();
+
+				if (m_WindowWidth > 0 && m_WindowHeight > 0)
 				{
-					float aspect = static_cast<float>(event.GetWidth())
-					             / static_cast<float>(event.GetHeight());
+					float aspect = static_cast<float>(m_WindowWidth)
+					             / static_cast<float>(m_WindowHeight);
 					m_Camera.SetAspectRatio(aspect);
 				}
 				return false;  // Don't consume, allow propagation
 			}
 		);
 
-		// Example: Handle F1 for debug toggle
+		// F1 toggles Engine Stats panel
 		dispatcher.Dispatch<VizEngine::KeyPressedEvent>(
-			[](VizEngine::KeyPressedEvent& event) {
-				if (event.GetKeyCode() == VizEngine::KeyCode::F1)
+			[this](VizEngine::KeyPressedEvent& event) {
+				if (event.GetKeyCode() == VizEngine::KeyCode::F1 && !event.IsRepeat())
 				{
-					VP_INFO("F1 pressed - debug toggle!");
+					m_ShowEngineStats = !m_ShowEngineStats;
+					VP_INFO("Engine Stats: {}", m_ShowEngineStats ? "ON" : "OFF");
 					return true;  // Consumed
 				}
 				return false;
@@ -360,6 +393,14 @@ private:
 	float m_MoveSpeed = 5.0f;
 	float m_SprintMultiplier = 2.5f;
 	float m_LookSensitivity = 0.003f;
+
+	// Engine stats
+	bool m_ShowEngineStats = true;
+	uint64_t m_FrameCount = 0;
+	float m_FpsUpdateTimer = 0.0f;
+	float m_CurrentFPS = 0.0f;
+	int m_WindowWidth = 800;
+	int m_WindowHeight = 800;
 };
 
 VizEngine::Application* VizEngine::CreateApplication(VizEngine::EngineConfig& config)
