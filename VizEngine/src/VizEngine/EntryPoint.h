@@ -2,18 +2,22 @@
 
 #ifdef VP_PLATFORM_WINDOWS
 
-namespace VizEngine
-{
-	// Implemented by the client application (e.g., Sandbox)
-	extern Application* CreateApplication();
-}
+#include "Engine.h"
+#include "Application.h"  // For CreateApplication declaration
 
 int main(int argc, char** argv)
 {
+	(void)argc;
+	(void)argv;
+
 	VizEngine::Log::Init();
-	auto app = VizEngine::CreateApplication();
-	app->Run();
+
+	VizEngine::EngineConfig config;
+	auto app = VizEngine::CreateApplication(config);
+	VizEngine::Engine::Get().Run(app, config);
 	delete app;
+
+	return 0;
 }
 
 #endif

@@ -6,6 +6,7 @@ project(VizEngine)
 set(VIZENGINE_SOURCES
     # Core
     src/VizEngine/Application.cpp
+    src/VizEngine/Engine.cpp
     src/VizEngine/Log.cpp
     src/VizEngine/Core/Camera.cpp
     src/VizEngine/Core/Mesh.cpp
@@ -33,6 +34,7 @@ set(VIZENGINE_HEADERS
     # Public headers
     src/VizEngine.h
     src/VizEngine/Application.h
+    src/VizEngine/Engine.h
     src/VizEngine/Core.h
     src/VizEngine/EntryPoint.h
     src/VizEngine/Log.h
@@ -146,9 +148,6 @@ else()
     )
 endif()
 
-# =============================================================================
-# Link Libraries
-# =============================================================================
 target_link_libraries(VizEngine 
     PRIVATE 
         glfw

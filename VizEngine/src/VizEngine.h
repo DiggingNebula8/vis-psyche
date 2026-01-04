@@ -1,7 +1,32 @@
 #pragma once
 
+// =============================================================================
+// VizEngine Public API
+// =============================================================================
+// This is the main header for VizEngine applications.
+// Include this single header to access the entire public API.
+
+// Core engine
 #include "VizEngine/Application.h"
+#include "VizEngine/Engine.h"
 #include "VizEngine/Log.h"
+
+// Subsystems accessible to applications
+#include "VizEngine/GUI/UIManager.h"
+#include "VizEngine/OpenGL/Renderer.h"
+#include "VizEngine/OpenGL/Shader.h"
+#include "VizEngine/OpenGL/Texture.h"
+
+// Core types
+#include "VizEngine/Core/Camera.h"
+#include "VizEngine/Core/Scene.h"
+#include "VizEngine/Core/Mesh.h"
+#include "VizEngine/Core/Light.h"
+#include "VizEngine/Core/Input.h"
+
+// Asset loading
 #include "VizEngine/Core/Model.h"
 #include "VizEngine/Core/Material.h"
+
+// Entry point (must be last)
 #include "VizEngine/EntryPoint.h"

@@ -9,7 +9,7 @@ namespace VizEngine
 	 * DirectionalLight represents a light source infinitely far away (like the sun).
 	 * All rays are parallel, coming from a single direction.
 	 */
-	struct VizEngine_API DirectionalLight
+	struct DirectionalLight
 	{
 		glm::vec3 Direction = glm::vec3(-0.2f, -1.0f, -0.3f);  // Direction light is traveling
 		
@@ -36,7 +36,7 @@ namespace VizEngine
 	 * PointLight represents a light source at a specific position that radiates in all directions.
 	 * Intensity falls off with distance (attenuation).
 	 */
-	struct VizEngine_API PointLight
+	struct PointLight
 	{
 		glm::vec3 Position = glm::vec3(0.0f, 5.0f, 0.0f);
 		
@@ -64,7 +64,7 @@ namespace VizEngine
 	/**
 	 * Material properties for Phong lighting model.
 	 */
-	struct VizEngine_API Material
+	struct Material
 	{
 		glm::vec3 Ambient   = glm::vec3(1.0f);    // How much ambient light is reflected
 		glm::vec3 Diffuse   = glm::vec3(1.0f);    // Main surface color
