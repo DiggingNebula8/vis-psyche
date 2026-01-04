@@ -117,6 +117,7 @@ namespace VizEngine
 		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 		{
 			VP_CORE_ERROR("Failed to initialize GLAD");
+			m_Window.reset();
 			return false;
 		}
 
