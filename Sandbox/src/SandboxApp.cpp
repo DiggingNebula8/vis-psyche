@@ -1,4 +1,6 @@
 #include <VizEngine.h>
+#include <VizEngine/Events/ApplicationEvent.h>
+#include <VizEngine/Events/KeyEvent.h>
 
 class Sandbox : public VizEngine::Application
 {
@@ -293,6 +295,36 @@ public:
 		}
 
 		uiManager.EndWindow();
+	}
+
+	void OnEvent(VizEngine::Event& e) override
+	{
+		VizEngine::EventDispatcher dispatcher(e);
+
+		// Handle window resize - update camera aspect ratio
+		dispatcher.Dispatch<VizEngine::WindowResizeEvent>(
+			[this](VizEngine::WindowResizeEvent& event) {
+				if (event.GetWidth() > 0 && event.GetHeight() > 0)
+				{
+					float aspect = static_cast<float>(event.GetWidth())
+					             / static_cast<float>(event.GetHeight());
+					m_Camera.SetAspectRatio(aspect);
+				}
+				return false;  // Don't consume, allow propagation
+			}
+		);
+
+		// Example: Handle F1 for debug toggle
+		dispatcher.Dispatch<VizEngine::KeyPressedEvent>(
+			[](VizEngine::KeyPressedEvent& event) {
+				if (event.GetKeyCode() == VizEngine::KeyCode::F1)
+				{
+					VP_INFO("F1 pressed - debug toggle!");
+					return true;  // Consumed
+				}
+				return false;
+			}
+		);
 	}
 
 	void OnDestroy() override

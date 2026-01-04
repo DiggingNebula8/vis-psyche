@@ -4,8 +4,9 @@
 
 namespace VizEngine
 {
-	// Forward declaration
+	// Forward declarations
 	struct EngineConfig;
+	class Event;
 
 	/**
 	 * Base class for game applications.
@@ -45,6 +46,13 @@ namespace VizEngine
 		 * Use for ImGui panels and debug UI.
 		 */
 		virtual void OnImGuiRender() {}
+
+		/**
+		 * Called when an event occurs (window resize, input, etc.).
+		 * Use EventDispatcher to handle specific event types.
+		 * @param e The event to handle
+		 */
+		virtual void OnEvent(Event& e) { (void)e; }
 
 		/**
 		 * Called once after the game loop ends.

@@ -12,6 +12,7 @@ namespace VizEngine
 	class GLFWManager;
 	class Renderer;
 	class UIManager;
+	class Event;
 
 	/**
 	 * Configuration for the Engine.
@@ -64,6 +65,12 @@ namespace VizEngine
 		 */
 		float GetDeltaTime() const { return m_DeltaTime; }
 
+		/**
+		 * Handle an event from the window system.
+		 * Routes to the application's OnEvent handler.
+		 */
+		void OnEvent(Event& e);
+
 	private:
 		Engine() = default;
 		~Engine() = default;
@@ -84,6 +91,7 @@ namespace VizEngine
 		std::unique_ptr<Renderer> m_Renderer;
 		std::unique_ptr<UIManager> m_UIManager;
 
+		Application* m_App = nullptr;  // Stored for event routing
 		float m_DeltaTime = 0.0f;
 		bool m_Running = false;
 	};

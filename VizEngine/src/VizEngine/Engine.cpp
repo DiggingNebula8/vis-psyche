@@ -1,6 +1,7 @@
 #include "Engine.h"
 #include "Application.h"
 #include "Log.h"
+#include "Events/Event.h"
 
 #include "OpenGL/GLFWManager.h"
 #include "OpenGL/Renderer.h"
@@ -26,6 +27,8 @@ namespace VizEngine
 			VP_CORE_ERROR("Engine::Run called with null application!");
 			return;
 		}
+
+		m_App = app;  // Store for event routing
 
 		if (!Init(config))
 		{
@@ -133,6 +136,11 @@ namespace VizEngine
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_DEPTH_TEST);
 
+		// Wire event callback
+		m_Window->SetEventCallback([this](Event& e) {
+			OnEvent(e);
+		});
+
 		// Create subsystems
 		m_UIManager = std::make_unique<UIManager>(m_Window->GetWindow());
 		m_Renderer = std::make_unique<Renderer>();
@@ -144,6 +152,15 @@ namespace VizEngine
 		return true;
 	}
 
+	void Engine::OnEvent(Event& e)
+	{
+		// Route events to application
+		if (m_App)
+		{
+			m_App->OnEvent(e);
+		}
+	}
+
 	void Engine::Shutdown()
 	{
 		VP_CORE_INFO("Shutting down Engine...");
@@ -152,6 +169,7 @@ namespace VizEngine
 		m_Renderer.reset();
 		m_UIManager.reset();
 		m_Window.reset();
+		m_App = nullptr;
 
 		VP_CORE_INFO("Engine shutdown complete");
 	}
