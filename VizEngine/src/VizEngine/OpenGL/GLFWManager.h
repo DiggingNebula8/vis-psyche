@@ -39,5 +39,7 @@ namespace VizEngine
 		static void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 		static void CursorPosCallback(GLFWwindow* window, double xpos, double ypos);
 		static void WindowCloseCallback(GLFWwindow* window);
+		static void WindowFocusCallback(GLFWwindow* window, int focused);
+		static void CharCallback(GLFWwindow* window, unsigned int codepoint);
 	};
 }

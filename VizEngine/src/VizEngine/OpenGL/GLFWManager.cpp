@@ -50,13 +50,14 @@ namespace VizEngine
 		// Store this pointer for callbacks
 		glfwSetWindowUserPointer(m_Window, this);
 
-		// Register callbacks
 		glfwSetFramebufferSizeCallback(m_Window, FramebufferSizeCallback);
 		glfwSetKeyCallback(m_Window, KeyCallback);
+		glfwSetCharCallback(m_Window, CharCallback);
 		glfwSetMouseButtonCallback(m_Window, MouseButtonCallback);
 		glfwSetScrollCallback(m_Window, ScrollCallback);
 		glfwSetCursorPosCallback(m_Window, CursorPosCallback);
 		glfwSetWindowCloseCallback(m_Window, WindowCloseCallback);
+		glfwSetWindowFocusCallback(m_Window, WindowFocusCallback);
 
 		// Initialize input system
 		Input::Init(m_Window);
@@ -201,6 +202,34 @@ namespace VizEngine
 		if (manager && manager->m_EventCallback)
 		{
 			WindowCloseEvent event;
+			manager->m_EventCallback(event);
+		}
+	}
+
+	void GLFWManager::WindowFocusCallback(GLFWwindow* window, int focused)
+	{
+		auto* manager = static_cast<GLFWManager*>(glfwGetWindowUserPointer(window));
+		if (manager && manager->m_EventCallback)
+		{
+			if (focused)
+			{
+				WindowFocusEvent event;
+				manager->m_EventCallback(event);
+			}
+			else
+			{
+				WindowLostFocusEvent event;
+				manager->m_EventCallback(event);
+			}
+		}
+	}
+
+	void GLFWManager::CharCallback(GLFWwindow* window, unsigned int codepoint)
+	{
+		auto* manager = static_cast<GLFWManager*>(glfwGetWindowUserPointer(window));
+		if (manager && manager->m_EventCallback)
+		{
+			KeyTypedEvent event(static_cast<KeyCode>(codepoint));
 			manager->m_EventCallback(event);
 		}
 	}
