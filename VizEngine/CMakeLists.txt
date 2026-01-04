@@ -50,6 +50,12 @@ set(VIZENGINE_HEADERS
     src/VizEngine/Core/Model.h
     src/VizEngine/Core/Input.h
     
+    # Events headers
+    src/VizEngine/Events/Event.h
+    src/VizEngine/Events/ApplicationEvent.h
+    src/VizEngine/Events/KeyEvent.h
+    src/VizEngine/Events/MouseEvent.h
+    
     # OpenGL headers
     src/VizEngine/OpenGL/Commons.h
     src/VizEngine/OpenGL/ErrorHandling.h
