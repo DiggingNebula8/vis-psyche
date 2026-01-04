@@ -15,9 +15,10 @@ namespace VizEngine
 		GLFWManager(unsigned int width, unsigned int height, const std::string& title);
 		~GLFWManager();
 
+		void PollEvents();
 		void ProcessInput();
 		bool WindowShouldClose();
-		void SwapBuffersAndPollEvents();
+		void SwapBuffers();
 		GLFWwindow* GetWindow() const;
 
 		void SetEventCallback(const EventCallbackFn& callback) { m_EventCallback = callback; }

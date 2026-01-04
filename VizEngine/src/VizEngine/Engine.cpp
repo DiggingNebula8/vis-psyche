@@ -56,19 +56,22 @@ namespace VizEngine
 				m_DeltaTime = static_cast<float>(currentTime - prevTime);
 				prevTime = currentTime;
 
-				// Input phase
+				// Poll events first to get fresh input data
+				m_Window->PollEvents();
+
+				// Input phase (reads fresh state from callbacks)
 				m_Window->ProcessInput();
 				m_UIManager->BeginFrame();
 
-				// Application hooks
+				// Application hooks (scroll data is now current-frame)
 				app->OnUpdate(m_DeltaTime);
 				app->OnRender();
 				app->OnImGuiRender();
 
 				// Present phase
 				m_UIManager->Render();
-				m_Window->SwapBuffersAndPollEvents();
-				Input::EndFrame();  // Reset scroll delta after events polled
+				m_Window->SwapBuffers();
+				Input::EndFrame();  // Reset scroll delta for next frame
 			}
 
 			// Application cleanup (normal exit)

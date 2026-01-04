@@ -68,7 +68,7 @@ namespace VizEngine
 	void Input::EndFrame()
 	{
 		// Reset scroll delta after frame processing
-		// Called after glfwPollEvents() so scroll data is current during the next frame
+		// Called at end of frame; scroll data was valid during OnUpdate()
 		s_ScrollDelta = 0.0f;
 	}
 

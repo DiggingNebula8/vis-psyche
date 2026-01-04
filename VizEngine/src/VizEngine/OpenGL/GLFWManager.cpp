@@ -74,10 +74,14 @@ namespace VizEngine
 		return glfwWindowShouldClose(m_Window);
 	}
 
-	void GLFWManager::SwapBuffersAndPollEvents()
+	void GLFWManager::PollEvents()
+	{
+		glfwPollEvents();
+	}
+
+	void GLFWManager::SwapBuffers()
 	{
 		glfwSwapBuffers(m_Window);
-		glfwPollEvents();
 	}
 
 	GLFWwindow* GLFWManager::GetWindow() const
