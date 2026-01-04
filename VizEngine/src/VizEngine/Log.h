@@ -61,7 +61,7 @@ namespace VizEngine
 	#define VP_CORE_ASSERT(condition, ...) \
 		do { \
 			if (!(condition)) { \
-				VP_CORE_ERROR("Check failed: {} - {}", #condition, __VA_ARGS__); \
+				VP_CORE_ERROR("Check failed: {}" __VA_OPT__(" - {}"), #condition __VA_OPT__(,) __VA_ARGS__); \
 				VP_DEBUG_BREAK(); \
 			} \
 		} while (0)
@@ -69,7 +69,7 @@ namespace VizEngine
 	#define VP_ASSERT(condition, ...) \
 		do { \
 			if (!(condition)) { \
-				VP_ERROR("Check failed: {} - {}", #condition, __VA_ARGS__); \
+				VP_ERROR("Check failed: {}" __VA_OPT__(" - {}"), #condition __VA_OPT__(,) __VA_ARGS__); \
 				VP_DEBUG_BREAK(); \
 			} \
 		} while (0)

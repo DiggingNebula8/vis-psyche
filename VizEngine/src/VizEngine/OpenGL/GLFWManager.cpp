@@ -233,7 +233,7 @@ namespace VizEngine
 		auto* manager = static_cast<GLFWManager*>(glfwGetWindowUserPointer(window));
 		if (manager && manager->m_EventCallback)
 		{
-			KeyTypedEvent event(static_cast<KeyCode>(codepoint));
+			KeyTypedEvent event(codepoint);
 			manager->m_EventCallback(event);
 		}
 	}

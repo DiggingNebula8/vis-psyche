@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include "Core.h"
 
 namespace VizEngine
@@ -64,7 +65,7 @@ namespace VizEngine
 	/**
 	 * Factory function implemented by client applications.
 	 * @param config Engine configuration that the application can modify.
-	 * @return A new Application instance.
+	 * @return A new Application instance (ownership transferred via unique_ptr).
 	 */
-	Application* CreateApplication(EngineConfig& config);
+	std::unique_ptr<Application> CreateApplication(EngineConfig& config);
 }

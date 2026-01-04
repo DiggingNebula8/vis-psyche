@@ -44,11 +44,11 @@ namespace VizEngine
 		Engine& operator=(const Engine&) = delete;
 
 		/**
-		 * Run the game loop with the given application.
-		 * @param app The application to run (must not be null)
-		 * @param config Engine configuration settings
-		 */
-		void Run(Application* app, const EngineConfig& config = {});
+	 * Run the game loop with the given application.
+	 * @param app The application to run (ownership transferred via unique_ptr)
+	 * @param config Engine configuration settings
+	 */
+	void Run(std::unique_ptr<Application> app, const EngineConfig& config = {});
 
 		/**
 		 * Request the engine to quit at the end of the current frame.

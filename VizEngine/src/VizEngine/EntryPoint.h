@@ -5,17 +5,13 @@
 #include "Engine.h"
 #include "Application.h"  // For CreateApplication declaration
 
-int main(int argc, char** argv)
+int main()
 {
-	(void)argc;
-	(void)argv;
-
 	VizEngine::Log::Init();
 
 	VizEngine::EngineConfig config;
 	auto app = VizEngine::CreateApplication(config);
-	VizEngine::Engine::Get().Run(app, config);
-	delete app;
+	VizEngine::Engine::Get().Run(std::move(app), config);
 
 	return 0;
 }

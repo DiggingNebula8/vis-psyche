@@ -4,6 +4,7 @@
 
 #include "Event.h"
 #include "VizEngine/Core/Input.h"
+#include <sstream>
 
 namespace VizEngine
 {
@@ -69,6 +70,13 @@ namespace VizEngine
     public:
         MouseButtonPressedEvent(MouseCode button) : MouseButtonEvent(button) {}
 
+        std::string ToString() const override
+        {
+            std::stringstream ss;
+            ss << "MouseButtonPressedEvent: " << static_cast<int>(m_Button);
+            return ss.str();
+        }
+
         EVENT_CLASS_TYPE(MouseButtonPressed)
     };
 
@@ -76,6 +84,13 @@ namespace VizEngine
     {
     public:
         MouseButtonReleasedEvent(MouseCode button) : MouseButtonEvent(button) {}
+
+        std::string ToString() const override
+        {
+            std::stringstream ss;
+            ss << "MouseButtonReleasedEvent: " << static_cast<int>(m_Button);
+            return ss.str();
+        }
 
         EVENT_CLASS_TYPE(MouseButtonReleased)
     };

@@ -6,6 +6,8 @@
 	#else
 		#define VizEngine_API __declspec(dllimport)
 	#endif
+#elif defined(__GNUC__) || defined(__clang__)
+	#define VizEngine_API __attribute__((visibility("default")))
 #else
-	#error VizEngine only supports windows!
+	#define VizEngine_API  // Fallback for unknown compilers
 #endif

@@ -20,16 +20,15 @@ namespace VizEngine
 		return instance;
 	}
 
-	void Engine::Run(Application* app, const EngineConfig& config)
+	void Engine::Run(std::unique_ptr<Application> app, const EngineConfig& config)
 	{
-		// Note: Caller retains ownership of app pointer (see EntryPoint.h)
 		if (!app)
 		{
 			VP_CORE_ERROR("Engine::Run called with null application!");
 			return;
 		}
 
-		m_App = app;  // Store for event routing
+		m_App = app.get();  // Store raw pointer for event routing
 
 		if (!Init(config))
 		{
