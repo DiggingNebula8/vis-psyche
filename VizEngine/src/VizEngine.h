@@ -19,6 +19,7 @@
 
 // Core types
 #include "VizEngine/Core/Camera.h"
+#include "VizEngine/Core/Transform.h"
 #include "VizEngine/Core/Scene.h"
 #include "VizEngine/Core/Mesh.h"
 #include "VizEngine/Core/Light.h"
