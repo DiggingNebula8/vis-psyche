@@ -20,6 +20,7 @@ namespace VizEngine
 
 	void Engine::Run(Application* app, const EngineConfig& config)
 	{
+		// Note: Caller retains ownership of app pointer (see EntryPoint.h)
 		if (!app)
 		{
 			VP_CORE_ERROR("Engine::Run called with null application!");
@@ -34,35 +35,46 @@ namespace VizEngine
 
 		m_Running = true;
 
-		// Application initialization
-		app->OnCreate();
-
-		double prevTime = glfwGetTime();
-
-		// Main game loop
-		while (m_Running && !m_Window->WindowShouldClose())
+		try
 		{
-			// Delta time calculation
-			double currentTime = glfwGetTime();
-			m_DeltaTime = static_cast<float>(currentTime - prevTime);
-			prevTime = currentTime;
+			// Application initialization
+			app->OnCreate();
 
-			// Input phase
-			m_Window->ProcessInput();
-			m_UIManager->BeginFrame();
+			double prevTime = glfwGetTime();
 
-			// Application hooks
-			app->OnUpdate(m_DeltaTime);
-			app->OnRender();
-			app->OnImGuiRender();
+			// Main game loop
+			while (m_Running && !m_Window->WindowShouldClose())
+			{
+				// Delta time calculation
+				double currentTime = glfwGetTime();
+				m_DeltaTime = static_cast<float>(currentTime - prevTime);
+				prevTime = currentTime;
 
-			// Present phase
-			m_UIManager->Render();
-			m_Window->SwapBuffersAndPollEvents();
+				// Input phase
+				m_Window->ProcessInput();
+				m_UIManager->BeginFrame();
+
+				// Application hooks
+				app->OnUpdate(m_DeltaTime);
+				app->OnRender();
+				app->OnImGuiRender();
+
+				// Present phase
+				m_UIManager->Render();
+				m_Window->SwapBuffersAndPollEvents();
+			}
+
+			// Application cleanup
+			app->OnDestroy();
 		}
-
-		// Application cleanup
-		app->OnDestroy();
+		catch (const std::exception& e)
+		{
+			VP_CORE_ERROR("Exception in engine loop: {}", e.what());
+		}
+		catch (...)
+		{
+			VP_CORE_ERROR("Unknown exception in engine loop");
+		}
 
 		Shutdown();
 	}
@@ -74,16 +86,19 @@ namespace VizEngine
 
 	GLFWManager& Engine::GetWindow()
 	{
+		VP_CORE_ASSERT(m_Window, "Engine not initialized or already shut down!");
 		return *m_Window;
 	}
 
 	Renderer& Engine::GetRenderer()
 	{
+		VP_CORE_ASSERT(m_Renderer, "Engine not initialized or already shut down!");
 		return *m_Renderer;
 	}
 
 	UIManager& Engine::GetUIManager()
 	{
+		VP_CORE_ASSERT(m_UIManager, "Engine not initialized or already shut down!");
 		return *m_UIManager;
 	}
 

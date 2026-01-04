@@ -43,4 +43,26 @@ namespace VizEngine
 #define VP_ERROR(...)		::VizEngine::Log::GetClientLogger()->error(__VA_ARGS__)
 #define VP_CRITICAL(...)	::VizEngine::Log::GetClientLogger()->critical(__VA_ARGS__)
 
+// Assertions (debug-only, stripped in release builds)
+#ifdef NDEBUG
+	#define VP_CORE_ASSERT(condition, ...)
+	#define VP_ASSERT(condition, ...)
+#else
+	#define VP_CORE_ASSERT(condition, ...) \
+		do { \
+			if (!(condition)) { \
+				VP_CORE_ERROR("Assertion failed: {}", __VA_ARGS__); \
+				__debugbreak(); \
+			} \
+		} while (0)
+
+	#define VP_ASSERT(condition, ...) \
+		do { \
+			if (!(condition)) { \
+				VP_ERROR("Assertion failed: {}", __VA_ARGS__); \
+				__debugbreak(); \
+			} \
+		} while (0)
+#endif
+
 
