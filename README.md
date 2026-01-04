@@ -12,7 +12,6 @@ VizPsyche is an open-source 3D graphics engine written in C++20 using OpenGL 4.6
 - [Prerequisites](#prerequisites)
 - [Building](#building)
 - [Running](#running)
-- [Usage](#usage)
 - [Dependencies](#dependencies)
 - [Troubleshooting](#troubleshooting)
 - [License](#license)
@@ -31,7 +30,7 @@ git clone --recursive git@github.com:DiggingNebula8/vis-psyche-docs.git
 
 ## Features
 
-- Modern OpenGL 4.6 rendering pipeline
+- Modern C++ & OpenGL 4.6 rendering pipeline
 - Abstraction classes: VertexBuffer, IndexBuffer, VertexArray, Shader, Texture, Renderer
 - glTF 2.0 Model Loading
 - Texture Support
@@ -113,30 +112,6 @@ Run the application:
 ```
 
 For release builds, replace `Debug` with `Release`.
-
----
-
-## Usage
-
-To create a custom application using VizEngine, inherit from `VizEngine::Application`:
-
-```cpp
-#include <VizEngine.h>
-
-class MyApp : public VizEngine::Application
-{
-public:
-    MyApp() {}
-    ~MyApp() {}
-};
-
-VizEngine::Application* VizEngine::CreateApplication()
-{
-    return new MyApp();
-}
-```
-
-The engine provides the entry point. Your application only needs to implement `CreateApplication()`.
 
 ---
 
