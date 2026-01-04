@@ -1,5 +1,11 @@
 #include "UIManager.h"
 
+#include <cstdarg>
+#include <GLFW/glfw3.h>
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+
 namespace VizEngine
 {
 	UIManager::UIManager(GLFWwindow* window)
@@ -19,11 +25,6 @@ namespace VizEngine
 		ImGui::NewFrame();
 	}
 
-	void UIManager::EndFrame()
-	{
-		// No longer needed since EndWindow handles this
-	}
-
 	void UIManager::Render()
 	{
 		ImGui::Render();
@@ -39,6 +40,67 @@ namespace VizEngine
 	{
 		ImGui::End();
 	}
+
+	// =========================================================================
+	// ImGui Widget Wrappers
+	// =========================================================================
+
+	void UIManager::Text(const char* fmt, ...)
+	{
+		va_list args;
+		va_start(args, fmt);
+		ImGui::TextV(fmt, args);
+		va_end(args);
+	}
+
+	void UIManager::Separator()
+	{
+		ImGui::Separator();
+	}
+
+	void UIManager::SameLine()
+	{
+		ImGui::SameLine();
+	}
+
+	bool UIManager::Button(const char* label)
+	{
+		return ImGui::Button(label);
+	}
+
+	bool UIManager::Checkbox(const char* label, bool* value)
+	{
+		return ImGui::Checkbox(label, value);
+	}
+
+	bool UIManager::SliderFloat(const char* label, float* value, float min, float max)
+	{
+		return ImGui::SliderFloat(label, value, min, max);
+	}
+
+	bool UIManager::DragFloat3(const char* label, float* values, float speed, float min, float max)
+	{
+		return ImGui::DragFloat3(label, values, speed, min, max);
+	}
+
+	bool UIManager::ColorEdit3(const char* label, float* color)
+	{
+		return ImGui::ColorEdit3(label, color);
+	}
+
+	bool UIManager::ColorEdit4(const char* label, float* color)
+	{
+		return ImGui::ColorEdit4(label, color);
+	}
+
+	bool UIManager::Selectable(const char* label, bool selected)
+	{
+		return ImGui::Selectable(label, selected);
+	}
+
+	// =========================================================================
+	// Private Methods
+	// =========================================================================
 
 	void UIManager::Init(GLFWwindow* window)
 	{

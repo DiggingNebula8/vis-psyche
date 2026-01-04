@@ -1,0 +1,135 @@
+#include "Engine.h"
+#include "Application.h"
+#include "Log.h"
+
+#include "OpenGL/GLFWManager.h"
+#include "OpenGL/Renderer.h"
+#include "OpenGL/ErrorHandling.h"
+#include "GUI/UIManager.h"
+
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+
+namespace VizEngine
+{
+	Engine& Engine::Get()
+	{
+		static Engine instance;
+		return instance;
+	}
+
+	void Engine::Run(Application* app, const EngineConfig& config)
+	{
+		if (!app)
+		{
+			VP_CORE_ERROR("Engine::Run called with null application!");
+			return;
+		}
+
+		if (!Init(config))
+		{
+			VP_CORE_ERROR("Engine initialization failed!");
+			return;
+		}
+
+		m_Running = true;
+
+		// Application initialization
+		app->OnCreate();
+
+		double prevTime = glfwGetTime();
+
+		// Main game loop
+		while (m_Running && !m_Window->WindowShouldClose())
+		{
+			// Delta time calculation
+			double currentTime = glfwGetTime();
+			m_DeltaTime = static_cast<float>(currentTime - prevTime);
+			prevTime = currentTime;
+
+			// Input phase
+			m_Window->ProcessInput();
+			m_UIManager->BeginFrame();
+
+			// Application hooks
+			app->OnUpdate(m_DeltaTime);
+			app->OnRender();
+			app->OnImGuiRender();
+
+			// Present phase
+			m_UIManager->Render();
+			m_Window->SwapBuffersAndPollEvents();
+		}
+
+		// Application cleanup
+		app->OnDestroy();
+
+		Shutdown();
+	}
+
+	void Engine::Quit()
+	{
+		m_Running = false;
+	}
+
+	GLFWManager& Engine::GetWindow()
+	{
+		return *m_Window;
+	}
+
+	Renderer& Engine::GetRenderer()
+	{
+		return *m_Renderer;
+	}
+
+	UIManager& Engine::GetUIManager()
+	{
+		return *m_UIManager;
+	}
+
+	bool Engine::Init(const EngineConfig& config)
+	{
+		VP_CORE_INFO("Initializing Engine...");
+
+		// Create window
+		m_Window = std::make_unique<GLFWManager>(
+			config.Width, 
+			config.Height, 
+			config.Title.c_str()
+		);
+
+		// Initialize GLAD
+		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+		{
+			VP_CORE_ERROR("Failed to initialize GLAD");
+			return false;
+		}
+
+		// OpenGL state setup
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_DEPTH_TEST);
+
+		// Create subsystems
+		m_UIManager = std::make_unique<UIManager>(m_Window->GetWindow());
+		m_Renderer = std::make_unique<Renderer>();
+
+		// Enable OpenGL debug output
+		ErrorHandling::HandleErrors();
+
+		VP_CORE_INFO("Engine initialized successfully");
+		return true;
+	}
+
+	void Engine::Shutdown()
+	{
+		VP_CORE_INFO("Shutting down Engine...");
+
+		// Reset subsystems in reverse order of creation
+		m_Renderer.reset();
+		m_UIManager.reset();
+		m_Window.reset();
+
+		VP_CORE_INFO("Engine shutdown complete");
+	}
+}

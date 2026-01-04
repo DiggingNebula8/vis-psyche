@@ -15,15 +15,12 @@ add_executable(Sandbox ${SANDBOX_SOURCES})
 # =============================================================================
 # Link Libraries
 # =============================================================================
-# VizEngine propagates its PUBLIC include directories automatically
+# VizEngine propagates ImGui via PUBLIC linkage, so Sandbox gets it automatically
 target_link_libraries(Sandbox PRIVATE VizEngine)
 
 # =============================================================================
-# Include Directories (only what's not already from VizEngine)
+# Compile Definitions
 # =============================================================================
-target_include_directories(Sandbox PRIVATE
-    ${CMAKE_SOURCE_DIR}/VizEngine/vendor/imgui  # For ImGui usage in app
-)
 
 # =============================================================================
 # Compile Definitions
