@@ -3,11 +3,14 @@
 #include <string>
 #include "VizEngine/Core.h"
 
-// Forward declaration - avoid exposing GLFW to consumers
+// Forward declarations
 struct GLFWwindow;
 
 namespace VizEngine
 {
+	// Forward declaration for event handling
+	class Event;
+
 	/**
 	 * Manages ImGui integration with the engine.
 	 * Provides wrapper methods so client applications don't need direct ImGui access.
@@ -22,6 +25,9 @@ namespace VizEngine
 		// Non-copyable (owns ImGui context state)
 		UIManager(const UIManager&) = delete;
 		UIManager& operator=(const UIManager&) = delete;
+
+		// Event handling - marks events as Handled if ImGui wants them
+		void OnEvent(Event& e);
 
 		// Frame lifecycle
 		void BeginFrame();

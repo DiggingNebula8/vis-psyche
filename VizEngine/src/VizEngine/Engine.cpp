@@ -154,8 +154,11 @@ namespace VizEngine
 
 	void Engine::OnEvent(Event& e)
 	{
-		// Route events to application
-		if (m_App)
+		// Give ImGui first chance to handle events
+		m_UIManager->OnEvent(e);
+
+		// Only forward to application if not consumed
+		if (!e.Handled && m_App)
 		{
 			m_App->OnEvent(e);
 		}

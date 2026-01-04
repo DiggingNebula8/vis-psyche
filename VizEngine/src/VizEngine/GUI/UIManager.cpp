@@ -1,4 +1,5 @@
 #include "UIManager.h"
+#include "VizEngine/Events/Event.h"
 
 #include <cstdarg>
 #include <GLFW/glfw3.h>
@@ -29,6 +30,23 @@ namespace VizEngine
 	{
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	}
+
+	void UIManager::OnEvent(Event& e)
+	{
+		ImGuiIO& io = ImGui::GetIO();
+
+		// If ImGui wants keyboard, consume keyboard events
+		if (io.WantCaptureKeyboard && e.IsInCategory(EventCategoryKeyboard))
+		{
+			e.Handled = true;
+		}
+
+		// If ImGui wants mouse, consume mouse events
+		if (io.WantCaptureMouse && e.IsInCategory(EventCategoryMouse))
+		{
+			e.Handled = true;
+		}
 	}
 
 	void UIManager::StartWindow(const std::string& windowName)
