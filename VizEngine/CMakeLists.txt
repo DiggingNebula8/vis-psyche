@@ -6,6 +6,7 @@ project(VizEngine)
 set(VIZENGINE_SOURCES
     # Core
     src/VizEngine/Application.cpp
+    src/VizEngine/Engine.cpp
     src/VizEngine/Log.cpp
     src/VizEngine/Core/Camera.cpp
     src/VizEngine/Core/Mesh.cpp
@@ -33,6 +34,7 @@ set(VIZENGINE_HEADERS
     # Public headers
     src/VizEngine.h
     src/VizEngine/Application.h
+    src/VizEngine/Engine.h
     src/VizEngine/Core.h
     src/VizEngine/EntryPoint.h
     src/VizEngine/Log.h
@@ -47,6 +49,12 @@ set(VIZENGINE_HEADERS
     src/VizEngine/Core/Material.h
     src/VizEngine/Core/Model.h
     src/VizEngine/Core/Input.h
+    
+    # Events headers
+    src/VizEngine/Events/Event.h
+    src/VizEngine/Events/ApplicationEvent.h
+    src/VizEngine/Events/KeyEvent.h
+    src/VizEngine/Events/MouseEvent.h
     
     # OpenGL headers
     src/VizEngine/OpenGL/Commons.h
@@ -146,9 +154,6 @@ else()
     )
 endif()
 
-# =============================================================================
-# Link Libraries
-# =============================================================================
 target_link_libraries(VizEngine 
     PRIVATE 
         glfw

@@ -104,6 +104,9 @@ namespace VizEngine
 		// Update input state (call once per frame, before processing input)
 		static void Update();
 		
+		// End frame cleanup (call after polling events, resets scroll delta)
+		static void EndFrame();
+		
 		// --- Keyboard ---
 		
 		// Returns true on the first frame the key is pressed
@@ -139,6 +142,9 @@ namespace VizEngine
 		// Get scroll wheel delta since last frame (positive = up)
 		static float GetScrollDelta();
 
+		// GLFW callback (called by GLFWManager)
+		static void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
+
 	private:
 		static GLFWwindow* s_Window;
 		
@@ -157,8 +163,5 @@ namespace VizEngine
 		
 		// Scroll wheel
 		static float s_ScrollDelta;
-		
-		// GLFW callback
-		static void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 	};
 }

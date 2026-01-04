@@ -1,5 +1,6 @@
 #include "Shader.h"
 #include "VizEngine/Log.h"
+#include <stdexcept>
 
 namespace VizEngine
 {
@@ -49,9 +50,21 @@ namespace VizEngine
 	Shader::Shader(const std::string& shaderFile)
 		: m_shaderPath(shaderFile), m_RendererID(0)
 	{
-		// Creating an object of the type ShaderPrograms to read the shader data from the file
+		// Parse the shader file
 		ShaderPrograms shaders = ShaderParser(shaderFile);
+		if (shaders.VertexProgram.empty() || shaders.FragmentProgram.empty())
+		{
+			VP_CORE_ERROR("Failed to parse shader file: {}", shaderFile);
+			throw std::runtime_error("Failed to parse shader: " + shaderFile);
+		}
+		
+		// Compile and link
 		m_RendererID = CreateShader(shaders.VertexProgram, shaders.FragmentProgram);
+		if (m_RendererID == 0)
+		{
+			VP_CORE_ERROR("Failed to compile/link shader: {}", shaderFile);
+			throw std::runtime_error("Failed to compile shader: " + shaderFile);
+		}
 	}
 
 	Shader::~Shader()
@@ -122,10 +135,21 @@ namespace VizEngine
 		unsigned int program = glCreateProgram();
 
 		unsigned int vs = CompileShader(GL_VERTEX_SHADER, vert);
-		CheckCompileErrors(vs, "VERTEX");
+		if (!CheckCompileErrors(vs, "VERTEX"))
+		{
+			glDeleteShader(vs);
+			glDeleteProgram(program);
+			return 0;
+		}
 
 		unsigned int fs = CompileShader(GL_FRAGMENT_SHADER, frag);
-		CheckCompileErrors(fs, "FRAGMENT");
+		if (!CheckCompileErrors(fs, "FRAGMENT"))
+		{
+			glDeleteShader(vs);
+			glDeleteShader(fs);
+			glDeleteProgram(program);
+			return 0;
+		}
 
 		// Attach the Vertex and Fragment Shaders to the Shader Program
 		glAttachShader(program, vs);
@@ -133,10 +157,16 @@ namespace VizEngine
 		// Wrap-up/Link all the shaders together into the Shader Program
 		glLinkProgram(program);
 		glValidateProgram(program);
-		CheckCompileErrors(program, "PROGRAM");
-		// Delete the now useless Vertex and Fragment Shader objects
+
+		// Cleanup shader objects (attached to program, no longer needed)
 		glDeleteShader(vs);
 		glDeleteShader(fs);
+
+		if (!CheckCompileErrors(program, "PROGRAM"))
+		{
+			glDeleteProgram(program);
+			return 0;
+		}
 
 		return program;
 	}
@@ -191,7 +221,8 @@ namespace VizEngine
 	}
 
 	// utility function for checking shader compilation/linking errors.
-	void Shader::CheckCompileErrors(unsigned int shader, std::string type)
+	// Returns true on success, false on error.
+	bool Shader::CheckCompileErrors(unsigned int shader, std::string type)
 	{
 		int success;
 		char infoLog[1024];
@@ -202,6 +233,7 @@ namespace VizEngine
 			{
 				glGetShaderInfoLog(shader, 1024, NULL, infoLog);
 				VP_CORE_ERROR("SHADER COMPILATION ERROR ({}): {}", type, infoLog);
+				return false;
 			}
 		}
 		else
@@ -211,7 +243,9 @@ namespace VizEngine
 			{
 				glGetProgramInfoLog(shader, 1024, NULL, infoLog);
 				VP_CORE_ERROR("SHADER LINKING ERROR ({}): {}", type, infoLog);
+				return false;
 			}
 		}
+		return true;
 	}
 }

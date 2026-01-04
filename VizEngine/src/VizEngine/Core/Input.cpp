@@ -23,8 +23,8 @@ namespace VizEngine
 	{
 		s_Window = window;
 		
-		// Register scroll callback
-		glfwSetScrollCallback(window, ScrollCallback);
+		// Note: Scroll callback is now registered by GLFWManager
+		// GLFWManager.cpp calls Input::ScrollCallback to update s_ScrollDelta
 		
 		// Initialize mouse position
 		double x, y;
@@ -63,9 +63,13 @@ namespace VizEngine
 			s_LastMousePosition = s_MousePosition;
 			s_FirstMouse = false;
 		}
-		
-		// Reset scroll delta (it accumulates via callback)
-		// Note: We don't reset here - we reset after it's read
+	}
+
+	void Input::EndFrame()
+	{
+		// Reset scroll delta after frame processing
+		// Called at end of frame; scroll data was valid during OnUpdate()
+		s_ScrollDelta = 0.0f;
 	}
 
 	// --- Keyboard ---
@@ -130,9 +134,7 @@ namespace VizEngine
 
 	float Input::GetScrollDelta()
 	{
-		float delta = s_ScrollDelta;
-		s_ScrollDelta = 0.0f;  // Reset after reading
-		return delta;
+		return s_ScrollDelta;
 	}
 
 	void Input::ScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
