@@ -1,6 +1,6 @@
 # VizPsyche
 
-VizPsyche is an open-source 3D graphics engine written in C++17 using OpenGL 4.6. Designed for learning graphics programming, it provides clean abstractions over OpenGL primitives and includes an ImGui-based interface for real-time parameter editing.
+VizPsyche is an open-source 3D graphics engine written in C++20 using OpenGL 4.6. Designed for learning graphics programming, it provides clean abstractions over OpenGL primitives and includes an ImGui-based interface for real-time parameter editing.
 
 [![Demo Video](https://img.youtube.com/vi/-xGmiWWSl5c/maxresdefault.jpg)](https://youtu.be/-xGmiWWSl5c)
 
