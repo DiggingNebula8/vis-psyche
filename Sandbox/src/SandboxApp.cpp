@@ -154,11 +154,11 @@ public:
 		}
 
 		// =========================================================================
-		// Object Rotation (skip ground plane at index 0)
+		// Object Rotation (skip ground plane by name, not index)
 		// =========================================================================
-		for (size_t i = 1; i < m_Scene.Size(); i++)
+		for (auto& obj : m_Scene)
 		{
-			auto& obj = m_Scene[i];
+			if (obj.Name == "Ground") continue;
 			obj.ObjectTransform.Rotation.y += m_RotationSpeed * deltaTime;
 		}
 	}
@@ -259,10 +259,10 @@ public:
 
 		uiManager.Separator();
 
-		// Add new objects
+		// Add new objects (use monotonic counter for unique names)
 		if (uiManager.Button("Add Pyramid"))
 		{
-			auto& newObj = m_Scene.Add(m_PyramidMesh, "Pyramid " + std::to_string(m_Scene.Size() + 1));
+			auto& newObj = m_Scene.Add(m_PyramidMesh, "Pyramid_" + std::to_string(m_NextObjectID++));
 			newObj.ObjectTransform.Scale = glm::vec3(2.0f, 4.0f, 2.0f);
 			newObj.Color = glm::vec4(0.5f, 0.5f, 0.9f, 1.0f);
 			newObj.TexturePtr = m_DefaultTexture;
@@ -270,7 +270,7 @@ public:
 		uiManager.SameLine();
 		if (uiManager.Button("Add Cube"))
 		{
-			auto& newObj = m_Scene.Add(m_CubeMesh, "Cube " + std::to_string(m_Scene.Size() + 1));
+			auto& newObj = m_Scene.Add(m_CubeMesh, "Cube_" + std::to_string(m_NextObjectID++));
 			newObj.ObjectTransform.Scale = glm::vec3(2.0f);
 			newObj.Color = glm::vec4(0.9f, 0.5f, 0.3f, 1.0f);
 			newObj.TexturePtr = m_DefaultTexture;
@@ -280,7 +280,7 @@ public:
 			uiManager.SameLine();
 			if (uiManager.Button("Add Duck"))
 			{
-				auto& newObj = m_Scene.Add(m_DuckMesh, "Duck " + std::to_string(m_Scene.Size() + 1));
+				auto& newObj = m_Scene.Add(m_DuckMesh, "Duck_" + std::to_string(m_NextObjectID++));
 				newObj.ObjectTransform.Scale = glm::vec3(0.02f);
 				newObj.Color = m_DuckColor;
 				newObj.Roughness = m_DuckRoughness;
@@ -388,6 +388,7 @@ private:
 	float m_ClearColor[4] = { 0.1f, 0.1f, 0.15f, 1.0f };
 	float m_RotationSpeed = 0.5f;
 	int m_SelectedObject = 0;
+	uint32_t m_NextObjectID = 1;  // Monotonic counter for unique object names
 
 	// Camera controller settings
 	float m_MoveSpeed = 5.0f;

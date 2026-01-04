@@ -43,6 +43,16 @@ namespace VizEngine
 #define VP_ERROR(...)		::VizEngine::Log::GetClientLogger()->error(__VA_ARGS__)
 #define VP_CRITICAL(...)	::VizEngine::Log::GetClientLogger()->critical(__VA_ARGS__)
 
+// Cross-platform debug break
+#if defined(_MSC_VER)
+	#define VP_DEBUG_BREAK() __debugbreak()
+#elif defined(__clang__) || defined(__GNUC__)
+	#define VP_DEBUG_BREAK() __builtin_trap()
+#else
+	#include <cstdlib>
+	#define VP_DEBUG_BREAK() std::abort()
+#endif
+
 // Assertions (debug-only, stripped in release builds)
 #ifdef NDEBUG
 	#define VP_CORE_ASSERT(condition, ...)
@@ -51,16 +61,16 @@ namespace VizEngine
 	#define VP_CORE_ASSERT(condition, ...) \
 		do { \
 			if (!(condition)) { \
-				VP_CORE_ERROR("Assertion failed: {}", __VA_ARGS__); \
-				__debugbreak(); \
+				VP_CORE_ERROR("Check failed: {} - {}", #condition, __VA_ARGS__); \
+				VP_DEBUG_BREAK(); \
 			} \
 		} while (0)
 
 	#define VP_ASSERT(condition, ...) \
 		do { \
 			if (!(condition)) { \
-				VP_ERROR("Assertion failed: {}", __VA_ARGS__); \
-				__debugbreak(); \
+				VP_ERROR("Check failed: {} - {}", #condition, __VA_ARGS__); \
+				VP_DEBUG_BREAK(); \
 			} \
 		} while (0)
 #endif

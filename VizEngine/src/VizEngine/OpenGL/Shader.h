@@ -63,6 +63,7 @@ namespace VizEngine
 		// Get uniform location for the set shader uniforms
 		int GetUniformLocation(const std::string& name);
 		// Utility function for checking shader compilation/linking errors.
-		void CheckCompileErrors(unsigned int shader, std::string type);
+		// Returns true on success, false on error.
+		bool CheckCompileErrors(unsigned int shader, std::string type);
 	};
 }

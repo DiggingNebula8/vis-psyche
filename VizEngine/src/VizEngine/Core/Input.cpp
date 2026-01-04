@@ -63,8 +63,12 @@ namespace VizEngine
 			s_LastMousePosition = s_MousePosition;
 			s_FirstMouse = false;
 		}
-		
-		// Reset scroll delta at frame start (accumulates via callback during frame)
+	}
+
+	void Input::EndFrame()
+	{
+		// Reset scroll delta after frame processing
+		// Called after glfwPollEvents() so scroll data is current during the next frame
 		s_ScrollDelta = 0.0f;
 	}
 

@@ -7,6 +7,7 @@
 #include "OpenGL/Renderer.h"
 #include "OpenGL/ErrorHandling.h"
 #include "GUI/UIManager.h"
+#include "Core/Input.h"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -38,10 +39,12 @@ namespace VizEngine
 
 		m_Running = true;
 
+		bool appCreated = false;
 		try
 		{
 			// Application initialization
 			app->OnCreate();
+			appCreated = true;
 
 			double prevTime = glfwGetTime();
 
@@ -65,18 +68,27 @@ namespace VizEngine
 				// Present phase
 				m_UIManager->Render();
 				m_Window->SwapBuffersAndPollEvents();
+				Input::EndFrame();  // Reset scroll delta after events polled
 			}
 
-			// Application cleanup
+			// Application cleanup (normal exit)
 			app->OnDestroy();
 		}
 		catch (const std::exception& e)
 		{
 			VP_CORE_ERROR("Exception in engine loop: {}", e.what());
+			if (appCreated)
+			{
+				app->OnDestroy();
+			}
 		}
 		catch (...)
 		{
 			VP_CORE_ERROR("Unknown exception in engine loop");
+			if (appCreated)
+			{
+				app->OnDestroy();
+			}
 		}
 
 		Shutdown();

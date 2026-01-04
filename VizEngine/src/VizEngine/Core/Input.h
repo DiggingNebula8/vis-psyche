@@ -104,6 +104,9 @@ namespace VizEngine
 		// Update input state (call once per frame, before processing input)
 		static void Update();
 		
+		// End frame cleanup (call after polling events, resets scroll delta)
+		static void EndFrame();
+		
 		// --- Keyboard ---
 		
 		// Returns true on the first frame the key is pressed
