@@ -23,8 +23,8 @@ namespace VizEngine
 	{
 		s_Window = window;
 		
-		// Register scroll callback
-		glfwSetScrollCallback(window, ScrollCallback);
+		// Note: Scroll callback is now registered by GLFWManager
+		// GLFWManager.cpp calls Input::ScrollCallback to update s_ScrollDelta
 		
 		// Initialize mouse position
 		double x, y;

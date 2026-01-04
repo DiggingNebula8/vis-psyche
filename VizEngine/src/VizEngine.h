@@ -28,5 +28,11 @@
 #include "VizEngine/Core/Model.h"
 #include "VizEngine/Core/Material.h"
 
+// Events (for event-driven applications)
+#include "VizEngine/Events/Event.h"
+#include "VizEngine/Events/ApplicationEvent.h"
+#include "VizEngine/Events/KeyEvent.h"
+#include "VizEngine/Events/MouseEvent.h"
+
 // Entry point (must be last)
 #include "VizEngine/EntryPoint.h"

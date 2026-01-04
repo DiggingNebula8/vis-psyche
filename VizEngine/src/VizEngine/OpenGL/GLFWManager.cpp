@@ -173,6 +173,10 @@ namespace VizEngine
 
 	void GLFWManager::ScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 	{
+		// Forward to Input system for polling support
+		Input::ScrollCallback(window, xoffset, yoffset);
+
+		// Fire event for event-driven handling
 		auto* manager = static_cast<GLFWManager*>(glfwGetWindowUserPointer(window));
 		if (manager && manager->m_EventCallback)
 		{

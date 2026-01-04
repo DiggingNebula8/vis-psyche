@@ -139,6 +139,9 @@ namespace VizEngine
 		// Get scroll wheel delta since last frame (positive = up)
 		static float GetScrollDelta();
 
+		// GLFW callback (called by GLFWManager)
+		static void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
+
 	private:
 		static GLFWwindow* s_Window;
 		
@@ -157,8 +160,5 @@ namespace VizEngine
 		
 		// Scroll wheel
 		static float s_ScrollDelta;
-		
-		// GLFW callback
-		static void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 	};
 }
