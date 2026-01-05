@@ -4,24 +4,24 @@ namespace VizEngine
 {
 	// Constructor that generates a VertexArray ID
 	VertexArray::VertexArray()
-		: m_ID(0)
+		: m_vao(0)
 	{
-		glGenVertexArrays(1, &m_ID);
+		glGenVertexArrays(1, &m_vao);
 	}
 
 	VertexArray::~VertexArray()
 	{
-		if (m_ID != 0)
+		if (m_vao != 0)
 		{
-			glDeleteVertexArrays(1, &m_ID);
+			glDeleteVertexArrays(1, &m_vao);
 		}
 	}
 
 	// Move constructor
 	VertexArray::VertexArray(VertexArray&& other) noexcept
-		: m_ID(other.m_ID)
+		: m_vao(other.m_vao)
 	{
-		other.m_ID = 0;
+		other.m_vao = 0;
 	}
 
 	// Move assignment operator
@@ -29,12 +29,12 @@ namespace VizEngine
 	{
 		if (this != &other)
 		{
-			if (m_ID != 0)
+			if (m_vao != 0)
 			{
-				glDeleteVertexArrays(1, &m_ID);
+				glDeleteVertexArrays(1, &m_vao);
 			}
-			m_ID = other.m_ID;
-			other.m_ID = 0;
+			m_vao = other.m_vao;
+			other.m_vao = 0;
 		}
 		return *this;
 	}
@@ -58,7 +58,7 @@ namespace VizEngine
 	// Binds the VertexArray
 	void VertexArray::Bind() const
 	{
-		glBindVertexArray(m_ID);
+		glBindVertexArray(m_vao);
 	}
 
 	// Unbinds the VertexArray

@@ -77,10 +77,10 @@ namespace VizEngine
 		/**
 		 * Get the OpenGL framebuffer ID.
 		 */
-		unsigned int GetID() const { return m_FBO; }
+		unsigned int GetID() const { return m_fbo; }
 
 	private:
-		unsigned int m_FBO = 0;
+		unsigned int m_fbo = 0;
 		int m_Width = 0;
 		int m_Height = 0;
 

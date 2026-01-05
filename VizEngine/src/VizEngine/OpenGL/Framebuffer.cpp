@@ -12,23 +12,23 @@ namespace VizEngine
 		: m_Width(width), m_Height(height)
 	{
 		// Generate framebuffer object
-		glGenFramebuffers(1, &m_FBO);
-		VP_CORE_INFO("Framebuffer created: ID={}, Size={}x{}", m_FBO, m_Width, m_Height);
+		glGenFramebuffers(1, &m_fbo);
+		VP_CORE_INFO("Framebuffer created: ID={}, Size={}x{}", m_fbo, m_Width, m_Height);
 	}
 
 	Framebuffer::~Framebuffer()
 	{
-		if (m_FBO != 0)
+		if (m_fbo != 0)
 		{
-			VP_CORE_INFO("Framebuffer destroyed: ID={}", m_FBO);
-			glDeleteFramebuffers(1, &m_FBO);
-			m_FBO = 0;
+			VP_CORE_INFO("Framebuffer destroyed: ID={}", m_fbo);
+			glDeleteFramebuffers(1, &m_fbo);
+			m_fbo = 0;
 		}
 	}
 
 	void Framebuffer::Bind() const
 	{
-		glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
+		glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 		// Set viewport to match framebuffer size
 		glViewport(0, 0, m_Width, m_Height);
 	}
@@ -73,7 +73,7 @@ namespace VizEngine
 		// Store reference to keep texture alive
 		m_ColorAttachments[slot] = texture;
 
-		VP_CORE_INFO("Framebuffer {}: Attached color texture {} to slot {}", m_FBO, texture->GetID(), slot);
+		VP_CORE_INFO("Framebuffer {}: Attached color texture {} to slot {}", m_fbo, texture->GetID(), slot);
 	}
 
 	void Framebuffer::AttachDepthTexture(std::shared_ptr<Texture> texture)
@@ -104,7 +104,7 @@ namespace VizEngine
 		// Store reference
 		m_DepthAttachment = texture;
 
-		VP_CORE_INFO("Framebuffer {}: Attached depth texture {}", m_FBO, texture->GetID());
+		VP_CORE_INFO("Framebuffer {}: Attached depth texture {}", m_fbo, texture->GetID());
 	}
 
 	bool Framebuffer::IsComplete() const
@@ -143,7 +143,7 @@ namespace VizEngine
 				break;
 			}
 
-			VP_CORE_ERROR("Framebuffer {}: Not complete - {}", m_FBO, errorMsg);
+			VP_CORE_ERROR("Framebuffer {}: Not complete - {}", m_fbo, errorMsg);
 			return false;
 		}
 

@@ -51,7 +51,7 @@ namespace VizEngine
 
 	private:
 		std::string m_shaderPath;
-		unsigned int m_RendererID;
+		unsigned int m_program;
 		std::unordered_map<std::string, int> m_LocationCache;
 
 		// Shader parser with a return type of ShaderPrograms

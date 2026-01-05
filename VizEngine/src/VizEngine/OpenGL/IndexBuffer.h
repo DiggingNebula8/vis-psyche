@@ -26,11 +26,11 @@ namespace VizEngine
 		void Unbind() const;
 
 		// Getters
-		inline unsigned int GetID() const { return m_ID; }
+		inline unsigned int GetID() const { return m_ibo; }
 		inline unsigned int GetCount() const { return m_Count; }
 
 	private:
-		unsigned int m_ID;
+		unsigned int m_ibo;
 		unsigned int m_Count;
 	};
 }
