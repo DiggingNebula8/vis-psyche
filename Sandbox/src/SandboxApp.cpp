@@ -244,6 +244,7 @@ public:
 		// Pass 1: Render scene from light's perspective to shadow map
 		// =========================================================================
 		m_ShadowMapFramebuffer->Bind();
+		renderer.SetViewport(0, 0, m_ShadowMapFramebuffer->GetWidth(), m_ShadowMapFramebuffer->GetHeight());
 		renderer.ClearDepth();  // Clear depth buffer (no color attachment)
 
 		// Enable polygon offset to reduce shadow acne
@@ -270,6 +271,7 @@ public:
 		renderer.DisablePolygonOffset();
 
 		m_ShadowMapFramebuffer->Unbind();
+		renderer.SetViewport(0, 0, m_WindowWidth, m_WindowHeight);
 
 		// =========================================================================
 		// Pass 2: Render scene normally with shadows
@@ -305,6 +307,7 @@ public:
 		m_Camera.SetAspectRatio(1.0f);  // Framebuffer is square (800x800)
 		
 		m_Framebuffer->Bind();
+		renderer.SetViewport(0, 0, m_Framebuffer->GetWidth(), m_Framebuffer->GetHeight());
 		renderer.Clear(m_ClearColor);
 
 		// Set shadow uniforms for offscreen render too
