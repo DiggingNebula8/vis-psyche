@@ -163,4 +163,27 @@ namespace VizEngine
 	{
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
+
+	void Texture::SetFilter(unsigned int minFilter, unsigned int magFilter)
+	{
+		glBindTexture(GL_TEXTURE_2D, m_texture);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
+
+	void Texture::SetWrap(unsigned int sWrap, unsigned int tWrap)
+	{
+		glBindTexture(GL_TEXTURE_2D, m_texture);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, sWrap);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, tWrap);
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
+
+	void Texture::SetBorderColor(const float color[4])
+	{
+		glBindTexture(GL_TEXTURE_2D, m_texture);
+		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color);
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
 }

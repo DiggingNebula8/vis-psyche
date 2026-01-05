@@ -156,6 +156,11 @@ public:
 			GL_DEPTH_COMPONENT,     // Format
 			GL_FLOAT                // Data type
 		);
+		
+		// Configure shadow map texture for correct sampling
+		m_ShadowMapDepth->SetWrap(GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER);
+		float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+		m_ShadowMapDepth->SetBorderColor(borderColor);
 
 		// Create framebuffer and attach depth texture only (no color)
 		m_ShadowMapFramebuffer = std::make_shared<VizEngine::Framebuffer>(

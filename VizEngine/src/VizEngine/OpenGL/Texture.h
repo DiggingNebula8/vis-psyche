@@ -39,6 +39,11 @@ namespace VizEngine
 		void Bind(unsigned int slot = 0) const;
 		void Unbind() const;
 
+		// Configuration
+		void SetFilter(unsigned int minFilter, unsigned int magFilter);
+		void SetWrap(unsigned int sWrap, unsigned int tWrap);
+		void SetBorderColor(const float color[4]);
+
 		inline int GetWidth() const { return m_Width; }
 		inline int GetHeight() const { return m_Height; }
 		inline unsigned int GetID() const { return m_texture; }
