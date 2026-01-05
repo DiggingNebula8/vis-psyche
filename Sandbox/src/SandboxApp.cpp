@@ -590,10 +590,17 @@ private:
 		// Position light "behind" the scene (directional lights are infinitely far)
 		glm::vec3 lightPos = -lightDir * 15.0f;
 
+		// Handle degenerate up vector (when light direction is vertical)
+		glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+		if (glm::abs(glm::dot(lightDir, up)) > 0.999f)
+		{
+			up = glm::vec3(0.0f, 0.0f, 1.0f);
+		}
+
 		glm::mat4 lightView = glm::lookAt(
 			lightPos,                      // Light position (behind scene)
 			glm::vec3(0.0f, 0.0f, 0.0f),  // Look at origin (scene center)
-			glm::vec3(0.0f, 1.0f, 0.0f)   // Up vector
+			up                            // Up vector
 		);
 
 		// Step 2: Create orthographic projection
