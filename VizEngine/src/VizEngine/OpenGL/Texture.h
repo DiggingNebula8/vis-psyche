@@ -15,6 +15,16 @@ namespace VizEngine
 		
 		// Create from raw pixel data (for embedded textures in glTF)
 		Texture(const unsigned char* data, int width, int height, int channels = 4);
+	
+	/**
+	 * Create an empty texture for use as a framebuffer attachment.
+	 * @param width Texture width
+	 * @param height Texture height
+	 * @param internalFormat OpenGL internal format (e.g., GL_RGBA8, GL_DEPTH_COMPONENT24)
+	 * @param format OpenGL format (e.g., GL_RGBA, GL_DEPTH_COMPONENT)
+	 * @param dataType Data type (e.g., GL_UNSIGNED_BYTE, GL_FLOAT)
+	 */
+	Texture(int width, int height, unsigned int internalFormat, unsigned int format, unsigned int dataType);
 		
 		~Texture();
 

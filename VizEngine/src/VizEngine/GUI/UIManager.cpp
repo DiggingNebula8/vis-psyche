@@ -116,6 +116,13 @@ namespace VizEngine
 		return ImGui::Selectable(label, selected);
 	}
 
+	void UIManager::Image(void* textureID, float width, float height)
+	{
+		// OpenGL textures are bottom-left origin, but ImGui expects top-left.
+		// We flip the UV coordinates: ImVec2(0, 1) to ImVec2(1, 0).
+		ImGui::Image(textureID, ImVec2(width, height), ImVec2(0, 1), ImVec2(1, 0));
+	}
+
 	// =========================================================================
 	// Private Methods
 	// =========================================================================

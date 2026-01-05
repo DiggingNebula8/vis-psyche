@@ -16,6 +16,7 @@
 #include "VizEngine/OpenGL/Renderer.h"
 #include "VizEngine/OpenGL/Shader.h"
 #include "VizEngine/OpenGL/Texture.h"
+#include "VizEngine/OpenGL/Framebuffer.h"
 
 // Core types
 #include "VizEngine/Core/Camera.h"

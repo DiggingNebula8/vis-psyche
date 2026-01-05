@@ -59,6 +59,9 @@ namespace VizEngine
 		
 		// Selection
 		bool Selectable(const char* label, bool selected);
+	
+	// Images
+	void Image(void* textureID, float width, float height);
 
 	private:
 		void Init(GLFWwindow* window);

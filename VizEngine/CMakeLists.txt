@@ -23,6 +23,7 @@ set(VIZENGINE_SOURCES
     src/VizEngine/OpenGL/Renderer.cpp
     src/VizEngine/OpenGL/Shader.cpp
     src/VizEngine/OpenGL/Texture.cpp
+    src/VizEngine/OpenGL/Framebuffer.cpp
     src/VizEngine/OpenGL/VertexArray.cpp
     src/VizEngine/OpenGL/VertexBuffer.cpp
     
@@ -64,6 +65,7 @@ set(VIZENGINE_HEADERS
     src/VizEngine/OpenGL/Renderer.h
     src/VizEngine/OpenGL/Shader.h
     src/VizEngine/OpenGL/Texture.h
+    src/VizEngine/OpenGL/Framebuffer.h
     src/VizEngine/OpenGL/VertexArray.h
     src/VizEngine/OpenGL/VertexBuffer.h
     src/VizEngine/OpenGL/VertexBufferLayout.h

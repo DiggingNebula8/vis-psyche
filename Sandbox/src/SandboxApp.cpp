@@ -105,6 +105,43 @@ public:
 				m_Scene[i].TexturePtr = m_DefaultTexture;
 			}
 		}
+
+		// =========================================================================
+		// Create Framebuffer for offscreen rendering
+		// =========================================================================
+		int fbWidth = 800;
+		int fbHeight = 800;
+
+		// Create color attachment (RGBA8)
+		m_FramebufferColor = std::make_shared<VizEngine::Texture>(
+			fbWidth, fbHeight,
+			GL_RGBA8,           // Internal format
+			GL_RGBA,            // Format
+			GL_UNSIGNED_BYTE    // Data type
+		);
+
+		// Create depth attachment (Depth24)
+		m_FramebufferDepth = std::make_shared<VizEngine::Texture>(
+			fbWidth, fbHeight,
+			GL_DEPTH_COMPONENT24,   // Internal format
+			GL_DEPTH_COMPONENT,     // Format
+			GL_FLOAT                // Data type
+		);
+
+		// Create framebuffer and attach textures
+		m_Framebuffer = std::make_shared<VizEngine::Framebuffer>(fbWidth, fbHeight);
+		m_Framebuffer->AttachColorTexture(m_FramebufferColor, 0);
+		m_Framebuffer->AttachDepthTexture(m_FramebufferDepth);
+
+		// Verify framebuffer is complete
+		if (!m_Framebuffer->IsComplete())
+		{
+			VP_ERROR("Framebuffer is not complete!");
+		}
+		else
+		{
+			VP_INFO("Framebuffer created successfully: {}x{}", fbWidth, fbHeight);
+		}
 	}
 
 	void OnUpdate(float deltaTime) override
@@ -176,9 +213,23 @@ public:
 		m_LitShader->SetVec3("u_LightSpecular", m_Light.Specular);
 		m_LitShader->SetVec3("u_ViewPos", m_Camera.GetPosition());
 
-		// Clear and render
+		// =========================================================================
+		// Render to Framebuffer (offscreen)
+		// =========================================================================
+		m_Framebuffer->Bind();
 		renderer.Clear(m_ClearColor);
 		m_Scene.Render(renderer, *m_LitShader, m_Camera);
+		m_Framebuffer->Unbind();
+
+		// =========================================================================
+		// Render to Screen (default framebuffer)
+		// =========================================================================
+		// Restore viewport to window size (use tracked dimensions to avoid header dependency)
+		renderer.SetViewport(0, 0, m_WindowWidth, m_WindowHeight);
+
+		// Clear screen - the scene will be displayed via ImGui preview
+		float screenClearColor[4] = { 0.1f, 0.1f, 0.15f, 1.0f };
+		renderer.Clear(screenClearColor);
 	}
 
 	void OnImGuiRender() override
@@ -200,6 +251,34 @@ public:
 			uiManager.Text("Window: %d x %d", m_WindowWidth, m_WindowHeight);
 			uiManager.Separator();
 			uiManager.Text("Press F1 to toggle");
+
+			uiManager.EndWindow();
+		}
+
+		// =========================================================================
+		// Framebuffer Texture Preview
+		// =========================================================================
+		if (m_ShowFramebufferTexture)
+		{
+			uiManager.StartWindow("Offscreen Render");
+
+			// ImGui::Image takes texture ID, size
+			unsigned int texID = m_FramebufferColor->GetID();
+			float width = static_cast<float>(m_Framebuffer->GetWidth());
+			float height = static_cast<float>(m_Framebuffer->GetHeight());
+
+			// Display with fixed size (scale down if needed)
+			float displaySize = 320.0f;  // Preview size
+			float aspect = width / height;
+			uiManager.Image(
+				reinterpret_cast<void*>(static_cast<uintptr_t>(texID)),
+				displaySize,
+				displaySize / aspect
+			);
+
+			uiManager.Separator();
+			uiManager.Text("Framebuffer: %dx%d", m_Framebuffer->GetWidth(), m_Framebuffer->GetHeight());
+			uiManager.Checkbox("Show Preview", &m_ShowFramebufferTexture);
 
 			uiManager.EndWindow();
 		}
@@ -383,6 +462,12 @@ private:
 	std::shared_ptr<VizEngine::Texture> m_DuckTexture;
 	glm::vec4 m_DuckColor = glm::vec4(1.0f);
 	float m_DuckRoughness = 0.5f;
+
+	// Framebuffer for offscreen rendering
+	std::shared_ptr<VizEngine::Framebuffer> m_Framebuffer;
+	std::shared_ptr<VizEngine::Texture> m_FramebufferColor;
+	std::shared_ptr<VizEngine::Texture> m_FramebufferDepth;
+	bool m_ShowFramebufferTexture = true;
 
 	// Runtime state
 	float m_ClearColor[4] = { 0.1f, 0.1f, 0.15f, 1.0f };

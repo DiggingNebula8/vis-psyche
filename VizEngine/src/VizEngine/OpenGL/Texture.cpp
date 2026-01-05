@@ -80,6 +80,37 @@ namespace VizEngine
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
+	Texture::Texture(int width, int height, unsigned int internalFormat, unsigned int format, unsigned int dataType)
+		: m_RendererID(0), m_FilePath("framebuffer"), m_LocalBuffer(nullptr),
+		  m_Width(width), m_Height(height), m_BPP(4)
+	{
+		glGenTextures(1, &m_RendererID);
+		glBindTexture(GL_TEXTURE_2D, m_RendererID);
+
+		// Allocate texture storage (data = nullptr for empty texture)
+		glTexImage2D(
+			GL_TEXTURE_2D,
+			0,                    // mipmap level
+			internalFormat,       // e.g., GL_RGBA8 or GL_DEPTH_COMPONENT24
+			m_Width,
+			m_Height,
+			0,                    // border (must be 0)
+			format,               // e.g., GL_RGBA or GL_DEPTH_COMPONENT
+			dataType,             // e.g., GL_UNSIGNED_BYTE or GL_FLOAT
+			nullptr               // no pixel data (allocate empty)
+		);
+
+		// Set texture parameters suitable for framebuffer attachments
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+		VP_CORE_INFO("Empty texture created: ID={}, Size={}x{}", m_RendererID, m_Width, m_Height);
+	}
+
 	Texture::~Texture()
 	{
 		if (m_RendererID != 0)
