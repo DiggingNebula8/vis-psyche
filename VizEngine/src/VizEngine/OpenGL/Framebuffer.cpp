@@ -26,6 +26,54 @@ namespace VizEngine
 		}
 	}
 
+	Framebuffer::Framebuffer(Framebuffer&& other) noexcept
+		: m_fbo(other.m_fbo)
+		, m_Width(other.m_Width)
+		, m_Height(other.m_Height)
+	{
+		// Move texture attachments
+		for (int i = 0; i < 8; ++i)
+		{
+			m_ColorAttachments[i] = std::move(other.m_ColorAttachments[i]);
+		}
+		m_DepthAttachment = std::move(other.m_DepthAttachment);
+
+		// Nullify moved-from object
+		other.m_fbo = 0;
+		other.m_Width = 0;
+		other.m_Height = 0;
+	}
+
+	Framebuffer& Framebuffer::operator=(Framebuffer&& other) noexcept
+	{
+		if (this != &other)
+		{
+			// Delete current FBO
+			if (m_fbo != 0)
+			{
+				glDeleteFramebuffers(1, &m_fbo);
+			}
+
+			// Move data
+			m_fbo = other.m_fbo;
+			m_Width = other.m_Width;
+			m_Height = other.m_Height;
+
+			// Move texture attachments
+			for (int i = 0; i < 8; ++i)
+			{
+				m_ColorAttachments[i] = std::move(other.m_ColorAttachments[i]);
+			}
+			m_DepthAttachment = std::move(other.m_DepthAttachment);
+
+			// Nullify moved-from object
+			other.m_fbo = 0;
+			other.m_Width = 0;
+			other.m_Height = 0;
+		}
+		return *this;
+	}
+
 	void Framebuffer::Bind() const
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
@@ -109,8 +157,16 @@ namespace VizEngine
 
 	bool Framebuffer::IsComplete() const
 	{
-		Bind();
+		// Temporarily bind framebuffer to check status
+		// Save current binding to restore later (avoid side effects)
+		GLint previousFBO = 0;
+		glGetIntegerv(GL_FRAMEBUFFER_BINDING, &previousFBO);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+
+		// Restore previous binding
+		glBindFramebuffer(GL_FRAMEBUFFER, previousFBO);
 
 		if (status != GL_FRAMEBUFFER_COMPLETE)
 		{

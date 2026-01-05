@@ -441,6 +441,13 @@ public:
 					VP_INFO("Engine Stats: {}", m_ShowEngineStats ? "ON" : "OFF");
 					return true;  // Consumed
 				}
+				// F2 toggles Framebuffer Preview
+				if (event.GetKeyCode() == VizEngine::KeyCode::F2 && !event.IsRepeat())
+				{
+					m_ShowFramebufferTexture = !m_ShowFramebufferTexture;
+					VP_INFO("Framebuffer Preview: {}", m_ShowFramebufferTexture ? "ON" : "OFF");
+					return true;  // Consumed
+				}
 				return false;
 			}
 		);

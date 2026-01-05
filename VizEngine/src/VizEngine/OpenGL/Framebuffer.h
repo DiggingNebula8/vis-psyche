@@ -33,6 +33,10 @@ namespace VizEngine
 		Framebuffer(const Framebuffer&) = delete;
 		Framebuffer& operator=(const Framebuffer&) = delete;
 
+		// Movable
+		Framebuffer(Framebuffer&& other) noexcept;
+		Framebuffer& operator=(Framebuffer&& other) noexcept;
+
 		/**
 		 * Bind this framebuffer for rendering.
 		 * Subsequent draw calls will render to this framebuffer's attachments.
