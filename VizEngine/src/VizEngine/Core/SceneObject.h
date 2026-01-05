@@ -14,7 +14,7 @@ namespace VizEngine
 	 * 
 	 * Note: This is a simple, learning-focused approach. Production engines
 	 * typically use Entity Component Systems (ECS) for better flexibility
-	 * and performance. See Chapter 6 for discussion of limitations.
+	 * and performance. See Part XI (Chapters 37+) for ECS implementation.
 	 */
 	struct VizEngine_API SceneObject
 	{

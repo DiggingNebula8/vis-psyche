@@ -5,6 +5,8 @@
 #include "VizEngine/Events/KeyEvent.h"
 #include "VizEngine/Events/MouseEvent.h"
 
+#include <stdexcept>
+
 namespace VizEngine
 {
 	GLFWManager::GLFWManager(unsigned int width, unsigned int height, const std::string& title)
@@ -23,7 +25,7 @@ namespace VizEngine
 		if (!glfwInit())
 		{
 			VP_CORE_ERROR("Failed to initialize GLFW");
-			exit(EXIT_FAILURE);
+			throw std::runtime_error("Failed to initialize GLFW");
 		}
 		// Set window hints
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -39,7 +41,7 @@ namespace VizEngine
 		{
 			VP_CORE_ERROR("Failed to create GLFW window");
 			glfwTerminate();
-			exit(EXIT_FAILURE);
+			throw std::runtime_error("Failed to create GLFW window");
 		}
 
 		m_Width = static_cast<int>(width);
