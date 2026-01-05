@@ -35,6 +35,7 @@ namespace VizEngine
 
 		// Window helpers
 		void StartWindow(const std::string& windowName);
+		void StartFixedWindow(const std::string& windowName, float width, float height);
 		void EndWindow();
 
 		// =========================================================================

@@ -54,6 +54,12 @@ namespace VizEngine
 		ImGui::Begin(windowName.c_str());
 	}
 
+	void UIManager::StartFixedWindow(const std::string& windowName, float width, float height)
+	{
+		ImGui::SetNextWindowSize(ImVec2(width, height), ImGuiCond_FirstUseEver);
+		ImGui::Begin(windowName.c_str(), nullptr, ImGuiWindowFlags_NoResize);
+	}
+
 	void UIManager::EndWindow()
 	{
 		ImGui::End();

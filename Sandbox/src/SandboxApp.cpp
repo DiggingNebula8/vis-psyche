@@ -216,6 +216,10 @@ public:
 		// =========================================================================
 		// Render to Framebuffer (offscreen)
 		// =========================================================================
+		// Use 1:1 aspect ratio for the 800x800 framebuffer
+		float windowAspect = static_cast<float>(m_WindowWidth) / static_cast<float>(m_WindowHeight);
+		m_Camera.SetAspectRatio(1.0f);  // Framebuffer is square (800x800)
+		
 		m_Framebuffer->Bind();
 		renderer.Clear(m_ClearColor);
 		m_Scene.Render(renderer, *m_LitShader, m_Camera);
@@ -224,12 +228,15 @@ public:
 		// =========================================================================
 		// Render to Screen (default framebuffer)
 		// =========================================================================
+		// Restore camera to window aspect ratio
+		m_Camera.SetAspectRatio(windowAspect);
+		
 		// Restore viewport to window size (use tracked dimensions to avoid header dependency)
 		renderer.SetViewport(0, 0, m_WindowWidth, m_WindowHeight);
 
-		// Clear screen - the scene will be displayed via ImGui preview
-		float screenClearColor[4] = { 0.1f, 0.1f, 0.15f, 1.0f };
-		renderer.Clear(screenClearColor);
+		// Render scene to screen (same as framebuffer for demonstration)
+		renderer.Clear(m_ClearColor);
+		m_Scene.Render(renderer, *m_LitShader, m_Camera);
 	}
 
 	void OnImGuiRender() override
@@ -260,7 +267,7 @@ public:
 		// =========================================================================
 		if (m_ShowFramebufferTexture)
 		{
-			uiManager.StartWindow("Offscreen Render");
+			uiManager.StartFixedWindow("Offscreen Render", 360.0f, 420.0f);
 
 			// ImGui::Image takes texture ID, size
 			unsigned int texID = m_FramebufferColor->GetID();
