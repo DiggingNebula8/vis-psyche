@@ -15,5 +15,9 @@ namespace VizEngine
 		void ClearDepth();
 		void SetViewport(int x, int y, int width, int height);
 		void Draw(const VertexArray& va, const IndexBuffer& ib, const Shader& shader) const;
+
+		// Shadow mapping helpers
+		void EnablePolygonOffset(float factor, float units);
+		void DisablePolygonOffset();
 	};
 }

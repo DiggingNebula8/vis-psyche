@@ -95,6 +95,7 @@ public:
 		// Load Assets
 		// =========================================================================
 		m_LitShader = std::make_unique<VizEngine::Shader>("resources/shaders/lit.shader");
+		m_ShadowDepthShader = std::make_unique<VizEngine::Shader>("resources/shaders/shadow_depth.shader");
 		m_DefaultTexture = std::make_shared<VizEngine::Texture>("resources/textures/uvchecker.png");
 
 		// Assign default texture to basic objects (created before this point)
@@ -141,6 +142,35 @@ public:
 		else
 		{
 			VP_INFO("Framebuffer created successfully: {}x{}", fbWidth, fbHeight);
+		}
+
+		// =========================================================================
+		// Create Shadow Map Framebuffer (depth-only, for shadow rendering)
+		// =========================================================================
+		int shadowMapResolution = 2048;  // Higher = crisper shadows (1024, 2048, 4096)
+
+		// Create depth texture for shadow map
+		m_ShadowMapDepth = std::make_shared<VizEngine::Texture>(
+			shadowMapResolution, shadowMapResolution,
+			GL_DEPTH_COMPONENT24,   // Internal format (24-bit depth)
+			GL_DEPTH_COMPONENT,     // Format
+			GL_FLOAT                // Data type
+		);
+
+		// Create framebuffer and attach depth texture only (no color)
+		m_ShadowMapFramebuffer = std::make_shared<VizEngine::Framebuffer>(
+			shadowMapResolution, shadowMapResolution
+		);
+		m_ShadowMapFramebuffer->AttachDepthTexture(m_ShadowMapDepth);
+
+		// Verify shadow map framebuffer is complete
+		if (!m_ShadowMapFramebuffer->IsComplete())
+		{
+			VP_ERROR("Shadow map framebuffer is not complete!");
+		}
+		else
+		{
+			VP_INFO("Shadow map framebuffer created: {}x{}", shadowMapResolution, shadowMapResolution);
 		}
 	}
 
@@ -205,6 +235,51 @@ public:
 		auto& engine = VizEngine::Engine::Get();
 		auto& renderer = engine.GetRenderer();
 
+		// =========================================================================
+		// Compute Light-Space Matrix (once per frame)
+		// =========================================================================
+		m_LightSpaceMatrix = ComputeLightSpaceMatrix(m_Light);
+
+		// =========================================================================
+		// Pass 1: Render scene from light's perspective to shadow map
+		// =========================================================================
+		m_ShadowMapFramebuffer->Bind();
+		renderer.ClearDepth();  // Clear depth buffer (no color attachment)
+
+		// Enable polygon offset to reduce shadow acne
+		renderer.EnablePolygonOffset(2.0f, 4.0f);
+
+		// Use shadow depth shader
+		m_ShadowDepthShader->Bind();
+		m_ShadowDepthShader->SetMatrix4fv("u_LightSpaceMatrix", m_LightSpaceMatrix);
+
+		// Render scene geometry (only need depth, no lighting)
+		// We need to set u_Model for each object since Scene::Render uses u_MVP
+		for (auto& obj : m_Scene)
+		{
+			if (!obj.Active || !obj.MeshPtr) continue;
+
+			glm::mat4 model = obj.ObjectTransform.GetModelMatrix();
+			m_ShadowDepthShader->SetMatrix4fv("u_Model", model);
+
+			obj.MeshPtr->Bind();
+			renderer.Draw(obj.MeshPtr->GetVertexArray(), obj.MeshPtr->GetIndexBuffer(), *m_ShadowDepthShader);
+		}
+
+		// Disable polygon offset
+		renderer.DisablePolygonOffset();
+
+		m_ShadowMapFramebuffer->Unbind();
+
+		// =========================================================================
+		// Pass 2: Render scene normally with shadows
+		// =========================================================================
+		// Restore viewport to window size
+		renderer.SetViewport(0, 0, m_WindowWidth, m_WindowHeight);
+
+		// Clear screen
+		renderer.Clear(m_ClearColor);
+
 		// Set light uniforms
 		m_LitShader->Bind();
 		m_LitShader->SetVec3("u_LightDirection", m_Light.GetDirection());
@@ -213,30 +288,39 @@ public:
 		m_LitShader->SetVec3("u_LightSpecular", m_Light.Specular);
 		m_LitShader->SetVec3("u_ViewPos", m_Camera.GetPosition());
 
+		// Set shadow mapping uniforms
+		m_LitShader->SetMatrix4fv("u_LightSpaceMatrix", m_LightSpaceMatrix);
+
+		// Bind shadow map to texture slot 1
+		m_ShadowMapDepth->Bind(1);
+		m_LitShader->SetInt("u_ShadowMap", 1);
+
+		// Render scene with shadows
+		m_Scene.Render(renderer, *m_LitShader, m_Camera);
+
 		// =========================================================================
-		// Render to Framebuffer (offscreen)
+		// Render to Framebuffer (offscreen) - kept for F2 preview
 		// =========================================================================
-		// Use 1:1 aspect ratio for the 800x800 framebuffer
 		float windowAspect = static_cast<float>(m_WindowWidth) / static_cast<float>(m_WindowHeight);
 		m_Camera.SetAspectRatio(1.0f);  // Framebuffer is square (800x800)
 		
 		m_Framebuffer->Bind();
 		renderer.Clear(m_ClearColor);
+
+		// Set shadow uniforms for offscreen render too
+		m_LitShader->Bind();
+		m_LitShader->SetMatrix4fv("u_LightSpaceMatrix", m_LightSpaceMatrix);
+		m_ShadowMapDepth->Bind(1);
+		m_LitShader->SetInt("u_ShadowMap", 1);
+
 		m_Scene.Render(renderer, *m_LitShader, m_Camera);
 		m_Framebuffer->Unbind();
 
-		// =========================================================================
-		// Render to Screen (default framebuffer)
-		// =========================================================================
 		// Restore camera to window aspect ratio
 		m_Camera.SetAspectRatio(windowAspect);
 		
-		// Restore viewport to window size (use tracked dimensions to avoid header dependency)
+		// Restore viewport to window size
 		renderer.SetViewport(0, 0, m_WindowWidth, m_WindowHeight);
-
-		// Render scene to screen (same as framebuffer for demonstration)
-		renderer.Clear(m_ClearColor);
-		m_Scene.Render(renderer, *m_LitShader, m_Camera);
 	}
 
 	void OnImGuiRender() override
@@ -263,7 +347,7 @@ public:
 		}
 
 		// =========================================================================
-		// Framebuffer Texture Preview
+		// Framebuffer Texture Preview (toggle with F2)
 		// =========================================================================
 		if (m_ShowFramebufferTexture)
 		{
@@ -286,6 +370,32 @@ public:
 			uiManager.Separator();
 			uiManager.Text("Framebuffer: %dx%d", m_Framebuffer->GetWidth(), m_Framebuffer->GetHeight());
 			uiManager.Checkbox("Show Preview", &m_ShowFramebufferTexture);
+
+			uiManager.EndWindow();
+		}
+
+		// =========================================================================
+		// Shadow Map Preview (toggle with F3)
+		// =========================================================================
+		if (m_ShowShadowMap)
+		{
+			uiManager.StartFixedWindow("Shadow Map Debug", 360.0f, 420.0f);
+
+			unsigned int shadowTexID = m_ShadowMapDepth->GetID();
+			float displaySize = 320.0f;
+
+			uiManager.Image(
+				reinterpret_cast<void*>(static_cast<uintptr_t>(shadowTexID)),
+				displaySize,
+				displaySize
+			);
+
+			uiManager.Separator();
+			uiManager.Text("Shadow Map: %dx%d",
+				m_ShadowMapFramebuffer->GetWidth(),
+				m_ShadowMapFramebuffer->GetHeight()
+			);
+			uiManager.Checkbox("Show Shadow Map", &m_ShowShadowMap);
 
 			uiManager.EndWindow();
 		}
@@ -448,6 +558,13 @@ public:
 					VP_INFO("Framebuffer Preview: {}", m_ShowFramebufferTexture ? "ON" : "OFF");
 					return true;  // Consumed
 				}
+				// F3 toggles Shadow Map Preview
+				if (event.GetKeyCode() == VizEngine::KeyCode::F3 && !event.IsRepeat())
+				{
+					m_ShowShadowMap = !m_ShowShadowMap;
+					VP_INFO("Shadow Map Preview: {}", m_ShowShadowMap ? "ON" : "OFF");
+					return true;  // Consumed
+				}
 				return false;
 			}
 		);
@@ -459,6 +576,37 @@ public:
 	}
 
 private:
+	// =========================================================================
+	// Helper: Compute Light-Space Matrix for Shadow Mapping
+	// =========================================================================
+	glm::mat4 ComputeLightSpaceMatrix(const VizEngine::DirectionalLight& light)
+	{
+		// Step 1: Create view matrix looking from light toward scene
+		glm::vec3 lightDir = light.GetDirection();  // Normalized direction
+
+		// Position light "behind" the scene (directional lights are infinitely far)
+		glm::vec3 lightPos = -lightDir * 15.0f;
+
+		glm::mat4 lightView = glm::lookAt(
+			lightPos,                      // Light position (behind scene)
+			glm::vec3(0.0f, 0.0f, 0.0f),  // Look at origin (scene center)
+			glm::vec3(0.0f, 1.0f, 0.0f)   // Up vector
+		);
+
+		// Step 2: Create orthographic projection
+		// Coverage determines how much of the scene gets shadows
+		float orthoSize = 15.0f;  // Adjust based on scene size
+
+		glm::mat4 lightProjection = glm::ortho(
+			-orthoSize, orthoSize,   // Left, right
+			-orthoSize, orthoSize,   // Bottom, top
+			0.1f, 30.0f              // Near, far planes
+		);
+
+		// Step 3: Combine into light-space matrix
+		return lightProjection * lightView;
+	}
+
 	// Scene
 	VizEngine::Scene m_Scene;
 	VizEngine::Camera m_Camera;
@@ -466,6 +614,7 @@ private:
 
 	// Assets
 	std::unique_ptr<VizEngine::Shader> m_LitShader;
+	std::unique_ptr<VizEngine::Shader> m_ShadowDepthShader;
 	std::shared_ptr<VizEngine::Texture> m_DefaultTexture;
 	std::shared_ptr<VizEngine::Mesh> m_PyramidMesh;
 	std::shared_ptr<VizEngine::Mesh> m_CubeMesh;
@@ -482,6 +631,12 @@ private:
 	std::shared_ptr<VizEngine::Texture> m_FramebufferColor;
 	std::shared_ptr<VizEngine::Texture> m_FramebufferDepth;
 	bool m_ShowFramebufferTexture = true;
+
+	// Shadow mapping
+	std::shared_ptr<VizEngine::Framebuffer> m_ShadowMapFramebuffer;
+	std::shared_ptr<VizEngine::Texture> m_ShadowMapDepth;
+	glm::mat4 m_LightSpaceMatrix;
+	bool m_ShowShadowMap = false;
 
 	// Runtime state
 	float m_ClearColor[4] = { 0.1f, 0.1f, 0.15f, 1.0f };

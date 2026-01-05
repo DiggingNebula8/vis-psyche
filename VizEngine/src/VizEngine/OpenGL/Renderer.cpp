@@ -26,4 +26,15 @@ namespace VizEngine
 
 		glDrawElements(GL_TRIANGLES, ib.GetCount(), GL_UNSIGNED_INT, nullptr);
 	}
+
+	void Renderer::EnablePolygonOffset(float factor, float units)
+	{
+		glEnable(GL_POLYGON_OFFSET_FILL);
+		glPolygonOffset(factor, units);
+	}
+
+	void Renderer::DisablePolygonOffset()
+	{
+		glDisable(GL_POLYGON_OFFSET_FILL);
+	}
 }
