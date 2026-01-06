@@ -25,6 +25,7 @@ namespace VizEngine
 		if (!m_Cubemap->IsCubemap())
 		{
 			VP_CORE_ERROR("Skybox: Texture is not a cubemap!");
+			throw std::runtime_error("Skybox: Cannot create skybox from non-cubemap texture");
 		}
 
 		// Load skybox shader

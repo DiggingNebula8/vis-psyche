@@ -118,9 +118,6 @@ namespace VizEngine
 		// stb_image loads with bottom-left origin, OpenGL expects bottom-left
 		stbi_set_flip_vertically_on_load(1);
 
-		glGenTextures(1, &m_texture);
-		glBindTexture(GL_TEXTURE_2D, m_texture);
-
 		if (m_IsHDR)
 		{
 			// Load HDR image (floating-point data)
@@ -128,6 +125,9 @@ namespace VizEngine
 
 			if (hdrData)
 			{
+				glGenTextures(1, &m_texture);
+				glBindTexture(GL_TEXTURE_2D, m_texture);
+
 				// Upload as 16-bit float texture (GL_RGB16F)
 				glTexImage2D(
 					GL_TEXTURE_2D,
@@ -163,6 +163,9 @@ namespace VizEngine
 
 			if (data)
 			{
+				glGenTextures(1, &m_texture);
+				glBindTexture(GL_TEXTURE_2D, m_texture);
+
 				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_Width, m_Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

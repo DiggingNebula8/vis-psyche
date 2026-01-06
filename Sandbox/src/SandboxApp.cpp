@@ -137,7 +137,9 @@ public:
 		// Verify framebuffer is complete
 		if (!m_Framebuffer->IsComplete())
 		{
-			VP_ERROR("Framebuffer is not complete!");
+			VP_ERROR("Framebuffer is not complete! Disabling offscreen render.");
+			m_Framebuffer.reset();
+			m_ShowFramebufferTexture = false;
 		}
 		else
 		{
@@ -171,7 +173,11 @@ public:
 		// Verify shadow map framebuffer is complete
 		if (!m_ShadowMapFramebuffer->IsComplete())
 		{
-			VP_ERROR("Shadow map framebuffer is not complete!");
+			VP_ERROR("Shadow map framebuffer is not complete! Disabling shadows.");
+			m_ShadowMapFramebuffer.reset();
+			// Also reset depth texture to avoid binding invalid texture
+			m_ShadowMapDepth.reset();
+			m_ShowShadowMap = false;
 		}
 		else
 		{
@@ -275,34 +281,37 @@ public:
 		// =========================================================================
 		// Pass 1: Render scene from light's perspective to shadow map
 		// =========================================================================
-		m_ShadowMapFramebuffer->Bind();
-		renderer.SetViewport(0, 0, m_ShadowMapFramebuffer->GetWidth(), m_ShadowMapFramebuffer->GetHeight());
-		renderer.ClearDepth();  // Clear depth buffer (no color attachment)
-
-		// Enable polygon offset to reduce shadow acne
-		renderer.EnablePolygonOffset(2.0f, 4.0f);
-
-		// Use shadow depth shader
-		m_ShadowDepthShader->Bind();
-		m_ShadowDepthShader->SetMatrix4fv("u_LightSpaceMatrix", m_LightSpaceMatrix);
-
-		// Render scene geometry (only need depth, no lighting)
-		// We need to set u_Model for each object since Scene::Render uses u_MVP
-		for (auto& obj : m_Scene)
+		if (m_ShadowMapFramebuffer && m_ShadowDepthShader)
 		{
-			if (!obj.Active || !obj.MeshPtr) continue;
+			m_ShadowMapFramebuffer->Bind();
+			renderer.SetViewport(0, 0, m_ShadowMapFramebuffer->GetWidth(), m_ShadowMapFramebuffer->GetHeight());
+			renderer.ClearDepth();  // Clear depth buffer (no color attachment)
 
-			glm::mat4 model = obj.ObjectTransform.GetModelMatrix();
-			m_ShadowDepthShader->SetMatrix4fv("u_Model", model);
+			// Enable polygon offset to reduce shadow acne
+			renderer.EnablePolygonOffset(2.0f, 4.0f);
 
-			obj.MeshPtr->Bind();
-			renderer.Draw(obj.MeshPtr->GetVertexArray(), obj.MeshPtr->GetIndexBuffer(), *m_ShadowDepthShader);
+			// Use shadow depth shader
+			m_ShadowDepthShader->Bind();
+			m_ShadowDepthShader->SetMatrix4fv("u_LightSpaceMatrix", m_LightSpaceMatrix);
+
+			// Render scene geometry (only need depth, no lighting)
+			// We need to set u_Model for each object since Scene::Render uses u_MVP
+			for (auto& obj : m_Scene)
+			{
+				if (!obj.Active || !obj.MeshPtr) continue;
+
+				glm::mat4 model = obj.ObjectTransform.GetModelMatrix();
+				m_ShadowDepthShader->SetMatrix4fv("u_Model", model);
+
+				obj.MeshPtr->Bind();
+				renderer.Draw(obj.MeshPtr->GetVertexArray(), obj.MeshPtr->GetIndexBuffer(), *m_ShadowDepthShader);
+			}
+
+			// Disable polygon offset
+			renderer.DisablePolygonOffset();
+
+			m_ShadowMapFramebuffer->Unbind();
 		}
-
-		// Disable polygon offset
-		renderer.DisablePolygonOffset();
-
-		m_ShadowMapFramebuffer->Unbind();
 		renderer.SetViewport(0, 0, m_WindowWidth, m_WindowHeight);
 
 		// =========================================================================
@@ -335,39 +344,45 @@ public:
 		// =========================================================================
 		// Render to Framebuffer (offscreen) - kept for F2 preview
 		// =========================================================================
-		float windowAspect = static_cast<float>(m_WindowWidth) / static_cast<float>(m_WindowHeight);
-		m_Camera.SetAspectRatio(1.0f);  // Framebuffer is square (800x800)
-		
-		m_Framebuffer->Bind();
-		renderer.SetViewport(0, 0, m_Framebuffer->GetWidth(), m_Framebuffer->GetHeight());
-		renderer.Clear(m_ClearColor);
-
-		// Set shadow uniforms for offscreen render too
-		m_LitShader->Bind();
-		m_LitShader->SetMatrix4fv("u_LightSpaceMatrix", m_LightSpaceMatrix);
-		m_ShadowMapDepth->Bind(1);
-		m_LitShader->SetInt("u_ShadowMap", 1);
-
-		m_Scene.Render(renderer, *m_LitShader, m_Camera);
-	
-		// Render Skybox to offscreen framebuffer
-		if (m_ShowSkybox && m_Skybox)
+		if (m_Framebuffer)
 		{
-			m_Skybox->Render(m_Camera);
-		}
-	
-		m_Framebuffer->Unbind();
+			float windowAspect = static_cast<float>(m_WindowWidth) / static_cast<float>(m_WindowHeight);
+			m_Camera.SetAspectRatio(1.0f);  // Framebuffer is square (800x800)
+			
+			m_Framebuffer->Bind();
+			renderer.SetViewport(0, 0, m_Framebuffer->GetWidth(), m_Framebuffer->GetHeight());
+			renderer.Clear(m_ClearColor);
 
-		// Restore camera to window aspect ratio
-		m_Camera.SetAspectRatio(windowAspect);
+			// Set shadow uniforms for offscreen render too
+			m_LitShader->Bind();
+			m_LitShader->SetMatrix4fv("u_LightSpaceMatrix", m_LightSpaceMatrix);
+			if (m_ShadowMapDepth)
+			{
+				m_ShadowMapDepth->Bind(1);
+				m_LitShader->SetInt("u_ShadowMap", 1);
+			}
+
+			m_Scene.Render(renderer, *m_LitShader, m_Camera);
 		
-		// Restore viewport to window size
-		renderer.SetViewport(0, 0, m_WindowWidth, m_WindowHeight);
+			// Render Skybox to offscreen framebuffer
+			if (m_ShowSkybox && m_Skybox)
+			{
+				m_Skybox->Render(m_Camera);
+			}
+		
+			m_Framebuffer->Unbind();
+
+			// Restore camera to window aspect ratio
+			m_Camera.SetAspectRatio(windowAspect);
+			
+			// Restore viewport to window size
+			renderer.SetViewport(0, 0, m_WindowWidth, m_WindowHeight);
+		}
 
 		// =========================================================================
 		// Render Skybox to screen as well
 		// =========================================================================
-		if (m_ShowSkybox)
+		if (m_ShowSkybox && m_Skybox)
 		{
 			m_Skybox->Render(m_Camera);
 		}

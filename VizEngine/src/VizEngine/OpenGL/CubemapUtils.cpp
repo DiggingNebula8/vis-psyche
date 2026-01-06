@@ -25,6 +25,12 @@ namespace VizEngine
 			return nullptr;
 		}
 
+		if (!equirectangularMap)
+		{
+			VP_CORE_ERROR("Cubemap conversion: Null equirectangularMap passed to EquirectangularToCubemap");
+			return nullptr;
+		}
+
 		VP_CORE_INFO("Converting equirectangular map to cubemap ({}x{} per face)...", resolution, resolution);
 
 		// Create empty cubemap texture
