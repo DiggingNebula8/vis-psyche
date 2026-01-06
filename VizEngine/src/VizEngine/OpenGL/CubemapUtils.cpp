@@ -120,6 +120,10 @@ namespace VizEngine
 		equirectangularMap->Bind(0);
 		shader->SetInt("u_EquirectangularMap", 0);
 
+		// Save current viewport
+		GLint prevViewport[4];
+		glGetIntegerv(GL_VIEWPORT, prevViewport);
+
 		glViewport(0, 0, resolution, resolution);
 		framebuffer->Bind();
 
@@ -153,6 +157,9 @@ namespace VizEngine
 		}
 
 		framebuffer->Unbind();
+
+		// Restore previous viewport
+		glViewport(prevViewport[0], prevViewport[1], prevViewport[2], prevViewport[3]);
 
 		// Generate mipmaps for the cubemap (improves quality and required for IBL)
 		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap->GetID());

@@ -16,6 +16,12 @@ namespace VizEngine
 	Skybox::Skybox(std::shared_ptr<Texture> cubemap)
 		: m_Cubemap(cubemap)
 	{
+		if (!m_Cubemap)
+		{
+			VP_CORE_ERROR("Skybox: Cubemap texture is null!");
+			throw std::runtime_error("Skybox: Cannot create skybox with null cubemap");
+		}
+
 		if (!m_Cubemap->IsCubemap())
 		{
 			VP_CORE_ERROR("Skybox: Texture is not a cubemap!");

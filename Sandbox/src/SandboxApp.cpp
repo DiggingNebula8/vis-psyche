@@ -351,7 +351,7 @@ public:
 		m_Scene.Render(renderer, *m_LitShader, m_Camera);
 	
 		// Render Skybox to offscreen framebuffer
-		if (m_ShowSkybox)
+		if (m_ShowSkybox && m_Skybox)
 		{
 			m_Skybox->Render(m_Camera);
 		}
@@ -403,22 +403,30 @@ public:
 		{
 			uiManager.StartFixedWindow("Offscreen Render", 360.0f, 420.0f);
 
-			// ImGui::Image takes texture ID, size
-			unsigned int texID = m_FramebufferColor->GetID();
-			float width = static_cast<float>(m_Framebuffer->GetWidth());
-			float height = static_cast<float>(m_Framebuffer->GetHeight());
+			if (m_FramebufferColor && m_Framebuffer)
+			{
+				// ImGui::Image takes texture ID, size
+				unsigned int texID = m_FramebufferColor->GetID();
+				float width = static_cast<float>(m_Framebuffer->GetWidth());
+				float height = static_cast<float>(m_Framebuffer->GetHeight());
 
-			// Display with fixed size (scale down if needed)
-			float displaySize = 320.0f;  // Preview size
-			float aspect = width / height;
-			uiManager.Image(
-				reinterpret_cast<void*>(static_cast<uintptr_t>(texID)),
-				displaySize,
-				displaySize / aspect
-			);
+				// Display with fixed size (scale down if needed)
+				float displaySize = 320.0f;  // Preview size
+				float aspect = width / height;
+				uiManager.Image(
+					reinterpret_cast<void*>(static_cast<uintptr_t>(texID)),
+					displaySize,
+					displaySize / aspect
+				);
 
-			uiManager.Separator();
-			uiManager.Text("Framebuffer: %dx%d", m_Framebuffer->GetWidth(), m_Framebuffer->GetHeight());
+				uiManager.Separator();
+				uiManager.Text("Framebuffer: %dx%d", m_Framebuffer->GetWidth(), m_Framebuffer->GetHeight());
+			}
+			else
+			{
+				uiManager.Text("Framebuffer not available");
+			}
+			
 			uiManager.Checkbox("Show Preview", &m_ShowFramebufferTexture);
 
 			uiManager.EndWindow();
@@ -431,20 +439,28 @@ public:
 		{
 			uiManager.StartFixedWindow("Shadow Map Debug", 360.0f, 420.0f);
 
-			unsigned int shadowTexID = m_ShadowMapDepth->GetID();
-			float displaySize = 320.0f;
+			if (m_ShadowMapDepth && m_ShadowMapFramebuffer)
+			{
+				unsigned int shadowTexID = m_ShadowMapDepth->GetID();
+				float displaySize = 320.0f;
 
-			uiManager.Image(
-				reinterpret_cast<void*>(static_cast<uintptr_t>(shadowTexID)),
-				displaySize,
-				displaySize
-			);
+				uiManager.Image(
+					reinterpret_cast<void*>(static_cast<uintptr_t>(shadowTexID)),
+					displaySize,
+					displaySize
+				);
 
-			uiManager.Separator();
-			uiManager.Text("Shadow Map: %dx%d",
-				m_ShadowMapFramebuffer->GetWidth(),
-				m_ShadowMapFramebuffer->GetHeight()
-			);
+				uiManager.Separator();
+				uiManager.Text("Shadow Map: %dx%d",
+					m_ShadowMapFramebuffer->GetWidth(),
+					m_ShadowMapFramebuffer->GetHeight()
+				);
+			}
+			else
+			{
+				uiManager.Text("Shadow map not available");
+			}
+
 			uiManager.Checkbox("Show Shadow Map", &m_ShowShadowMap);
 
 			uiManager.EndWindow();
@@ -576,8 +592,18 @@ public:
 		// =========================================================================
 		uiManager.StartWindow("Skybox");
 		uiManager.Checkbox("Show Skybox", &m_ShowSkybox);
-		uiManager.Text("HDRI: %dx%d", m_EnvironmentHDRI->GetWidth(), m_EnvironmentHDRI->GetHeight());
-		uiManager.Text("Cubemap: %dx%d per face", m_SkyboxCubemap->GetWidth(), m_SkyboxCubemap->GetHeight());
+		
+		if (m_SkyboxCubemap)
+		{
+			uiManager.Text("Cubemap: %dx%d per face", 
+				m_SkyboxCubemap->GetWidth(), 
+				m_SkyboxCubemap->GetHeight());
+		}
+		else
+		{
+			uiManager.Text("Cubemap: Not loaded");
+		}
+
 		uiManager.EndWindow();
 	}
 

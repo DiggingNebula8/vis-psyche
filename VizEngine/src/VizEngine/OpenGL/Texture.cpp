@@ -293,24 +293,27 @@ namespace VizEngine
 
 	void Texture::SetFilter(unsigned int minFilter, unsigned int magFilter)
 	{
-		glBindTexture(GL_TEXTURE_2D, m_texture);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
-		glBindTexture(GL_TEXTURE_2D, 0);
+		GLenum target = m_IsCubemap ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
+		glBindTexture(target, m_texture);
+		glTexParameteri(target, GL_TEXTURE_MIN_FILTER, minFilter);
+		glTexParameteri(target, GL_TEXTURE_MAG_FILTER, magFilter);
+		glBindTexture(target, 0);
 	}
 
 	void Texture::SetWrap(unsigned int sWrap, unsigned int tWrap)
 	{
-		glBindTexture(GL_TEXTURE_2D, m_texture);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, sWrap);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, tWrap);
-		glBindTexture(GL_TEXTURE_2D, 0);
+		GLenum target = m_IsCubemap ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
+		glBindTexture(target, m_texture);
+		glTexParameteri(target, GL_TEXTURE_WRAP_S, sWrap);
+		glTexParameteri(target, GL_TEXTURE_WRAP_T, tWrap);
+		glBindTexture(target, 0);
 	}
 
 	void Texture::SetBorderColor(const float color[4])
 	{
-		glBindTexture(GL_TEXTURE_2D, m_texture);
-		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color);
-		glBindTexture(GL_TEXTURE_2D, 0);
+		GLenum target = m_IsCubemap ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
+		glBindTexture(target, m_texture);
+		glTexParameterfv(target, GL_TEXTURE_BORDER_COLOR, color);
+		glBindTexture(target, 0);
 	}
 }
