@@ -177,6 +177,29 @@ public:
 		{
 			VP_INFO("Shadow map framebuffer created: {}x{}", shadowMapResolution, shadowMapResolution);
 		}
+
+		// =========================================================================
+		// Create Skybox from HDRI
+		// =========================================================================
+		VP_INFO("Loading environment HDRI...");
+
+		// Load HDR equirectangular map
+		m_EnvironmentHDRI = std::make_shared<VizEngine::Texture>(
+			"resources/textures/environments/qwantani_dusk_2_puresky_2k.hdr", 
+			true  // isHDR
+		);
+
+		// Convert to cubemap (one-time operation)
+		int cubemapResolution = 512;  // 512x512 per face
+		m_SkyboxCubemap = VizEngine::CubemapUtils::EquirectangularToCubemap(
+			m_EnvironmentHDRI, 
+			cubemapResolution
+		);
+
+		// Create skybox
+		m_Skybox = std::make_unique<VizEngine::Skybox>(m_SkyboxCubemap);
+
+		VP_INFO("Skybox ready!");
 	}
 
 	void OnUpdate(float deltaTime) override
@@ -329,6 +352,14 @@ public:
 		
 		// Restore viewport to window size
 		renderer.SetViewport(0, 0, m_WindowWidth, m_WindowHeight);
+
+		// =========================================================================
+		// Render Skybox (last, after all geometry)
+		// =========================================================================
+		if (m_ShowSkybox)
+		{
+			m_Skybox->Render(m_Camera);
+		}
 	}
 
 	void OnImGuiRender() override
@@ -528,6 +559,15 @@ public:
 		}
 
 		uiManager.EndWindow();
+
+		// =========================================================================
+		// Skybox Controls
+		// =========================================================================
+		uiManager.StartWindow("Skybox");
+		uiManager.Checkbox("Show Skybox", &m_ShowSkybox);
+		uiManager.Text("HDRI: %dx%d", m_EnvironmentHDRI->GetWidth(), m_EnvironmentHDRI->GetHeight());
+		uiManager.Text("Cubemap: %dx%d per face", m_SkyboxCubemap->GetWidth(), m_SkyboxCubemap->GetHeight());
+		uiManager.EndWindow();
 	}
 
 	void OnEvent(VizEngine::Event& e) override
@@ -571,6 +611,13 @@ public:
 				{
 					m_ShowShadowMap = !m_ShowShadowMap;
 					VP_INFO("Shadow Map Preview: {}", m_ShowShadowMap ? "ON" : "OFF");
+					return true;  // Consumed
+				}
+				// F4 toggles Skybox
+				if (event.GetKeyCode() == VizEngine::KeyCode::F4 && !event.IsRepeat())
+				{
+					m_ShowSkybox = !m_ShowSkybox;
+					VP_INFO("Skybox: {}", m_ShowSkybox ? "ON" : "OFF");
 					return true;  // Consumed
 				}
 				return false;
@@ -671,6 +718,12 @@ private:
 	float m_CurrentFPS = 0.0f;
 	int m_WindowWidth = 800;
 	int m_WindowHeight = 800;
+
+	// Skybox
+	std::shared_ptr<VizEngine::Texture> m_EnvironmentHDRI;
+	std::shared_ptr<VizEngine::Texture> m_SkyboxCubemap;
+	std::unique_ptr<VizEngine::Skybox> m_Skybox;
+	bool m_ShowSkybox = true;
 };
 
 std::unique_ptr<VizEngine::Application> VizEngine::CreateApplication(VizEngine::EngineConfig& config)
