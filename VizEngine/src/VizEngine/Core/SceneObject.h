@@ -22,7 +22,8 @@ namespace VizEngine
 		std::shared_ptr<Texture> TexturePtr;        // Optional per-object texture (nullptr = use default)
 		Transform ObjectTransform;                   // Position, rotation, scale (unique per object)
 		glm::vec4 Color = glm::vec4(1.0f);          // Per-object tint color
-		float Roughness = 0.5f;                      // Material roughness (0 = shiny, 1 = matte)
+		float Roughness = 0.5f;                      // Material roughness (0 = smooth, 1 = rough)
+		float Metallic = 0.0f;                       // Material metalness (0 = dielectric, 1 = metal)
 		bool Active = true;                          // Enable/disable rendering
 		std::string Name = "Object";                 // Display name for UI
 

@@ -12,6 +12,7 @@ set(VIZENGINE_SOURCES
     src/VizEngine/Core/Mesh.cpp
     src/VizEngine/Core/Scene.cpp
     src/VizEngine/Core/Model.cpp
+    src/VizEngine/Core/Material.cpp
     src/VizEngine/Core/TinyGLTF.cpp
     src/VizEngine/Core/Input.cpp
     
