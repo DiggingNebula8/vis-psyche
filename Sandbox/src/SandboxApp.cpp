@@ -196,6 +196,10 @@ public:
 			cubemapResolution
 		);
 
+		// Release original HDRI to free memory (~6MB for 2K texture)
+		// The cubemap now contains all the data we need
+		m_EnvironmentHDRI.reset();
+
 		// Create skybox
 		m_Skybox = std::make_unique<VizEngine::Skybox>(m_SkyboxCubemap);
 
