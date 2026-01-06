@@ -374,14 +374,10 @@ void main()
     vec3 color = ambient + Lo;
     
     // ========================================================================
-    // Tone Mapping and Gamma Correction
+    // Output HDR Color (Chapter 35: Tone mapping moved to separate pass)
     // ========================================================================
-    
-    // Reinhard tone mapping (simple, will be improved in Chapter 35)
-    color = color / (color + vec3(1.0));
-    
-    // Gamma correction (linear -> sRGB)
-    color = pow(color, vec3(1.0 / 2.2));
-    
+
+    // Output raw linear HDR values (no tone mapping, no gamma correction)
+    // These will be processed by the tone mapping shader
     FragColor = vec4(color, 1.0);
 }

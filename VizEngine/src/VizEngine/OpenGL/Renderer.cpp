@@ -37,4 +37,14 @@ namespace VizEngine
 	{
 		glDisable(GL_POLYGON_OFFSET_FILL);
 	}
+
+	void Renderer::EnableDepthTest()
+	{
+		glEnable(GL_DEPTH_TEST);
+	}
+
+	void Renderer::DisableDepthTest()
+	{
+		glDisable(GL_DEPTH_TEST);
+	}
 }

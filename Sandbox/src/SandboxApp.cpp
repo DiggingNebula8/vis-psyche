@@ -250,6 +250,55 @@ public:
 		m_DefaultLitShader = std::make_unique<VizEngine::Shader>("resources/shaders/defaultlit.shader");
 		m_SphereMesh = std::shared_ptr<VizEngine::Mesh>(VizEngine::Mesh::CreateSphere(1.0f, 32).release());
 		VP_INFO("PBR rendering initialized");
+
+		// =========================================================================
+		// HDR Pipeline Setup (Chapter 35)
+		// =========================================================================
+		VP_INFO("Setting up HDR pipeline...");
+
+		// Create HDR color texture (RGB16F)
+		m_HDRColorTexture = std::make_shared<VizEngine::Texture>(
+			m_WindowWidth, m_WindowHeight,
+			GL_RGB16F,           // Internal format (HDR)
+			GL_RGB,              // Format
+			GL_FLOAT             // Data type
+		);
+
+		// Create depth texture
+		m_HDRDepthTexture = std::make_shared<VizEngine::Texture>(
+			m_WindowWidth, m_WindowHeight,
+			GL_DEPTH_COMPONENT24,
+			GL_DEPTH_COMPONENT,
+			GL_FLOAT
+		);
+
+		// Create HDR framebuffer and attach textures
+		m_HDRFramebuffer = std::make_shared<VizEngine::Framebuffer>(m_WindowWidth, m_WindowHeight);
+		m_HDRFramebuffer->AttachColorTexture(m_HDRColorTexture, 0);
+		m_HDRFramebuffer->AttachDepthTexture(m_HDRDepthTexture);
+
+		// Verify framebuffer is complete
+		if (!m_HDRFramebuffer->IsComplete())
+		{
+			VP_ERROR("HDR Framebuffer is not complete!");
+		}
+		else
+		{
+			VP_INFO("HDR Framebuffer created successfully: {}x{} (RGB16F)", 
+			        m_WindowWidth, m_WindowHeight);
+		}
+
+		// Load tone mapping shader
+		m_ToneMappingShader = std::make_shared<VizEngine::Shader>("resources/shaders/tonemapping.shader");
+		if (!m_ToneMappingShader->IsValid())
+		{
+			VP_ERROR("Failed to load tone mapping shader!");
+		}
+
+		// Create fullscreen quad
+		m_FullscreenQuad = std::make_shared<VizEngine::FullscreenQuad>();
+
+		VP_INFO("HDR pipeline initialized successfully");
 	}
 
 	void OnUpdate(float deltaTime) override
@@ -355,10 +404,9 @@ public:
 		renderer.SetViewport(0, 0, m_WindowWidth, m_WindowHeight);
 
 		// =========================================================================
-		// Pass 2: Render scene with PBR (Chapter 33)
+		// Pass 2: Render scene with PBR to HDR Framebuffer (Chapter 35)
 		// =========================================================================
-
-		// Clear screen
+		m_HDRFramebuffer->Bind();
 		renderer.Clear(m_ClearColor);
 
 		m_DefaultLitShader->Bind();
@@ -413,7 +461,45 @@ public:
 		RenderSceneObjects();
 
 		// =========================================================================
-		// Render to Framebuffer (offscreen) - kept for F2 preview
+		// Render Skybox to HDR Buffer
+		// =========================================================================
+		if (m_ShowSkybox && m_Skybox)
+		{
+			m_Skybox->Render(m_Camera);
+		}
+
+		m_HDRFramebuffer->Unbind();
+
+		// =========================================================================
+		// Pass 3: Tone Mapping to Screen (Chapter 35)
+		// =========================================================================
+		renderer.SetViewport(0, 0, m_WindowWidth, m_WindowHeight);
+		renderer.Clear(m_ClearColor);
+
+		// Disable depth test for fullscreen quad
+		renderer.DisableDepthTest();
+
+		// Bind tone mapping shader
+		m_ToneMappingShader->Bind();
+
+		// Bind HDR texture
+		m_HDRColorTexture->Bind(0);
+		m_ToneMappingShader->SetInt("u_HDRBuffer", 0);
+
+		// Set tone mapping parameters
+		m_ToneMappingShader->SetInt("u_ToneMappingMode", m_ToneMappingMode);
+		m_ToneMappingShader->SetFloat("u_Exposure", m_Exposure);
+		m_ToneMappingShader->SetFloat("u_Gamma", m_Gamma);
+		m_ToneMappingShader->SetFloat("u_WhitePoint", m_WhitePoint);
+
+		// Render fullscreen quad
+		m_FullscreenQuad->Render();
+
+		// Re-enable depth test
+		renderer.EnableDepthTest();
+
+		// =========================================================================
+		// Render to preview Framebuffer (offscreen) - kept for F2 preview
 		// =========================================================================
 		if (m_Framebuffer)
 		{
@@ -445,14 +531,6 @@ public:
 			
 			// Restore viewport to window size
 			renderer.SetViewport(0, 0, m_WindowWidth, m_WindowHeight);
-		}
-
-		// =========================================================================
-		// Render Skybox to screen as well
-		// =========================================================================
-		if (m_ShowSkybox && m_Skybox)
-		{
-			m_Skybox->Render(m_Camera);
 		}
 	}
 
@@ -738,6 +816,54 @@ public:
 			uiManager.Text("IBL maps not generated!");
 		}
 		uiManager.EndWindow();
+
+		// =========================================================================
+		// HDR & Tone Mapping Panel (Chapter 35)
+		// =========================================================================
+		uiManager.StartWindow("HDR & Tone Mapping");
+
+		// Tone mapping operator selection
+		const char* toneMappingModes[] = { 
+			"Reinhard", 
+			"Reinhard Extended", 
+			"Exposure", 
+			"ACES Filmic", 
+			"Uncharted 2" 
+		};
+		uiManager.Combo("Tone Mapping", &m_ToneMappingMode, toneMappingModes, 5);
+
+		// Exposure control (for all modes except simple Reinhard)
+		if (m_ToneMappingMode != 0)
+		{
+			uiManager.SliderFloat("Exposure", &m_Exposure, 0.1f, 5.0f);
+			
+			// Show f-stop equivalent
+			float fStops = log2f(m_Exposure);
+			uiManager.Text("(%.2f f-stops)", fStops);
+		}
+
+		// White point (for Reinhard Extended)
+		if (m_ToneMappingMode == 1)
+		{
+			uiManager.SliderFloat("White Point", &m_WhitePoint, 1.0f, 20.0f);
+		}
+
+		// Gamma control
+		uiManager.SliderFloat("Gamma", &m_Gamma, 1.8f, 2.6f);
+
+		uiManager.Separator();
+
+		// Framebuffer info
+		if (m_HDRFramebuffer)
+		{
+			uiManager.Text("HDR Buffer: %dx%d RGB16F", 
+			               m_HDRFramebuffer->GetWidth(), 
+			               m_HDRFramebuffer->GetHeight());
+			uiManager.Text("Memory: ~%.2f MB", 
+			               (m_HDRFramebuffer->GetWidth() * m_HDRFramebuffer->GetHeight() * 6) / (1024.0f * 1024.0f));
+		}
+
+		uiManager.EndWindow();
 	}
 
 	void OnEvent(VizEngine::Event& e) override
@@ -755,6 +881,28 @@ public:
 					float aspect = static_cast<float>(m_WindowWidth)
 					             / static_cast<float>(m_WindowHeight);
 					m_Camera.SetAspectRatio(aspect);
+
+					// Recreate HDR framebuffer with new dimensions (Chapter 35)
+					if (m_HDRFramebuffer)
+					{
+						VP_INFO("Recreating HDR framebuffer: {}x{}", m_WindowWidth, m_WindowHeight);
+
+						m_HDRColorTexture = std::make_shared<VizEngine::Texture>(
+							m_WindowWidth, m_WindowHeight, GL_RGB16F, GL_RGB, GL_FLOAT
+						);
+						m_HDRDepthTexture = std::make_shared<VizEngine::Texture>(
+							m_WindowWidth, m_WindowHeight, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT
+						);
+
+						m_HDRFramebuffer = std::make_shared<VizEngine::Framebuffer>(m_WindowWidth, m_WindowHeight);
+						m_HDRFramebuffer->AttachColorTexture(m_HDRColorTexture, 0);
+						m_HDRFramebuffer->AttachDepthTexture(m_HDRDepthTexture);
+
+						if (!m_HDRFramebuffer->IsComplete())
+						{
+							VP_ERROR("HDR Framebuffer incomplete after resize!");
+						}
+					}
 				}
 				return false;  // Don't consume, allow propagation
 			}
@@ -954,6 +1102,19 @@ private:
 	};
 	float m_PBRLightIntensity = 300.0f;
 	glm::vec3 m_PBRLightColor = glm::vec3(1.0f);  // White light
+
+	// HDR Pipeline (Chapter 35)
+	std::shared_ptr<VizEngine::Framebuffer> m_HDRFramebuffer;
+	std::shared_ptr<VizEngine::Texture> m_HDRColorTexture;
+	std::shared_ptr<VizEngine::Texture> m_HDRDepthTexture;
+	std::shared_ptr<VizEngine::Shader> m_ToneMappingShader;
+	std::shared_ptr<VizEngine::FullscreenQuad> m_FullscreenQuad;
+
+	// HDR Settings
+	int m_ToneMappingMode = 3;      // 0=Reinhard, 1=ReinhardExt, 2=Exposure, 3=ACES, 4=Uncharted2
+	float m_Exposure = 1.0f;
+	float m_Gamma = 2.2f;
+	float m_WhitePoint = 4.0f;      // For Reinhard Extended
 };
 
 std::unique_ptr<VizEngine::Application> VizEngine::CreateApplication(VizEngine::EngineConfig& config)

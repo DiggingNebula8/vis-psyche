@@ -28,6 +28,7 @@ set(VIZENGINE_SOURCES
     src/VizEngine/OpenGL/VertexArray.cpp
     src/VizEngine/OpenGL/VertexBuffer.cpp
     src/VizEngine/OpenGL/CubemapUtils.cpp
+    src/VizEngine/OpenGL/FullscreenQuad.cpp
     
     # Renderer
     src/VizEngine/Renderer/Skybox.cpp
@@ -75,6 +76,7 @@ set(VIZENGINE_HEADERS
     src/VizEngine/OpenGL/VertexBuffer.h
     src/VizEngine/OpenGL/VertexBufferLayout.h
     src/VizEngine/OpenGL/CubemapUtils.h
+    src/VizEngine/OpenGL/FullscreenQuad.h
     
     # Renderer headers
     src/VizEngine/Renderer/Skybox.h

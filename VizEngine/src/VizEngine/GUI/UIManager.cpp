@@ -122,6 +122,11 @@ namespace VizEngine
 		return ImGui::Selectable(label, selected);
 	}
 
+	bool UIManager::Combo(const char* label, int* currentItem, const char* const items[], int itemCount)
+	{
+		return ImGui::Combo(label, currentItem, items, itemCount);
+	}
+
 	void UIManager::Image(void* textureID, float width, float height)
 	{
 		// OpenGL textures are bottom-left origin, but ImGui expects top-left.

@@ -60,6 +60,7 @@ namespace VizEngine
 		
 		// Selection
 		bool Selectable(const char* label, bool selected);
+		bool Combo(const char* label, int* currentItem, const char* const items[], int itemCount);
 	
 	// Images
 	void Image(void* textureID, float width, float height);
