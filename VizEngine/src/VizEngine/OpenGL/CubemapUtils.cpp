@@ -13,6 +13,56 @@
 #include <gtc/matrix_transform.hpp>
 #include <cmath>
 
+namespace
+{
+	// Unit cube vertices for cubemap rendering (36 vertices, positions only)
+	// Extracted as a file-scoped constant to avoid duplication across methods
+	static constexpr float UNIT_CUBE_VERTICES[] = {
+		// Back face
+		-1.0f, -1.0f, -1.0f,
+		 1.0f,  1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f,  1.0f, -1.0f,
+		-1.0f, -1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+		// Front face
+		-1.0f, -1.0f,  1.0f,
+		 1.0f, -1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		-1.0f,  1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
+		// Left face
+		-1.0f,  1.0f,  1.0f,
+		-1.0f,  1.0f, -1.0f,
+		-1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f,  1.0f,
+		-1.0f,  1.0f,  1.0f,
+		// Right face
+		 1.0f,  1.0f,  1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f,  1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f, -1.0f,  1.0f,
+		// Bottom face
+		-1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f,  1.0f,
+		 1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f, -1.0f,
+		// Top face
+		-1.0f,  1.0f, -1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f, -1.0f,
+		 1.0f,  1.0f,  1.0f,
+		-1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f,  1.0f
+	};
+}
+
 namespace VizEngine
 {
 	std::shared_ptr<Texture> CubemapUtils::EquirectangularToCubemap(
@@ -98,54 +148,11 @@ namespace VizEngine
 			glm::lookAt(glm::vec3(0.0f), glm::vec3( 0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))   // -Z
 		};
 
-		// Cube vertices (positions only, for fullscreen rendering)
-		float cubeVertices[] = {
-			// Positions
-			-1.0f, -1.0f, -1.0f,
-			 1.0f,  1.0f, -1.0f,
-			 1.0f, -1.0f, -1.0f,
-			 1.0f,  1.0f, -1.0f,
-			-1.0f, -1.0f, -1.0f,
-			-1.0f,  1.0f, -1.0f,
-
-			-1.0f, -1.0f,  1.0f,
-			 1.0f, -1.0f,  1.0f,
-			 1.0f,  1.0f,  1.0f,
-			 1.0f,  1.0f,  1.0f,
-			-1.0f,  1.0f,  1.0f,
-			-1.0f, -1.0f,  1.0f,
-
-			-1.0f,  1.0f,  1.0f,
-			-1.0f,  1.0f, -1.0f,
-			-1.0f, -1.0f, -1.0f,
-			-1.0f, -1.0f, -1.0f,
-			-1.0f, -1.0f,  1.0f,
-			-1.0f,  1.0f,  1.0f,
-
-			 1.0f,  1.0f,  1.0f,
-			 1.0f, -1.0f, -1.0f,
-			 1.0f,  1.0f, -1.0f,
-			 1.0f, -1.0f, -1.0f,
-			 1.0f,  1.0f,  1.0f,
-			 1.0f, -1.0f,  1.0f,
-
-			-1.0f, -1.0f, -1.0f,
-			 1.0f, -1.0f, -1.0f,
-			 1.0f, -1.0f,  1.0f,
-			 1.0f, -1.0f,  1.0f,
-			-1.0f, -1.0f,  1.0f,
-			-1.0f, -1.0f, -1.0f,
-
-			-1.0f,  1.0f, -1.0f,
-			 1.0f,  1.0f,  1.0f,
-			 1.0f,  1.0f, -1.0f,
-			 1.0f,  1.0f,  1.0f,
-			-1.0f,  1.0f, -1.0f,
-			-1.0f,  1.0f,  1.0f
-		};
-
-		// Setup cube VAO/VBO
-		auto cubeVBO = std::make_shared<VertexBuffer>(cubeVertices, static_cast<unsigned int>(sizeof(cubeVertices)));
+		// Setup cube VAO/VBO using shared vertex data
+		auto cubeVBO = std::make_shared<VertexBuffer>(
+			UNIT_CUBE_VERTICES,
+			static_cast<unsigned int>(sizeof(UNIT_CUBE_VERTICES))
+		);
 		VertexBufferLayout layout;
 		layout.Push<float>(3);  // Position
 
@@ -269,52 +276,11 @@ namespace VizEngine
 			glm::lookAt(glm::vec3(0.0f), glm::vec3( 0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
 		};
 
-		// Cube vertices (same as EquirectangularToCubemap)
-		float cubeVertices[] = {
-			-1.0f, -1.0f, -1.0f,
-			 1.0f,  1.0f, -1.0f,
-			 1.0f, -1.0f, -1.0f,
-			 1.0f,  1.0f, -1.0f,
-			-1.0f, -1.0f, -1.0f,
-			-1.0f,  1.0f, -1.0f,
-
-			-1.0f, -1.0f,  1.0f,
-			 1.0f, -1.0f,  1.0f,
-			 1.0f,  1.0f,  1.0f,
-			 1.0f,  1.0f,  1.0f,
-			-1.0f,  1.0f,  1.0f,
-			-1.0f, -1.0f,  1.0f,
-
-			-1.0f,  1.0f,  1.0f,
-			-1.0f,  1.0f, -1.0f,
-			-1.0f, -1.0f, -1.0f,
-			-1.0f, -1.0f, -1.0f,
-			-1.0f, -1.0f,  1.0f,
-			-1.0f,  1.0f,  1.0f,
-
-			 1.0f,  1.0f,  1.0f,
-			 1.0f, -1.0f, -1.0f,
-			 1.0f,  1.0f, -1.0f,
-			 1.0f, -1.0f, -1.0f,
-			 1.0f,  1.0f,  1.0f,
-			 1.0f, -1.0f,  1.0f,
-
-			-1.0f, -1.0f, -1.0f,
-			 1.0f, -1.0f, -1.0f,
-			 1.0f, -1.0f,  1.0f,
-			 1.0f, -1.0f,  1.0f,
-			-1.0f, -1.0f,  1.0f,
-			-1.0f, -1.0f, -1.0f,
-
-			-1.0f,  1.0f, -1.0f,
-			 1.0f,  1.0f,  1.0f,
-			 1.0f,  1.0f, -1.0f,
-			 1.0f,  1.0f,  1.0f,
-			-1.0f,  1.0f, -1.0f,
-			-1.0f,  1.0f,  1.0f
-		};
-
-		auto cubeVBO = std::make_shared<VertexBuffer>(cubeVertices, static_cast<unsigned int>(sizeof(cubeVertices)));
+		// Setup cube VAO/VBO using shared vertex data
+		auto cubeVBO = std::make_shared<VertexBuffer>(
+			const_cast<float*>(UNIT_CUBE_VERTICES),
+			static_cast<unsigned int>(sizeof(UNIT_CUBE_VERTICES))
+		);
 		VertexBufferLayout layout;
 		layout.Push<float>(3);
 		auto cubeVAO = std::make_shared<VertexArray>();
@@ -388,52 +354,11 @@ namespace VizEngine
 			glm::lookAt(glm::vec3(0.0f), glm::vec3( 0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
 		};
 
-		// Cube geometry (same as other methods)
-		float cubeVertices[] = {
-			-1.0f, -1.0f, -1.0f,
-			 1.0f,  1.0f, -1.0f,
-			 1.0f, -1.0f, -1.0f,
-			 1.0f,  1.0f, -1.0f,
-			-1.0f, -1.0f, -1.0f,
-			-1.0f,  1.0f, -1.0f,
-
-			-1.0f, -1.0f,  1.0f,
-			 1.0f, -1.0f,  1.0f,
-			 1.0f,  1.0f,  1.0f,
-			 1.0f,  1.0f,  1.0f,
-			-1.0f,  1.0f,  1.0f,
-			-1.0f, -1.0f,  1.0f,
-
-			-1.0f,  1.0f,  1.0f,
-			-1.0f,  1.0f, -1.0f,
-			-1.0f, -1.0f, -1.0f,
-			-1.0f, -1.0f, -1.0f,
-			-1.0f, -1.0f,  1.0f,
-			-1.0f,  1.0f,  1.0f,
-
-			 1.0f,  1.0f,  1.0f,
-			 1.0f, -1.0f, -1.0f,
-			 1.0f,  1.0f, -1.0f,
-			 1.0f, -1.0f, -1.0f,
-			 1.0f,  1.0f,  1.0f,
-			 1.0f, -1.0f,  1.0f,
-
-			-1.0f, -1.0f, -1.0f,
-			 1.0f, -1.0f, -1.0f,
-			 1.0f, -1.0f,  1.0f,
-			 1.0f, -1.0f,  1.0f,
-			-1.0f, -1.0f,  1.0f,
-			-1.0f, -1.0f, -1.0f,
-
-			-1.0f,  1.0f, -1.0f,
-			 1.0f,  1.0f,  1.0f,
-			 1.0f,  1.0f, -1.0f,
-			 1.0f,  1.0f,  1.0f,
-			-1.0f,  1.0f, -1.0f,
-			-1.0f,  1.0f,  1.0f
-		};
-
-		auto cubeVBO = std::make_shared<VertexBuffer>(cubeVertices, static_cast<unsigned int>(sizeof(cubeVertices)));
+		// Setup cube VAO/VBO using shared vertex data
+		auto cubeVBO = std::make_shared<VertexBuffer>(
+			const_cast<float*>(UNIT_CUBE_VERTICES),
+			static_cast<unsigned int>(sizeof(UNIT_CUBE_VERTICES))
+		);
 		VertexBufferLayout layout;
 		layout.Push<float>(3);
 		auto cubeVAO = std::make_shared<VertexArray>();
@@ -448,16 +373,25 @@ namespace VizEngine
 		auto framebuffer = std::make_shared<Framebuffer>(resolution, resolution);
 		framebuffer->Bind();
 
-		// Verify framebuffer is usable before entering mip loop
+		GLint prevViewport[4];
+		glGetIntegerv(GL_VIEWPORT, prevViewport);
+
+		// Create single RBO for all mip levels (reused by resizing)
+		// Must attach before checking framebuffer completeness
+		unsigned int rbo;
+		glGenRenderbuffers(1, &rbo);
+		glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, resolution, resolution);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo);
+
+		// Verify framebuffer is usable (now has depth attachment)
 		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		{
 			VP_CORE_ERROR("GeneratePrefilteredMap: Framebuffer not usable");
+			glDeleteRenderbuffers(1, &rbo);
 			framebuffer->Unbind();
 			return nullptr;
 		}
-
-		GLint prevViewport[4];
-		glGetIntegerv(GL_VIEWPORT, prevViewport);
 
 		unsigned int maxMipLevels = 5;
 		for (unsigned int mip = 0; mip < maxMipLevels; ++mip)
@@ -466,10 +400,7 @@ namespace VizEngine
 			unsigned int mipWidth = static_cast<unsigned int>(resolution * std::pow(0.5f, mip));
 			unsigned int mipHeight = mipWidth;
 
-			// Create depth buffer for this mip size
-			unsigned int rbo;
-			glGenRenderbuffers(1, &rbo);
-			glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+			// Resize depth buffer for this mip size
 			glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);
 			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo);
 
@@ -490,9 +421,9 @@ namespace VizEngine
 				cubeVAO->Bind();
 				glDrawArrays(GL_TRIANGLES, 0, 36);
 			}
-
-			glDeleteRenderbuffers(1, &rbo);
 		}
+
+		glDeleteRenderbuffers(1, &rbo);
 
 		framebuffer->Unbind();
 		glViewport(prevViewport[0], prevViewport[1], prevViewport[2], prevViewport[3]);

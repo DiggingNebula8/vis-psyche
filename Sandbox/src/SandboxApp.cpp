@@ -410,34 +410,7 @@ public:
 		}
 
 		// Render scene objects with PBR
-		for (auto& obj : m_Scene)
-		{
-			if (!obj.Active || !obj.MeshPtr) continue;
-
-			glm::mat4 model = obj.ObjectTransform.GetModelMatrix();
-			m_DefaultLitShader->SetMatrix4fv("u_Model", model);
-
-			// Use object's material properties for PBR
-			m_DefaultLitShader->SetVec3("u_Albedo", glm::vec3(obj.Color));
-			m_DefaultLitShader->SetFloat("u_Metallic", obj.Metallic);
-			m_DefaultLitShader->SetFloat("u_Roughness", obj.Roughness);
-			m_DefaultLitShader->SetFloat("u_AO", 1.0f);
-
-			// Bind texture if available
-			if (obj.TexturePtr)
-			{
-				obj.TexturePtr->Bind(0);
-				m_DefaultLitShader->SetInt("u_AlbedoTexture", 0);
-				m_DefaultLitShader->SetBool("u_UseAlbedoTexture", true);
-			}
-			else
-			{
-				m_DefaultLitShader->SetBool("u_UseAlbedoTexture", false);
-			}
-
-			obj.MeshPtr->Bind();
-			renderer.Draw(obj.MeshPtr->GetVertexArray(), obj.MeshPtr->GetIndexBuffer(), *m_DefaultLitShader);
-		}
+		RenderSceneObjects();
 
 		// =========================================================================
 		// Render to Framebuffer (offscreen) - kept for F2 preview
@@ -457,32 +430,7 @@ public:
 			m_DefaultLitShader->SetMatrix4fv("u_Projection", m_Camera.GetProjectionMatrix());
 
 			// Render scene objects with PBR
-			for (auto& obj : m_Scene)
-			{
-				if (!obj.Active || !obj.MeshPtr) continue;
-
-				glm::mat4 model = obj.ObjectTransform.GetModelMatrix();
-				m_DefaultLitShader->SetMatrix4fv("u_Model", model);
-				m_DefaultLitShader->SetVec3("u_Albedo", glm::vec3(obj.Color));
-				m_DefaultLitShader->SetFloat("u_Metallic", obj.Metallic);
-				m_DefaultLitShader->SetFloat("u_Roughness", obj.Roughness);
-				m_DefaultLitShader->SetFloat("u_AO", 1.0f);
-
-				// Bind texture if available
-				if (obj.TexturePtr)
-				{
-					obj.TexturePtr->Bind(0);
-					m_DefaultLitShader->SetInt("u_AlbedoTexture", 0);
-					m_DefaultLitShader->SetBool("u_UseAlbedoTexture", true);
-				}
-				else
-				{
-					m_DefaultLitShader->SetBool("u_UseAlbedoTexture", false);
-				}
-
-				obj.MeshPtr->Bind();
-				renderer.Draw(obj.MeshPtr->GetVertexArray(), obj.MeshPtr->GetIndexBuffer(), *m_DefaultLitShader);
-			}
+			RenderSceneObjects();
 		
 			// Render Skybox to offscreen framebuffer
 			if (m_ShowSkybox && m_Skybox)
@@ -889,6 +837,43 @@ private:
 
 		// Step 3: Combine into light-space matrix
 		return lightProjection * lightView;
+	}
+
+	// =========================================================================
+	// Helper: Render all scene objects with PBR materials
+	// =========================================================================
+	void RenderSceneObjects()
+	{
+		auto& renderer = VizEngine::Engine::Get().GetRenderer();
+
+		for (auto& obj : m_Scene)
+		{
+			if (!obj.Active || !obj.MeshPtr) continue;
+
+			glm::mat4 model = obj.ObjectTransform.GetModelMatrix();
+			m_DefaultLitShader->SetMatrix4fv("u_Model", model);
+
+			// Use object's material properties for PBR
+			m_DefaultLitShader->SetVec3("u_Albedo", glm::vec3(obj.Color));
+			m_DefaultLitShader->SetFloat("u_Metallic", obj.Metallic);
+			m_DefaultLitShader->SetFloat("u_Roughness", obj.Roughness);
+			m_DefaultLitShader->SetFloat("u_AO", 1.0f);
+
+			// Bind texture if available
+			if (obj.TexturePtr)
+			{
+				obj.TexturePtr->Bind(0);
+				m_DefaultLitShader->SetInt("u_AlbedoTexture", 0);
+				m_DefaultLitShader->SetBool("u_UseAlbedoTexture", true);
+			}
+			else
+			{
+				m_DefaultLitShader->SetBool("u_UseAlbedoTexture", false);
+			}
+
+			obj.MeshPtr->Bind();
+			renderer.Draw(obj.MeshPtr->GetVertexArray(), obj.MeshPtr->GetIndexBuffer(), *m_DefaultLitShader);
+		}
 	}
 
 	// Scene
