@@ -26,9 +26,9 @@ namespace VizEngine
 		void Unbind() const;
 
 		// Getter for ID
-		inline unsigned int GetID() const { return m_ID; }
+		inline unsigned int GetID() const { return m_vbo; }
 
 	private:
-		unsigned int m_ID;
+		unsigned int m_vbo;
 	};
 }

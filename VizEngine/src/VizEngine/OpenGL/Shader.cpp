@@ -48,7 +48,7 @@ namespace VizEngine
 
 	// Constructor that builds the final Shader
 	Shader::Shader(const std::string& shaderFile)
-		: m_shaderPath(shaderFile), m_RendererID(0)
+		: m_shaderPath(shaderFile), m_program(0)
 	{
 		// Parse the shader file
 		ShaderPrograms shaders = ShaderParser(shaderFile);
@@ -59,8 +59,8 @@ namespace VizEngine
 		}
 		
 		// Compile and link
-		m_RendererID = CreateShader(shaders.VertexProgram, shaders.FragmentProgram);
-		if (m_RendererID == 0)
+		m_program = CreateShader(shaders.VertexProgram, shaders.FragmentProgram);
+		if (m_program == 0)
 		{
 			VP_CORE_ERROR("Failed to compile/link shader: {}", shaderFile);
 			throw std::runtime_error("Failed to compile shader: " + shaderFile);
@@ -69,19 +69,19 @@ namespace VizEngine
 
 	Shader::~Shader()
 	{
-		if (m_RendererID != 0)
+		if (m_program != 0)
 		{
-			glDeleteProgram(m_RendererID);
+			glDeleteProgram(m_program);
 		}
 	}
 
 	// Move constructor
 	Shader::Shader(Shader&& other) noexcept
 		: m_shaderPath(std::move(other.m_shaderPath)),
-		  m_RendererID(other.m_RendererID),
+		  m_program(other.m_program),
 		  m_LocationCache(std::move(other.m_LocationCache))
 	{
-		other.m_RendererID = 0;
+		other.m_program = 0;
 	}
 
 	// Move assignment operator
@@ -89,14 +89,14 @@ namespace VizEngine
 	{
 		if (this != &other)
 		{
-			if (m_RendererID != 0)
+			if (m_program != 0)
 			{
-				glDeleteProgram(m_RendererID);
+				glDeleteProgram(m_program);
 			}
 			m_shaderPath = std::move(other.m_shaderPath);
-			m_RendererID = other.m_RendererID;
+			m_program = other.m_program;
 			m_LocationCache = std::move(other.m_LocationCache);
-			other.m_RendererID = 0;
+			other.m_program = 0;
 		}
 		return *this;
 	}
@@ -104,7 +104,7 @@ namespace VizEngine
 	// Bind the Shader Program
 	void Shader::Bind() const
 	{
-		glUseProgram(m_RendererID);
+		glUseProgram(m_program);
 	}
 
 	// Unbind the Shader Program
@@ -212,7 +212,7 @@ namespace VizEngine
 		if (m_LocationCache.find(name) != m_LocationCache.end())
 			return m_LocationCache[name];
 
-		int location = glGetUniformLocation(m_RendererID, name.c_str());
+		int location = glGetUniformLocation(m_program, name.c_str());
 		if (location == -1)
 			VP_CORE_WARN("Shader Uniform {} doesn't exist!", name);
 

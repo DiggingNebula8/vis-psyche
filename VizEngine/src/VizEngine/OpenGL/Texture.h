@@ -15,6 +15,31 @@ namespace VizEngine
 		
 		// Create from raw pixel data (for embedded textures in glTF)
 		Texture(const unsigned char* data, int width, int height, int channels = 4);
+	
+	/**
+	 * Create an empty texture for use as a framebuffer attachment.
+	 * @param width Texture width
+	 * @param height Texture height
+	 * @param internalFormat OpenGL internal format (e.g., GL_RGBA8, GL_DEPTH_COMPONENT24)
+	 * @param format OpenGL format (e.g., GL_RGBA, GL_DEPTH_COMPONENT)
+	 * @param dataType Data type (e.g., GL_UNSIGNED_BYTE, GL_FLOAT)
+	 */
+	Texture(int width, int height, unsigned int internalFormat, unsigned int format, unsigned int dataType);
+
+	/**
+	 * Load HDR equirectangular image (for environment maps).
+	 * Uses stbi_loadf for floating-point data.
+	 * @param filepath Path to .hdr file
+	 * @param isHDR Set to true to load as HDR (GL_RGB16F)
+	 */
+	Texture(const std::string& filepath, bool isHDR);
+
+	/**
+	 * Create an empty cubemap texture.
+	 * @param resolution Resolution per face (e.g., 512, 1024)
+	 * @param isHDR Use HDR format (GL_RGB16F) or LDR (GL_RGB8)
+	 */
+	Texture(int resolution, bool isHDR);
 		
 		~Texture();
 
@@ -29,14 +54,23 @@ namespace VizEngine
 		void Bind(unsigned int slot = 0) const;
 		void Unbind() const;
 
+		// Configuration
+		void SetFilter(unsigned int minFilter, unsigned int magFilter);
+		void SetWrap(unsigned int sWrap, unsigned int tWrap);
+		void SetBorderColor(const float color[4]);
+
 		inline int GetWidth() const { return m_Width; }
 		inline int GetHeight() const { return m_Height; }
-		inline unsigned int GetID() const { return m_RendererID; }
+		inline unsigned int GetID() const { return m_texture; }
+		inline bool IsCubemap() const { return m_IsCubemap; }
+		inline bool IsHDR() const { return m_IsHDR; }
 
 	private:
-		unsigned int m_RendererID;
+		unsigned int m_texture;
 		std::string m_FilePath;
 		unsigned char* m_LocalBuffer;
 		int m_Width, m_Height, m_BPP;
+		bool m_IsCubemap = false;
+		bool m_IsHDR = false;
 	};
 }

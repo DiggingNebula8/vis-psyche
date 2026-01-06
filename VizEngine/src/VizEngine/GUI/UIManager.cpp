@@ -54,6 +54,12 @@ namespace VizEngine
 		ImGui::Begin(windowName.c_str());
 	}
 
+	void UIManager::StartFixedWindow(const std::string& windowName, float width, float height)
+	{
+		ImGui::SetNextWindowSize(ImVec2(width, height), ImGuiCond_FirstUseEver);
+		ImGui::Begin(windowName.c_str(), nullptr, ImGuiWindowFlags_NoResize);
+	}
+
 	void UIManager::EndWindow()
 	{
 		ImGui::End();
@@ -114,6 +120,13 @@ namespace VizEngine
 	bool UIManager::Selectable(const char* label, bool selected)
 	{
 		return ImGui::Selectable(label, selected);
+	}
+
+	void UIManager::Image(void* textureID, float width, float height)
+	{
+		// OpenGL textures are bottom-left origin, but ImGui expects top-left.
+		// We flip the UV coordinates: ImVec2(0, 1) to ImVec2(1, 0).
+		ImGui::Image(textureID, ImVec2(width, height), ImVec2(0, 1), ImVec2(1, 0));
 	}
 
 	// =========================================================================

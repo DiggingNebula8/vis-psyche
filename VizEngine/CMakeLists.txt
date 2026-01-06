@@ -23,8 +23,13 @@ set(VIZENGINE_SOURCES
     src/VizEngine/OpenGL/Renderer.cpp
     src/VizEngine/OpenGL/Shader.cpp
     src/VizEngine/OpenGL/Texture.cpp
+    src/VizEngine/OpenGL/Framebuffer.cpp
     src/VizEngine/OpenGL/VertexArray.cpp
     src/VizEngine/OpenGL/VertexBuffer.cpp
+    src/VizEngine/OpenGL/CubemapUtils.cpp
+    
+    # Renderer
+    src/VizEngine/Renderer/Skybox.cpp
     
     # GUI
     src/VizEngine/GUI/UIManager.cpp
@@ -64,9 +69,14 @@ set(VIZENGINE_HEADERS
     src/VizEngine/OpenGL/Renderer.h
     src/VizEngine/OpenGL/Shader.h
     src/VizEngine/OpenGL/Texture.h
+    src/VizEngine/OpenGL/Framebuffer.h
     src/VizEngine/OpenGL/VertexArray.h
     src/VizEngine/OpenGL/VertexBuffer.h
     src/VizEngine/OpenGL/VertexBufferLayout.h
+    src/VizEngine/OpenGL/CubemapUtils.h
+    
+    # Renderer headers
+    src/VizEngine/Renderer/Skybox.h
     
     # GUI headers
     src/VizEngine/GUI/UIManager.h

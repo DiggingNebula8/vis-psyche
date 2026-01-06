@@ -13,6 +13,11 @@ namespace VizEngine
 		glClear(GL_DEPTH_BUFFER_BIT);
 	}
 
+	void Renderer::SetViewport(int x, int y, int width, int height)
+	{
+		glViewport(x, y, width, height);
+	}
+
 	void Renderer::Draw(const VertexArray& va, const IndexBuffer& ib, const Shader& shader) const
 	{
 		shader.Bind();
@@ -20,5 +25,16 @@ namespace VizEngine
 		ib.Bind();
 
 		glDrawElements(GL_TRIANGLES, ib.GetCount(), GL_UNSIGNED_INT, nullptr);
+	}
+
+	void Renderer::EnablePolygonOffset(float factor, float units)
+	{
+		glEnable(GL_POLYGON_OFFSET_FILL);
+		glPolygonOffset(factor, units);
+	}
+
+	void Renderer::DisablePolygonOffset()
+	{
+		glDisable(GL_POLYGON_OFFSET_FILL);
 	}
 }

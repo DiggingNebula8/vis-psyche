@@ -10,14 +10,17 @@ out vec3 v_FragPos;
 out vec3 v_Normal;
 out vec4 v_Color;
 out vec2 v_TexCoord;
+out vec4 v_FragPosLightSpace;  // Position in light space for shadow mapping
 
 uniform mat4 u_Model;
 uniform mat4 u_MVP;
+uniform mat4 u_LightSpaceMatrix;  // Light's projection * view
 
 void main()
 {
-	// Fragment position in world space (for lighting calculations)
-	v_FragPos = vec3(u_Model * aPos);
+	// World position for lighting and shadow calculations
+	vec4 worldPos = u_Model * aPos;
+	v_FragPos = worldPos.xyz;
 	
 	// Transform normal to world space
 	// Note: For non-uniform scaling, use inverse transpose of model matrix
@@ -25,6 +28,9 @@ void main()
 	
 	v_Color = aColor;
 	v_TexCoord = aTexCoord;
+	
+	// Transform position to light space for shadow mapping
+	v_FragPosLightSpace = u_LightSpaceMatrix * worldPos;
 	
 	gl_Position = u_MVP * aPos;
 }
@@ -38,6 +44,7 @@ in vec3 v_FragPos;
 in vec3 v_Normal;
 in vec4 v_Color;
 in vec2 v_TexCoord;
+in vec4 v_FragPosLightSpace;
 
 // Light properties
 uniform vec3 u_LightDirection;
@@ -55,6 +62,54 @@ uniform sampler2D u_MainTex;
 // Material properties
 uniform float u_Roughness;
 
+// Shadow mapping
+uniform sampler2D u_ShadowMap;
+
+// Calculate shadow with PCF (Percentage Closer Filtering)
+// Returns 0.0 = fully lit, 1.0 = fully in shadow
+float CalculateShadow(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir)
+{
+	// Perspective divide to get NDC coordinates
+	vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+	
+	// Transform from [-1, 1] to [0, 1] range for texture sampling
+	projCoords = projCoords * 0.5 + 0.5;
+	
+	// Outside shadow map bounds = no shadow
+	if (projCoords.z > 1.0)
+		return 0.0;
+	if (projCoords.x < 0.0 || projCoords.x > 1.0 || projCoords.y < 0.0 || projCoords.y > 1.0)
+		return 0.0;
+	
+	float currentDepth = projCoords.z;
+	
+	// Slope-scaled bias to prevent shadow acne
+	// Surfaces facing away from light need more bias
+	float bias = max(0.005 * (1.0 - dot(normal, lightDir)), 0.001);
+	
+	// PCF: Sample 3x3 kernel and average for soft shadows
+	float shadow = 0.0;
+	vec2 texelSize = 1.0 / textureSize(u_ShadowMap, 0);
+	
+	for (int x = -1; x <= 1; ++x)
+	{
+		for (int y = -1; y <= 1; ++y)
+		{
+			// Sample neighboring texel
+			vec2 offset = vec2(x, y) * texelSize;
+			float closestDepth = texture(u_ShadowMap, projCoords.xy + offset).r;
+			
+			// Accumulate shadow comparison
+			shadow += currentDepth - bias > closestDepth ? 1.0 : 0.0;
+		}
+	}
+	
+	// Average over 9 samples
+	shadow /= 9.0;
+	
+	return shadow;
+}
+
 void main()
 {
 	// Sample texture
@@ -70,7 +125,7 @@ void main()
 	vec3 lightDir = normalize(-u_LightDirection);
 	
 	// === AMBIENT ===
-	// Constant base illumination
+	// Constant base illumination (always present, even in shadow)
 	vec3 ambient = u_LightAmbient * baseColor;
 	
 	// === DIFFUSE ===
@@ -87,9 +142,13 @@ void main()
 	float spec = pow(max(dot(norm, halfDir), 0.0), shininess);
 	vec3 specular = u_LightSpecular * spec;
 	
-	// Combine all lighting components
-	vec3 result = ambient + diffuse + specular;
+	// === SHADOW ===
+	// Calculate shadow factor (0.0 = lit, 1.0 = shadowed)
+	float shadow = CalculateShadow(v_FragPosLightSpace, norm, lightDir);
+	
+	// Apply shadow to diffuse and specular (NOT to ambient)
+	// Ambient light reaches shadowed areas (indirect lighting simulation)
+	vec3 result = ambient + (1.0 - shadow) * (diffuse + specular);
 	
 	FragColor = vec4(result, texColor.a * u_ObjectColor.a);
 }
-

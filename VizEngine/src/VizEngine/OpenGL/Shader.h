@@ -40,6 +40,9 @@ namespace VizEngine
 		// Unbinds the Shader Program
 		void Unbind() const;
 
+		// Validation
+		bool IsValid() const { return m_program != 0; }
+
 		// Utility uniform functions
 		void SetBool(const std::string& name, bool value);
 		void SetInt(const std::string& name, int value);
@@ -51,7 +54,7 @@ namespace VizEngine
 
 	private:
 		std::string m_shaderPath;
-		unsigned int m_RendererID;
+		unsigned int m_program;
 		std::unordered_map<std::string, int> m_LocationCache;
 
 		// Shader parser with a return type of ShaderPrograms

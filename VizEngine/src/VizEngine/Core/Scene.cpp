@@ -40,6 +40,9 @@ namespace VizEngine
 	{
 		shader.Bind();
 
+		// Explicitly set the main texture to slot 0 (prevents issues if textures bound to other slots)
+		shader.SetInt("u_MainTex", 0);
+
 		for (auto& obj : m_Objects)
 		{
 			// Skip inactive or invalid objects

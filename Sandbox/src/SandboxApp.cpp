@@ -95,6 +95,7 @@ public:
 		// Load Assets
 		// =========================================================================
 		m_LitShader = std::make_unique<VizEngine::Shader>("resources/shaders/lit.shader");
+		m_ShadowDepthShader = std::make_unique<VizEngine::Shader>("resources/shaders/shadow_depth.shader");
 		m_DefaultTexture = std::make_shared<VizEngine::Texture>("resources/textures/uvchecker.png");
 
 		// Assign default texture to basic objects (created before this point)
@@ -105,6 +106,110 @@ public:
 				m_Scene[i].TexturePtr = m_DefaultTexture;
 			}
 		}
+
+		// =========================================================================
+		// Create Framebuffer for offscreen rendering
+		// =========================================================================
+		int fbWidth = 800;
+		int fbHeight = 800;
+
+		// Create color attachment (RGBA8)
+		m_FramebufferColor = std::make_shared<VizEngine::Texture>(
+			fbWidth, fbHeight,
+			GL_RGBA8,           // Internal format
+			GL_RGBA,            // Format
+			GL_UNSIGNED_BYTE    // Data type
+		);
+
+		// Create depth attachment (Depth24)
+		m_FramebufferDepth = std::make_shared<VizEngine::Texture>(
+			fbWidth, fbHeight,
+			GL_DEPTH_COMPONENT24,   // Internal format
+			GL_DEPTH_COMPONENT,     // Format
+			GL_FLOAT                // Data type
+		);
+
+		// Create framebuffer and attach textures
+		m_Framebuffer = std::make_shared<VizEngine::Framebuffer>(fbWidth, fbHeight);
+		m_Framebuffer->AttachColorTexture(m_FramebufferColor, 0);
+		m_Framebuffer->AttachDepthTexture(m_FramebufferDepth);
+
+		// Verify framebuffer is complete
+		if (!m_Framebuffer->IsComplete())
+		{
+			VP_ERROR("Framebuffer is not complete! Disabling offscreen render.");
+			m_Framebuffer.reset();
+			m_ShowFramebufferTexture = false;
+		}
+		else
+		{
+			VP_INFO("Framebuffer created successfully: {}x{}", fbWidth, fbHeight);
+		}
+
+		// =========================================================================
+		// Create Shadow Map Framebuffer (depth-only, for shadow rendering)
+		// =========================================================================
+		int shadowMapResolution = 2048;  // Higher = crisper shadows (1024, 2048, 4096)
+
+		// Create depth texture for shadow map
+		m_ShadowMapDepth = std::make_shared<VizEngine::Texture>(
+			shadowMapResolution, shadowMapResolution,
+			GL_DEPTH_COMPONENT24,   // Internal format (24-bit depth)
+			GL_DEPTH_COMPONENT,     // Format
+			GL_FLOAT                // Data type
+		);
+		
+		// Configure shadow map texture for correct sampling
+		m_ShadowMapDepth->SetWrap(GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER);
+		float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+		m_ShadowMapDepth->SetBorderColor(borderColor);
+
+		// Create framebuffer and attach depth texture only (no color)
+		m_ShadowMapFramebuffer = std::make_shared<VizEngine::Framebuffer>(
+			shadowMapResolution, shadowMapResolution
+		);
+		m_ShadowMapFramebuffer->AttachDepthTexture(m_ShadowMapDepth);
+
+		// Verify shadow map framebuffer is complete
+		if (!m_ShadowMapFramebuffer->IsComplete())
+		{
+			VP_ERROR("Shadow map framebuffer is not complete! Disabling shadows.");
+			m_ShadowMapFramebuffer.reset();
+			// Also reset depth texture to avoid binding invalid texture
+			m_ShadowMapDepth.reset();
+			m_ShowShadowMap = false;
+		}
+		else
+		{
+			VP_INFO("Shadow map framebuffer created: {}x{}", shadowMapResolution, shadowMapResolution);
+		}
+
+		// =========================================================================
+		// Create Skybox from HDRI
+		// =========================================================================
+		VP_INFO("Loading environment HDRI...");
+
+		// Load HDR equirectangular map
+		m_EnvironmentHDRI = std::make_shared<VizEngine::Texture>(
+			"resources/textures/environments/qwantani_dusk_2_puresky_2k.hdr", 
+			true  // isHDR
+		);
+
+		// Convert to cubemap (one-time operation)
+		int cubemapResolution = 512;  // 512x512 per face
+		m_SkyboxCubemap = VizEngine::CubemapUtils::EquirectangularToCubemap(
+			m_EnvironmentHDRI, 
+			cubemapResolution
+		);
+
+		// Release original HDRI to free memory (~6MB for 2K texture)
+		// The cubemap now contains all the data we need
+		m_EnvironmentHDRI.reset();
+
+		// Create skybox
+		m_Skybox = std::make_unique<VizEngine::Skybox>(m_SkyboxCubemap);
+
+		VP_INFO("Skybox ready!");
 	}
 
 	void OnUpdate(float deltaTime) override
@@ -168,6 +273,54 @@ public:
 		auto& engine = VizEngine::Engine::Get();
 		auto& renderer = engine.GetRenderer();
 
+		// =========================================================================
+		// Compute Light-Space Matrix (once per frame)
+		// =========================================================================
+		m_LightSpaceMatrix = ComputeLightSpaceMatrix(m_Light);
+
+		// =========================================================================
+		// Pass 1: Render scene from light's perspective to shadow map
+		// =========================================================================
+		if (m_ShadowMapFramebuffer && m_ShadowDepthShader)
+		{
+			m_ShadowMapFramebuffer->Bind();
+			renderer.SetViewport(0, 0, m_ShadowMapFramebuffer->GetWidth(), m_ShadowMapFramebuffer->GetHeight());
+			renderer.ClearDepth();  // Clear depth buffer (no color attachment)
+
+			// Enable polygon offset to reduce shadow acne
+			renderer.EnablePolygonOffset(2.0f, 4.0f);
+
+			// Use shadow depth shader
+			m_ShadowDepthShader->Bind();
+			m_ShadowDepthShader->SetMatrix4fv("u_LightSpaceMatrix", m_LightSpaceMatrix);
+
+			// Render scene geometry (only need depth, no lighting)
+			// We need to set u_Model for each object since Scene::Render uses u_MVP
+			for (auto& obj : m_Scene)
+			{
+				if (!obj.Active || !obj.MeshPtr) continue;
+
+				glm::mat4 model = obj.ObjectTransform.GetModelMatrix();
+				m_ShadowDepthShader->SetMatrix4fv("u_Model", model);
+
+				obj.MeshPtr->Bind();
+				renderer.Draw(obj.MeshPtr->GetVertexArray(), obj.MeshPtr->GetIndexBuffer(), *m_ShadowDepthShader);
+			}
+
+			// Disable polygon offset
+			renderer.DisablePolygonOffset();
+
+			m_ShadowMapFramebuffer->Unbind();
+		}
+		renderer.SetViewport(0, 0, m_WindowWidth, m_WindowHeight);
+
+		// =========================================================================
+		// Pass 2: Render scene normally with shadows
+		// =========================================================================
+
+		// Clear screen
+		renderer.Clear(m_ClearColor);
+
 		// Set light uniforms
 		m_LitShader->Bind();
 		m_LitShader->SetVec3("u_LightDirection", m_Light.GetDirection());
@@ -176,9 +329,68 @@ public:
 		m_LitShader->SetVec3("u_LightSpecular", m_Light.Specular);
 		m_LitShader->SetVec3("u_ViewPos", m_Camera.GetPosition());
 
-		// Clear and render
-		renderer.Clear(m_ClearColor);
+		// Set shadow mapping uniforms
+		m_LitShader->SetMatrix4fv("u_LightSpaceMatrix", m_LightSpaceMatrix);
+
+		// Bind shadow map to texture slot 1
+		if (m_ShadowMapDepth)
+		{
+			m_ShadowMapDepth->Bind(1);
+			m_LitShader->SetInt("u_ShadowMap", 1);
+		}
+		else
+		{
+			m_LitShader->SetInt("u_ShadowMap", 0);
+		}
+
+		// Render scene with shadows
 		m_Scene.Render(renderer, *m_LitShader, m_Camera);
+
+		// =========================================================================
+		// Render to Framebuffer (offscreen) - kept for F2 preview
+		// =========================================================================
+		if (m_Framebuffer)
+		{
+			float windowAspect = static_cast<float>(m_WindowWidth) / static_cast<float>(m_WindowHeight);
+			m_Camera.SetAspectRatio(1.0f);  // Framebuffer is square (800x800)
+			
+			m_Framebuffer->Bind();
+			renderer.SetViewport(0, 0, m_Framebuffer->GetWidth(), m_Framebuffer->GetHeight());
+			renderer.Clear(m_ClearColor);
+
+			// Set shadow uniforms for offscreen render too
+			m_LitShader->Bind();
+			m_LitShader->SetMatrix4fv("u_LightSpaceMatrix", m_LightSpaceMatrix);
+			if (m_ShadowMapDepth)
+			{
+				m_ShadowMapDepth->Bind(1);
+				m_LitShader->SetInt("u_ShadowMap", 1);
+			}
+
+			m_Scene.Render(renderer, *m_LitShader, m_Camera);
+		
+			// Render Skybox to offscreen framebuffer
+			if (m_ShowSkybox && m_Skybox)
+			{
+				m_Skybox->Render(m_Camera);
+			}
+		
+			m_Framebuffer->Unbind();
+
+			// Restore camera to window aspect ratio
+			m_Camera.SetAspectRatio(windowAspect);
+			
+			// Restore viewport to window size
+			renderer.SetViewport(0, 0, m_WindowWidth, m_WindowHeight);
+		}
+
+		// =========================================================================
+		// Render Skybox to screen as well
+		// =========================================================================
+		if (m_ShowSkybox && m_Skybox)
+		{
+			m_Skybox->Render(m_Camera);
+		}
 	}
 
 	void OnImGuiRender() override
@@ -200,6 +412,76 @@ public:
 			uiManager.Text("Window: %d x %d", m_WindowWidth, m_WindowHeight);
 			uiManager.Separator();
 			uiManager.Text("Press F1 to toggle");
+
+			uiManager.EndWindow();
+		}
+
+		// =========================================================================
+		// Framebuffer Texture Preview (toggle with F2)
+		// =========================================================================
+		if (m_ShowFramebufferTexture)
+		{
+			uiManager.StartFixedWindow("Offscreen Render", 360.0f, 420.0f);
+
+			if (m_FramebufferColor && m_Framebuffer)
+			{
+				// ImGui::Image takes texture ID, size
+				unsigned int texID = m_FramebufferColor->GetID();
+				float width = static_cast<float>(m_Framebuffer->GetWidth());
+				float height = static_cast<float>(m_Framebuffer->GetHeight());
+
+				// Display with fixed size (scale down if needed)
+				float displaySize = 320.0f;  // Preview size
+				float aspect = width / height;
+				uiManager.Image(
+					reinterpret_cast<void*>(static_cast<uintptr_t>(texID)),
+					displaySize,
+					displaySize / aspect
+				);
+
+				uiManager.Separator();
+				uiManager.Text("Framebuffer: %dx%d", m_Framebuffer->GetWidth(), m_Framebuffer->GetHeight());
+			}
+			else
+			{
+				uiManager.Text("Framebuffer not available");
+			}
+			
+			uiManager.Checkbox("Show Preview", &m_ShowFramebufferTexture);
+
+			uiManager.EndWindow();
+		}
+
+		// =========================================================================
+		// Shadow Map Preview (toggle with F3)
+		// =========================================================================
+		if (m_ShowShadowMap)
+		{
+			uiManager.StartFixedWindow("Shadow Map Debug", 360.0f, 420.0f);
+
+			if (m_ShadowMapDepth && m_ShadowMapFramebuffer)
+			{
+				unsigned int shadowTexID = m_ShadowMapDepth->GetID();
+				float displaySize = 320.0f;
+
+				uiManager.Image(
+					reinterpret_cast<void*>(static_cast<uintptr_t>(shadowTexID)),
+					displaySize,
+					displaySize
+				);
+
+				uiManager.Separator();
+				uiManager.Text("Shadow Map: %dx%d",
+					m_ShadowMapFramebuffer->GetWidth(),
+					m_ShadowMapFramebuffer->GetHeight()
+				);
+			}
+			else
+			{
+				uiManager.Text("Shadow map not available");
+			}
+
+			uiManager.Checkbox("Show Shadow Map", &m_ShowShadowMap);
 
 			uiManager.EndWindow();
 		}
@@ -324,6 +606,25 @@ public:
 		}
 
 		uiManager.EndWindow();
+
+		// =========================================================================
+		// Skybox Controls
+		// =========================================================================
+		uiManager.StartWindow("Skybox");
+		uiManager.Checkbox("Show Skybox", &m_ShowSkybox);
+		
+		if (m_SkyboxCubemap)
+		{
+			uiManager.Text("Cubemap: %dx%d per face", 
+				m_SkyboxCubemap->GetWidth(), 
+				m_SkyboxCubemap->GetHeight());
+		}
+		else
+		{
+			uiManager.Text("Cubemap: Not loaded");
+		}
+
+		uiManager.EndWindow();
 	}
 
 	void OnEvent(VizEngine::Event& e) override
@@ -355,6 +656,27 @@ public:
 					VP_INFO("Engine Stats: {}", m_ShowEngineStats ? "ON" : "OFF");
 					return true;  // Consumed
 				}
+				// F2 toggles Framebuffer Preview
+				if (event.GetKeyCode() == VizEngine::KeyCode::F2 && !event.IsRepeat())
+				{
+					m_ShowFramebufferTexture = !m_ShowFramebufferTexture;
+					VP_INFO("Framebuffer Preview: {}", m_ShowFramebufferTexture ? "ON" : "OFF");
+					return true;  // Consumed
+				}
+				// F3 toggles Shadow Map Preview
+				if (event.GetKeyCode() == VizEngine::KeyCode::F3 && !event.IsRepeat())
+				{
+					m_ShowShadowMap = !m_ShowShadowMap;
+					VP_INFO("Shadow Map Preview: {}", m_ShowShadowMap ? "ON" : "OFF");
+					return true;  // Consumed
+				}
+				// F4 toggles Skybox
+				if (event.GetKeyCode() == VizEngine::KeyCode::F4 && !event.IsRepeat())
+				{
+					m_ShowSkybox = !m_ShowSkybox;
+					VP_INFO("Skybox: {}", m_ShowSkybox ? "ON" : "OFF");
+					return true;  // Consumed
+				}
 				return false;
 			}
 		);
@@ -366,6 +688,44 @@ public:
 	}
 
 private:
+	// =========================================================================
+	// Helper: Compute Light-Space Matrix for Shadow Mapping
+	// =========================================================================
+	glm::mat4 ComputeLightSpaceMatrix(const VizEngine::DirectionalLight& light)
+	{
+		// Step 1: Create view matrix looking from light toward scene
+		glm::vec3 lightDir = light.GetDirection();  // Normalized direction
+
+		// Position light "behind" the scene (directional lights are infinitely far)
+		glm::vec3 lightPos = -lightDir * 15.0f;
+
+		// Handle degenerate up vector (when light direction is vertical)
+		glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+		if (glm::abs(glm::dot(lightDir, up)) > 0.999f)
+		{
+			up = glm::vec3(0.0f, 0.0f, 1.0f);
+		}
+
+		glm::mat4 lightView = glm::lookAt(
+			lightPos,                      // Light position (behind scene)
+			glm::vec3(0.0f, 0.0f, 0.0f),  // Look at origin (scene center)
+			up                            // Up vector
+		);
+
+		// Step 2: Create orthographic projection
+		// Coverage determines how much of the scene gets shadows
+		float orthoSize = 15.0f;  // Adjust based on scene size
+
+		glm::mat4 lightProjection = glm::ortho(
+			-orthoSize, orthoSize,   // Left, right
+			-orthoSize, orthoSize,   // Bottom, top
+			0.1f, 30.0f              // Near, far planes
+		);
+
+		// Step 3: Combine into light-space matrix
+		return lightProjection * lightView;
+	}
+
 	// Scene
 	VizEngine::Scene m_Scene;
 	VizEngine::Camera m_Camera;
@@ -373,6 +733,7 @@ private:
 
 	// Assets
 	std::unique_ptr<VizEngine::Shader> m_LitShader;
+	std::unique_ptr<VizEngine::Shader> m_ShadowDepthShader;
 	std::shared_ptr<VizEngine::Texture> m_DefaultTexture;
 	std::shared_ptr<VizEngine::Mesh> m_PyramidMesh;
 	std::shared_ptr<VizEngine::Mesh> m_CubeMesh;
@@ -383,6 +744,18 @@ private:
 	std::shared_ptr<VizEngine::Texture> m_DuckTexture;
 	glm::vec4 m_DuckColor = glm::vec4(1.0f);
 	float m_DuckRoughness = 0.5f;
+
+	// Framebuffer for offscreen rendering
+	std::shared_ptr<VizEngine::Framebuffer> m_Framebuffer;
+	std::shared_ptr<VizEngine::Texture> m_FramebufferColor;
+	std::shared_ptr<VizEngine::Texture> m_FramebufferDepth;
+	bool m_ShowFramebufferTexture = true;
+
+	// Shadow mapping
+	std::shared_ptr<VizEngine::Framebuffer> m_ShadowMapFramebuffer;
+	std::shared_ptr<VizEngine::Texture> m_ShadowMapDepth;
+	glm::mat4 m_LightSpaceMatrix;
+	bool m_ShowShadowMap = false;
 
 	// Runtime state
 	float m_ClearColor[4] = { 0.1f, 0.1f, 0.15f, 1.0f };
@@ -402,6 +775,12 @@ private:
 	float m_CurrentFPS = 0.0f;
 	int m_WindowWidth = 800;
 	int m_WindowHeight = 800;
+
+	// Skybox
+	std::shared_ptr<VizEngine::Texture> m_EnvironmentHDRI;
+	std::shared_ptr<VizEngine::Texture> m_SkyboxCubemap;
+	std::unique_ptr<VizEngine::Skybox> m_Skybox;
+	bool m_ShowSkybox = true;
 };
 
 std::unique_ptr<VizEngine::Application> VizEngine::CreateApplication(VizEngine::EngineConfig& config)
