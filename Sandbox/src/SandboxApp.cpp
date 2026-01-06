@@ -345,6 +345,13 @@ public:
 		m_LitShader->SetInt("u_ShadowMap", 1);
 
 		m_Scene.Render(renderer, *m_LitShader, m_Camera);
+	
+		// Render Skybox to offscreen framebuffer
+		if (m_ShowSkybox)
+		{
+			m_Skybox->Render(m_Camera);
+		}
+	
 		m_Framebuffer->Unbind();
 
 		// Restore camera to window aspect ratio
@@ -354,7 +361,7 @@ public:
 		renderer.SetViewport(0, 0, m_WindowWidth, m_WindowHeight);
 
 		// =========================================================================
-		// Render Skybox (last, after all geometry)
+		// Render Skybox to screen as well
 		// =========================================================================
 		if (m_ShowSkybox)
 		{
