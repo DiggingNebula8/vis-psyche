@@ -40,6 +40,9 @@ namespace VizEngine
 		// Unbinds the Shader Program
 		void Unbind() const;
 
+		// Validation
+		bool IsValid() const { return m_program != 0; }
+
 		// Utility uniform functions
 		void SetBool(const std::string& name, bool value);
 		void SetInt(const std::string& name, int value);
