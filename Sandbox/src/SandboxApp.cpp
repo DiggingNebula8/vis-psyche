@@ -1,6 +1,7 @@
 #include <VizEngine.h>
 #include <VizEngine/Events/ApplicationEvent.h>
 #include <VizEngine/Events/KeyEvent.h>
+#include <chrono>
 
 class Sandbox : public VizEngine::Application
 {
@@ -211,6 +212,19 @@ public:
 		VP_INFO("Skybox ready!");
 
 		// =========================================================================
+		// Generate IBL Maps (Chapter 34)
+		// =========================================================================
+		auto iblStart = std::chrono::high_resolution_clock::now();
+
+		m_IrradianceMap = VizEngine::CubemapUtils::GenerateIrradianceMap(m_SkyboxCubemap, 32);
+		m_PrefilteredMap = VizEngine::CubemapUtils::GeneratePrefilteredMap(m_SkyboxCubemap, 512);
+		m_BRDFLut = VizEngine::CubemapUtils::GenerateBRDFLUT(512);
+
+		auto iblEnd = std::chrono::high_resolution_clock::now();
+		auto iblDuration = std::chrono::duration_cast<std::chrono::milliseconds>(iblEnd - iblStart);
+		VP_INFO("IBL maps generated in {}ms", iblDuration.count());
+
+		// =========================================================================
 		// PBR Rendering Setup (Chapter 33)
 		// =========================================================================
 		m_DefaultLitShader = std::make_unique<VizEngine::Shader>("resources/shaders/defaultlit.shader");
@@ -353,6 +367,26 @@ public:
 		{
 			m_ShadowMapDepth->Bind(1);
 			m_DefaultLitShader->SetInt("u_ShadowMap", 1);
+		}
+
+		// Bind IBL textures (Chapter 34)
+		if (m_UseIBL && m_IrradianceMap && m_PrefilteredMap && m_BRDFLut)
+		{
+			m_IrradianceMap->Bind(5);
+			m_DefaultLitShader->SetInt("u_IrradianceMap", 5);
+
+			m_PrefilteredMap->Bind(6);
+			m_DefaultLitShader->SetInt("u_PrefilteredMap", 6);
+
+			m_BRDFLut->Bind(7);
+			m_DefaultLitShader->SetInt("u_BRDF_LUT", 7);
+
+			m_DefaultLitShader->SetFloat("u_MaxReflectionLOD", 4.0f);  // maxMipLevels - 1
+			m_DefaultLitShader->SetBool("u_UseIBL", true);
+		}
+		else
+		{
+			m_DefaultLitShader->SetBool("u_UseIBL", false);
 		}
 
 		// Render scene objects with PBR
@@ -718,6 +752,24 @@ public:
 		}
 
 		uiManager.EndWindow();
+
+		// =========================================================================
+		// IBL Controls (Chapter 34)
+		// =========================================================================
+		uiManager.StartWindow("IBL");
+		uiManager.Checkbox("Use IBL", &m_UseIBL);
+
+		if (m_IrradianceMap && m_PrefilteredMap && m_BRDFLut)
+		{
+			uiManager.Text("Irradiance: 32x32 cubemap");
+			uiManager.Text("Prefiltered: 512x512 cubemap (5 mips)");
+			uiManager.Text("BRDF LUT: 512x512 RG texture");
+		}
+		else
+		{
+			uiManager.Text("IBL maps not generated!");
+		}
+		uiManager.EndWindow();
 	}
 
 	void OnEvent(VizEngine::Event& e) override
@@ -873,6 +925,12 @@ private:
 	std::shared_ptr<VizEngine::Texture> m_SkyboxCubemap;
 	std::unique_ptr<VizEngine::Skybox> m_Skybox;
 	bool m_ShowSkybox = true;
+
+	// IBL (Chapter 34)
+	std::shared_ptr<VizEngine::Texture> m_IrradianceMap;
+	std::shared_ptr<VizEngine::Texture> m_PrefilteredMap;
+	std::shared_ptr<VizEngine::Texture> m_BRDFLut;
+	bool m_UseIBL = true;
 
 	// PBR Rendering (Chapter 33)
 	std::unique_ptr<VizEngine::Shader> m_DefaultLitShader;

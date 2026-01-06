@@ -83,6 +83,15 @@ uniform bool u_UseDirLight;         // Enable directional light
 uniform sampler2D u_ShadowMap;
 
 // ============================================================================
+// Image-Based Lighting (Chapter 34)
+// ============================================================================
+uniform samplerCube u_IrradianceMap;
+uniform samplerCube u_PrefilteredMap;
+uniform sampler2D u_BRDF_LUT;
+uniform float u_MaxReflectionLOD;
+uniform bool u_UseIBL;
+
+// ============================================================================
 // Constants
 // ============================================================================
 const float PI = 3.14159265359;
@@ -199,6 +208,12 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 vec3 FresnelSchlick(float cosTheta, vec3 F0)
 {
     return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+}
+
+// Fresnel-Schlick with roughness for IBL (accounts for rough surfaces)
+vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
+{
+    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
 
 // ============================================================================
@@ -320,10 +335,41 @@ void main()
     }
     
     // ========================================================================
-    // Ambient Lighting (simple constant term for now)
-    // Chapter 34 will replace this with Image-Based Lighting
+    // Ambient Lighting (IBL or fallback)
     // ========================================================================
-    vec3 ambient = vec3(0.03) * albedo * u_AO;
+    vec3 ambient;
+    
+    if (u_UseIBL)
+    {
+        // ----- Diffuse IBL -----
+        // Use Fresnel with roughness for IBL to account for surface roughness
+        vec3 kS_IBL = FresnelSchlickRoughness(max(dot(N, V), 0.0), F0, u_Roughness);
+        vec3 kD_IBL = (vec3(1.0) - kS_IBL) * (1.0 - u_Metallic);
+        
+        vec3 irradiance = texture(u_IrradianceMap, N).rgb;
+        vec3 diffuseIBL = irradiance * albedo;
+        
+        // ----- Specular IBL -----
+        vec3 R = reflect(-V, N);
+        
+        // Sample pre-filtered environment at roughness-appropriate mip level
+        vec3 prefilteredColor = textureLod(u_PrefilteredMap, R, 
+            u_Roughness * u_MaxReflectionLOD).rgb;
+        
+        // Look up BRDF integration
+        vec2 envBRDF = texture(u_BRDF_LUT, vec2(max(dot(N, V), 0.0), u_Roughness)).rg;
+        
+        // Reconstruct specular: F0 * scale + bias
+        vec3 specularIBL = prefilteredColor * (F0 * envBRDF.x + envBRDF.y);
+        
+        // ----- Combine -----
+        ambient = (kD_IBL * diffuseIBL + specularIBL) * u_AO;
+    }
+    else
+    {
+        // Fallback to simple ambient (Chapter 33 style)
+        ambient = vec3(0.03) * albedo * u_AO;
+    }
     
     vec3 color = ambient + Lo;
     
