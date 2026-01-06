@@ -278,7 +278,7 @@ namespace VizEngine
 
 		// Setup cube VAO/VBO using shared vertex data
 		auto cubeVBO = std::make_shared<VertexBuffer>(
-			const_cast<float*>(UNIT_CUBE_VERTICES),
+			UNIT_CUBE_VERTICES,
 			static_cast<unsigned int>(sizeof(UNIT_CUBE_VERTICES))
 		);
 		VertexBufferLayout layout;
@@ -356,7 +356,7 @@ namespace VizEngine
 
 		// Setup cube VAO/VBO using shared vertex data
 		auto cubeVBO = std::make_shared<VertexBuffer>(
-			const_cast<float*>(UNIT_CUBE_VERTICES),
+			UNIT_CUBE_VERTICES,
 			static_cast<unsigned int>(sizeof(UNIT_CUBE_VERTICES))
 		);
 		VertexBufferLayout layout;
