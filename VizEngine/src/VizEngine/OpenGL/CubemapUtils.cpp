@@ -239,6 +239,15 @@ namespace VizEngine
 		framebuffer->Bind();
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo);
 
+		// Verify framebuffer completeness before proceeding
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		{
+			VP_CORE_ERROR("GenerateIrradianceMap: Framebuffer incomplete after depth attachment");
+			glDeleteRenderbuffers(1, &rbo);
+			framebuffer->Unbind();
+			return nullptr;
+		}
+
 		// Load irradiance convolution shader
 		auto shader = std::make_shared<Shader>("resources/shaders/irradiance_convolution.shader");
 		if (!shader->IsValid())
@@ -438,6 +447,14 @@ namespace VizEngine
 		// Create framebuffer
 		auto framebuffer = std::make_shared<Framebuffer>(resolution, resolution);
 		framebuffer->Bind();
+
+		// Verify framebuffer is usable before entering mip loop
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		{
+			VP_CORE_ERROR("GeneratePrefilteredMap: Framebuffer not usable");
+			framebuffer->Unbind();
+			return nullptr;
+		}
 
 		GLint prevViewport[4];
 		glGetIntegerv(GL_VIEWPORT, prevViewport);

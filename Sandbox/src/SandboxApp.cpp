@@ -220,9 +220,29 @@ public:
 		m_PrefilteredMap = VizEngine::CubemapUtils::GeneratePrefilteredMap(m_SkyboxCubemap, 512);
 		m_BRDFLut = VizEngine::CubemapUtils::GenerateBRDFLUT(512);
 
+		// Validate IBL maps and disable IBL if any failed
+		if (!m_IrradianceMap)
+		{
+			VP_ERROR("Failed to generate irradiance map - IBL disabled");
+			m_UseIBL = false;
+		}
+		if (!m_PrefilteredMap)
+		{
+			VP_ERROR("Failed to generate prefiltered environment map - IBL disabled");
+			m_UseIBL = false;
+		}
+		if (!m_BRDFLut)
+		{
+			VP_ERROR("Failed to generate BRDF LUT - IBL disabled");
+			m_UseIBL = false;
+		}
+
 		auto iblEnd = std::chrono::high_resolution_clock::now();
 		auto iblDuration = std::chrono::duration_cast<std::chrono::milliseconds>(iblEnd - iblStart);
-		VP_INFO("IBL maps generated in {}ms", iblDuration.count());
+		if (m_UseIBL)
+		{
+			VP_INFO("IBL maps generated in {}ms", iblDuration.count());
+		}
 
 		// =========================================================================
 		// PBR Rendering Setup (Chapter 33)
