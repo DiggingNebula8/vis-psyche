@@ -13,7 +13,7 @@
 namespace VizEngine
 {
 	// Default material for meshes without one assigned
-	PBRMaterial Model::s_DefaultMaterial = PBRMaterial(glm::vec4(0.8f, 0.8f, 0.8f, 1.0f), 0.0f, 0.5f);
+	Material Model::s_DefaultMaterial = Material(glm::vec4(0.8f, 0.8f, 0.8f, 1.0f), 0.0f, 0.5f);
 
 	//==========================================================================
 	// ModelLoader - Internal helper class to keep tinygltf out of header
@@ -186,7 +186,7 @@ namespace VizEngine
 		return 0;
 	}
 
-	const PBRMaterial& Model::GetMaterialForMesh(size_t meshIndex) const
+	const Material& Model::GetMaterialForMesh(size_t meshIndex) const
 	{
 		size_t matIndex = GetMaterialIndexForMesh(meshIndex);
 		if (matIndex < m_Materials.size())
@@ -273,7 +273,7 @@ namespace VizEngine
 	{
 		for (const auto& gltfMat : gltfModel.materials)
 		{
-			PBRMaterial material;
+			Material material;
 			material.Name = gltfMat.name.empty() ? "Material" : gltfMat.name;
 
 			const auto& pbr = gltfMat.pbrMetallicRoughness;
@@ -320,16 +320,16 @@ namespace VizEngine
 
 			if (gltfMat.alphaMode == "MASK")
 			{
-				material.Alpha = PBRMaterial::AlphaMode::Mask;
+				material.Alpha = Material::AlphaMode::Mask;
 				material.AlphaCutoff = static_cast<float>(gltfMat.alphaCutoff);
 			}
 			else if (gltfMat.alphaMode == "BLEND")
 			{
-				material.Alpha = PBRMaterial::AlphaMode::Blend;
+				material.Alpha = Material::AlphaMode::Blend;
 			}
 			else
 			{
-				material.Alpha = PBRMaterial::AlphaMode::Opaque;
+				material.Alpha = Material::AlphaMode::Opaque;
 			}
 
 			material.DoubleSided = gltfMat.doubleSided;
@@ -679,3 +679,4 @@ namespace VizEngine
 		return tex;
 	}
 }
+

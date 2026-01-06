@@ -3,7 +3,7 @@
 
 namespace VizEngine
 {
-	void PBRMaterial::Bind(Shader& shader) const
+	void Material::Bind(Shader& shader) const
 	{
 		// Upload PBR material uniforms to shader
 		shader.SetVec3("u_Albedo", glm::vec3(BaseColor));
@@ -12,3 +12,4 @@ namespace VizEngine
 		shader.SetFloat("u_AO", AO);
 	}
 }
+

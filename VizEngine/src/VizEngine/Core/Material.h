@@ -17,7 +17,7 @@ namespace VizEngine
 	 * This is separate from the Phong Material in Light.h.
 	 * Use this for models loaded from glTF files.
 	 */
-	struct VizEngine_API PBRMaterial
+	struct VizEngine_API Material
 	{
 		std::string Name = "Unnamed";
 
@@ -45,14 +45,14 @@ namespace VizEngine
 		// Double-sided rendering
 		bool DoubleSided = false;
 
-		PBRMaterial() = default;
+		Material() = default;
 
 		// Simple constructor with just color
-		explicit PBRMaterial(const glm::vec4& baseColor)
+		explicit Material(const glm::vec4& baseColor)
 			: BaseColor(baseColor) {}
 
 		// Constructor with color and metallic/roughness
-		PBRMaterial(const glm::vec4& baseColor, float metallic, float roughness)
+		Material(const glm::vec4& baseColor, float metallic, float roughness)
 			: BaseColor(baseColor), Metallic(metallic), Roughness(roughness) {}
 
 		// Upload material uniforms to PBR shader
@@ -71,4 +71,5 @@ namespace VizEngine
 		}
 	};
 }
+
 

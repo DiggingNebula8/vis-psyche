@@ -61,24 +61,5 @@ namespace VizEngine
 			, Specular(color) {}
 	};
 
-	/**
-	 * Material properties for Phong lighting model.
-	 */
-	struct Material
-	{
-		glm::vec3 Ambient   = glm::vec3(1.0f);    // How much ambient light is reflected
-		glm::vec3 Diffuse   = glm::vec3(1.0f);    // Main surface color
-		glm::vec3 Specular  = glm::vec3(0.5f);    // Specular highlight color
-		float Roughness     = 0.5f;               // Surface roughness (0 = shiny, 1 = matte)
-
-		Material() = default;
-
-		Material(const glm::vec3& color, float roughness = 0.5f)
-			: Ambient(color)
-			, Diffuse(color)
-			, Specular(glm::vec3(0.5f))
-			, Roughness(roughness) {}
-	};
 }
-
 
