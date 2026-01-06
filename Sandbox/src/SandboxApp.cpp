@@ -213,7 +213,7 @@ public:
 		// =========================================================================
 		// PBR Rendering Setup (Chapter 33)
 		// =========================================================================
-		m_PBRShader = std::make_unique<VizEngine::Shader>("resources/shaders/pbr.shader");
+		m_DefaultLitShader = std::make_unique<VizEngine::Shader>("resources/shaders/defaultlit.shader");
 		m_SphereMesh = std::shared_ptr<VizEngine::Mesh>(VizEngine::Mesh::CreateSphere(1.0f, 32).release());
 		VP_INFO("PBR rendering initialized");
 	}
@@ -327,25 +327,33 @@ public:
 		// Clear screen
 		renderer.Clear(m_ClearColor);
 
-		m_PBRShader->Bind();
+		m_DefaultLitShader->Bind();
 
 		// Set camera matrices
-		m_PBRShader->SetMatrix4fv("u_View", m_Camera.GetViewMatrix());
-		m_PBRShader->SetMatrix4fv("u_Projection", m_Camera.GetProjectionMatrix());
-		m_PBRShader->SetVec3("u_ViewPos", m_Camera.GetPosition());
+		m_DefaultLitShader->SetMatrix4fv("u_View", m_Camera.GetViewMatrix());
+		m_DefaultLitShader->SetMatrix4fv("u_Projection", m_Camera.GetProjectionMatrix());
+		m_DefaultLitShader->SetVec3("u_ViewPos", m_Camera.GetPosition());
 
 		// Set PBR point lights
-		m_PBRShader->SetInt("u_LightCount", 4);
+		m_DefaultLitShader->SetInt("u_LightCount", 4);
 		for (int i = 0; i < 4; ++i)
 		{
-			m_PBRShader->SetVec3("u_LightPositions[" + std::to_string(i) + "]", m_PBRLightPositions[i]);
-			m_PBRShader->SetVec3("u_LightColors[" + std::to_string(i) + "]", m_PBRLightColors[i]);
+			m_DefaultLitShader->SetVec3("u_LightPositions[" + std::to_string(i) + "]", m_PBRLightPositions[i]);
+			m_DefaultLitShader->SetVec3("u_LightColors[" + std::to_string(i) + "]", m_PBRLightColors[i]);
 		}
 
 		// Set directional light from ImGui Lighting panel
-		m_PBRShader->SetBool("u_UseDirLight", true);
-		m_PBRShader->SetVec3("u_DirLightDirection", m_Light.GetDirection());
-		m_PBRShader->SetVec3("u_DirLightColor", m_Light.Diffuse * 2.0f);
+		m_DefaultLitShader->SetBool("u_UseDirLight", true);
+		m_DefaultLitShader->SetVec3("u_DirLightDirection", m_Light.GetDirection());
+		m_DefaultLitShader->SetVec3("u_DirLightColor", m_Light.Diffuse * 2.0f);
+
+		// Set shadow mapping uniforms
+		m_DefaultLitShader->SetMatrix4fv("u_LightSpaceMatrix", m_LightSpaceMatrix);
+		if (m_ShadowMapDepth)
+		{
+			m_ShadowMapDepth->Bind(1);
+			m_DefaultLitShader->SetInt("u_ShadowMap", 1);
+		}
 
 		// Render scene objects with PBR
 		for (auto& obj : m_Scene)
@@ -353,28 +361,28 @@ public:
 			if (!obj.Active || !obj.MeshPtr) continue;
 
 			glm::mat4 model = obj.ObjectTransform.GetModelMatrix();
-			m_PBRShader->SetMatrix4fv("u_Model", model);
+			m_DefaultLitShader->SetMatrix4fv("u_Model", model);
 
 			// Use object's material properties for PBR
-			m_PBRShader->SetVec3("u_Albedo", glm::vec3(obj.Color));
-			m_PBRShader->SetFloat("u_Metallic", obj.Metallic);
-			m_PBRShader->SetFloat("u_Roughness", obj.Roughness);
-			m_PBRShader->SetFloat("u_AO", 1.0f);
+			m_DefaultLitShader->SetVec3("u_Albedo", glm::vec3(obj.Color));
+			m_DefaultLitShader->SetFloat("u_Metallic", obj.Metallic);
+			m_DefaultLitShader->SetFloat("u_Roughness", obj.Roughness);
+			m_DefaultLitShader->SetFloat("u_AO", 1.0f);
 
 			// Bind texture if available
 			if (obj.TexturePtr)
 			{
 				obj.TexturePtr->Bind(0);
-				m_PBRShader->SetInt("u_AlbedoTexture", 0);
-				m_PBRShader->SetBool("u_UseAlbedoTexture", true);
+				m_DefaultLitShader->SetInt("u_AlbedoTexture", 0);
+				m_DefaultLitShader->SetBool("u_UseAlbedoTexture", true);
 			}
 			else
 			{
-				m_PBRShader->SetBool("u_UseAlbedoTexture", false);
+				m_DefaultLitShader->SetBool("u_UseAlbedoTexture", false);
 			}
 
 			obj.MeshPtr->Bind();
-			renderer.Draw(obj.MeshPtr->GetVertexArray(), obj.MeshPtr->GetIndexBuffer(), *m_PBRShader);
+			renderer.Draw(obj.MeshPtr->GetVertexArray(), obj.MeshPtr->GetIndexBuffer(), *m_DefaultLitShader);
 		}
 
 		// =========================================================================
@@ -390,9 +398,9 @@ public:
 			renderer.Clear(m_ClearColor);
 
 			// PBR shader already configured, just need to update camera for new aspect
-			m_PBRShader->Bind();
-			m_PBRShader->SetMatrix4fv("u_View", m_Camera.GetViewMatrix());
-			m_PBRShader->SetMatrix4fv("u_Projection", m_Camera.GetProjectionMatrix());
+			m_DefaultLitShader->Bind();
+			m_DefaultLitShader->SetMatrix4fv("u_View", m_Camera.GetViewMatrix());
+			m_DefaultLitShader->SetMatrix4fv("u_Projection", m_Camera.GetProjectionMatrix());
 
 			// Render scene objects with PBR
 			for (auto& obj : m_Scene)
@@ -400,26 +408,26 @@ public:
 				if (!obj.Active || !obj.MeshPtr) continue;
 
 				glm::mat4 model = obj.ObjectTransform.GetModelMatrix();
-				m_PBRShader->SetMatrix4fv("u_Model", model);
-				m_PBRShader->SetVec3("u_Albedo", glm::vec3(obj.Color));
-				m_PBRShader->SetFloat("u_Metallic", obj.Metallic);
-				m_PBRShader->SetFloat("u_Roughness", obj.Roughness);
-				m_PBRShader->SetFloat("u_AO", 1.0f);
+				m_DefaultLitShader->SetMatrix4fv("u_Model", model);
+				m_DefaultLitShader->SetVec3("u_Albedo", glm::vec3(obj.Color));
+				m_DefaultLitShader->SetFloat("u_Metallic", obj.Metallic);
+				m_DefaultLitShader->SetFloat("u_Roughness", obj.Roughness);
+				m_DefaultLitShader->SetFloat("u_AO", 1.0f);
 
 				// Bind texture if available
 				if (obj.TexturePtr)
 				{
 					obj.TexturePtr->Bind(0);
-					m_PBRShader->SetInt("u_AlbedoTexture", 0);
-					m_PBRShader->SetBool("u_UseAlbedoTexture", true);
+					m_DefaultLitShader->SetInt("u_AlbedoTexture", 0);
+					m_DefaultLitShader->SetBool("u_UseAlbedoTexture", true);
 				}
 				else
 				{
-					m_PBRShader->SetBool("u_UseAlbedoTexture", false);
+					m_DefaultLitShader->SetBool("u_UseAlbedoTexture", false);
 				}
 
 				obj.MeshPtr->Bind();
-				renderer.Draw(obj.MeshPtr->GetVertexArray(), obj.MeshPtr->GetIndexBuffer(), *m_PBRShader);
+				renderer.Draw(obj.MeshPtr->GetVertexArray(), obj.MeshPtr->GetIndexBuffer(), *m_DefaultLitShader);
 			}
 		
 			// Render Skybox to offscreen framebuffer
@@ -867,7 +875,7 @@ private:
 	bool m_ShowSkybox = true;
 
 	// PBR Rendering (Chapter 33)
-	std::unique_ptr<VizEngine::Shader> m_PBRShader;
+	std::unique_ptr<VizEngine::Shader> m_DefaultLitShader;
 	std::shared_ptr<VizEngine::Mesh> m_SphereMesh;
 	glm::vec3 m_PBRLightPositions[4] = {
 		glm::vec3(-10.0f,  10.0f, 10.0f),
@@ -892,3 +900,4 @@ std::unique_ptr<VizEngine::Application> VizEngine::CreateApplication(VizEngine::
 	config.Height = 800;
 	return std::make_unique<Sandbox>();
 }
+
