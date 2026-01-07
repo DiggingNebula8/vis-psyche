@@ -432,10 +432,13 @@ public:
 		// =========================================================================
 		// Pass 2: Render scene with PBR to HDR Framebuffer (Chapter 35)
 		// =========================================================================
-		m_HDRFramebuffer->Bind();
-		renderer.Clear(m_ClearColor);
+		// Validate HDR resources before rendering
+		if (m_HDREnabled && m_HDRFramebuffer && m_DefaultLitShader && m_HDRFramebuffer->IsComplete())
+		{
+			m_HDRFramebuffer->Bind();
+			renderer.Clear(m_ClearColor);
 
-		m_DefaultLitShader->Bind();
+			m_DefaultLitShader->Bind();
 
 		// Set camera matrices
 		m_DefaultLitShader->SetMatrix4fv("u_View", m_Camera.GetViewMatrix());
@@ -483,24 +486,90 @@ public:
 			m_DefaultLitShader->SetBool("u_UseIBL", false);
 		}
 
-		// Render scene objects with PBR
-		RenderSceneObjects();
+			// Render scene objects with PBR
+			RenderSceneObjects();
 
-		// =========================================================================
-		// Render Skybox to HDR Buffer
-		// =========================================================================
-		if (m_ShowSkybox && m_Skybox)
-		{
-			m_Skybox->Render(m_Camera);
+			// =========================================================================
+			// Render Skybox to HDR Buffer
+			// =========================================================================
+			if (m_ShowSkybox && m_Skybox)
+			{
+				m_Skybox->Render(m_Camera);
+			}
+
+			m_HDRFramebuffer->Unbind();
 		}
-
-		m_HDRFramebuffer->Unbind();
+		else
+		{
+			// HDR unavailable - fall back to direct LDR rendering
+			VP_WARN("HDR rendering disabled, falling back to LDR path");
+			
+			// Render directly to screen without HDR
+			renderer.Clear(m_ClearColor);
+			
+			if (m_DefaultLitShader)
+			{
+				m_DefaultLitShader->Bind();
+				
+				// Set camera matrices
+				m_DefaultLitShader->SetMatrix4fv("u_View", m_Camera.GetViewMatrix());
+				m_DefaultLitShader->SetMatrix4fv("u_Projection", m_Camera.GetProjectionMatrix());
+				m_DefaultLitShader->SetVec3("u_ViewPos", m_Camera.GetPosition());
+				
+				// Set PBR point lights
+				m_DefaultLitShader->SetInt("u_LightCount", 4);
+				for (int i = 0; i < 4; ++i)
+				{
+					m_DefaultLitShader->SetVec3("u_LightPositions[" + std::to_string(i) + "]", m_PBRLightPositions[i]);
+					m_DefaultLitShader->SetVec3("u_LightColors[" + std::to_string(i) + "]", m_PBRLightColors[i]);
+				}
+				
+				// Set directional light
+				m_DefaultLitShader->SetBool("u_UseDirLight", true);
+				m_DefaultLitShader->SetVec3("u_DirLightDirection", m_Light.GetDirection());
+				m_DefaultLitShader->SetVec3("u_DirLightColor", m_Light.Diffuse * 2.0f);
+				
+				// Set shadow mapping uniforms
+				m_DefaultLitShader->SetMatrix4fv("u_LightSpaceMatrix", m_LightSpaceMatrix);
+				if (m_ShadowMapDepth)
+				{
+					m_ShadowMapDepth->Bind(1);
+					m_DefaultLitShader->SetInt("u_ShadowMap", 1);
+				}
+				
+				// Bind IBL textures
+				if (m_UseIBL && m_IrradianceMap && m_PrefilteredMap && m_BRDFLut)
+				{
+					m_IrradianceMap->Bind(5);
+					m_DefaultLitShader->SetInt("u_IrradianceMap", 5);
+					m_PrefilteredMap->Bind(6);
+					m_DefaultLitShader->SetInt("u_PrefilteredMap", 6);
+					m_BRDFLut->Bind(7);
+					m_DefaultLitShader->SetInt("u_BRDF_LUT", 7);
+					m_DefaultLitShader->SetFloat("u_MaxReflectionLOD", 4.0f);
+					m_DefaultLitShader->SetBool("u_UseIBL", true);
+				}
+				else
+				{
+					m_DefaultLitShader->SetBool("u_UseIBL", false);
+				}
+				
+				// Render scene
+				RenderSceneObjects();
+				
+				// Render skybox
+				if (m_ShowSkybox && m_Skybox)
+				{
+					m_Skybox->Render(m_Camera);
+				}
+			}
+		}
 
 		// =========================================================================
 		// Pass 3: Bloom Processing (Chapter 36)
 		// =========================================================================
 		std::shared_ptr<VizEngine::Texture> bloomTexture = nullptr;
-		if (m_EnableBloom && m_Bloom)
+		if (m_HDREnabled && m_EnableBloom && m_Bloom && m_HDRColorTexture)
 		{
 			// Update bloom parameters (in case they changed via ImGui)
 			m_Bloom->SetThreshold(m_BloomThreshold);
@@ -514,49 +583,58 @@ public:
 		// =========================================================================
 		// Pass 4: Tone Mapping + Post-Processing to Screen (Chapter 35 & 36)
 		// =========================================================================
-		renderer.SetViewport(0, 0, m_WindowWidth, m_WindowHeight);
-		renderer.Clear(m_ClearColor);
-
-		// Disable depth test for fullscreen quad
-		renderer.DisableDepthTest();
-
-		// Bind tone mapping shader
-		m_ToneMappingShader->Bind();
-
-		// Bind HDR texture
-		m_HDRColorTexture->Bind(0);
-		m_ToneMappingShader->SetInt("u_HDRBuffer", 0);
-
-		// Set tone mapping parameters
-		m_ToneMappingShader->SetInt("u_ToneMappingMode", m_ToneMappingMode);
-		m_ToneMappingShader->SetFloat("u_Exposure", m_Exposure);
-		m_ToneMappingShader->SetFloat("u_Gamma", m_Gamma);
-		m_ToneMappingShader->SetFloat("u_WhitePoint", m_WhitePoint);
-
-		// Bloom parameters
-		m_ToneMappingShader->SetBool("u_EnableBloom", m_EnableBloom);
-		m_ToneMappingShader->SetFloat("u_BloomIntensity", m_BloomIntensity);
-		if (bloomTexture)
+		// Only perform tone mapping if HDR pipeline is active
+		if (m_HDREnabled && m_ToneMappingShader && m_HDRColorTexture && m_FullscreenQuad)
 		{
-			bloomTexture->Bind(1);
-			m_ToneMappingShader->SetInt("u_BloomTexture", 1);
+			renderer.SetViewport(0, 0, m_WindowWidth, m_WindowHeight);
+			// Don't clear here if HDR is disabled - LDR fallback already rendered
+			renderer.Clear(m_ClearColor);
+
+			// Disable depth test for fullscreen quad
+			renderer.DisableDepthTest();
+
+			// Bind tone mapping shader
+			m_ToneMappingShader->Bind();
+
+			// Bind HDR texture
+			m_HDRColorTexture->Bind(0);
+			m_ToneMappingShader->SetInt("u_HDRBuffer", 0);
+
+			// Set tone mapping parameters
+			m_ToneMappingShader->SetInt("u_ToneMappingMode", m_ToneMappingMode);
+			m_ToneMappingShader->SetFloat("u_Exposure", m_Exposure);
+			m_ToneMappingShader->SetFloat("u_Gamma", m_Gamma);
+			m_ToneMappingShader->SetFloat("u_WhitePoint", m_WhitePoint);
+
+			// Bloom parameters
+			m_ToneMappingShader->SetBool("u_EnableBloom", m_EnableBloom);
+			m_ToneMappingShader->SetFloat("u_BloomIntensity", m_BloomIntensity);
+			if (bloomTexture)
+			{
+				bloomTexture->Bind(1);
+				m_ToneMappingShader->SetInt("u_BloomTexture", 1);
+			}
+
+			// Color grading parameters
+			m_ToneMappingShader->SetBool("u_EnableColorGrading", m_EnableColorGrading);
+			m_ToneMappingShader->SetFloat("u_LUTContribution", m_LUTContribution);
+			m_ToneMappingShader->SetFloat("u_Saturation", m_Saturation);
+			m_ToneMappingShader->SetFloat("u_Contrast", m_Contrast);
+			m_ToneMappingShader->SetFloat("u_Brightness", m_Brightness);
+
+			if (m_EnableColorGrading && m_ColorGradingLUT != 0)
+			{
+				VizEngine::Texture::BindTexture3D(m_ColorGradingLUT, 2);
+				m_ToneMappingShader->SetInt("u_ColorGradingLUT", 2);
+			}
+
+			// Render fullscreen quad
+			m_FullscreenQuad->Render();
 		}
-
-		// Color grading parameters
-		m_ToneMappingShader->SetBool("u_EnableColorGrading", m_EnableColorGrading);
-		m_ToneMappingShader->SetFloat("u_LUTContribution", m_LUTContribution);
-		m_ToneMappingShader->SetFloat("u_Saturation", m_Saturation);
-		m_ToneMappingShader->SetFloat("u_Contrast", m_Contrast);
-		m_ToneMappingShader->SetFloat("u_Brightness", m_Brightness);
-
-		if (m_EnableColorGrading && m_ColorGradingLUT != 0)
+		else if (!m_HDREnabled)
 		{
-			VizEngine::Texture::BindTexture3D(m_ColorGradingLUT, 2);
-			m_ToneMappingShader->SetInt("u_ColorGradingLUT", 2);
+			// HDR disabled - LDR fallback already rendered directly, no tone mapping needed
 		}
-
-		// Render fullscreen quad
-		m_FullscreenQuad->Render();
 
 		// Re-enable depth test
 		renderer.EnableDepthTest();
@@ -979,20 +1057,43 @@ public:
 					{
 						VP_INFO("Recreating HDR framebuffer: {}x{}", m_WindowWidth, m_WindowHeight);
 
-						m_HDRColorTexture = std::make_shared<VizEngine::Texture>(
+						// Preserve old resources in case new creation fails
+						auto oldFramebuffer = m_HDRFramebuffer;
+						auto oldColorTexture = m_HDRColorTexture;
+						auto oldDepthTexture = m_HDRDepthTexture;
+
+						// Attempt to create new resources
+						auto newColorTexture = std::make_shared<VizEngine::Texture>(
 							m_WindowWidth, m_WindowHeight, GL_RGB16F, GL_RGB, GL_FLOAT
 						);
-						m_HDRDepthTexture = std::make_shared<VizEngine::Texture>(
+						auto newDepthTexture = std::make_shared<VizEngine::Texture>(
 							m_WindowWidth, m_WindowHeight, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT
 						);
 
-						m_HDRFramebuffer = std::make_shared<VizEngine::Framebuffer>(m_WindowWidth, m_WindowHeight);
-						m_HDRFramebuffer->AttachColorTexture(m_HDRColorTexture, 0);
-						m_HDRFramebuffer->AttachDepthTexture(m_HDRDepthTexture);
+						auto newFramebuffer = std::make_shared<VizEngine::Framebuffer>(m_WindowWidth, m_WindowHeight);
+						newFramebuffer->AttachColorTexture(newColorTexture, 0);
+						newFramebuffer->AttachDepthTexture(newDepthTexture);
 
-						if (!m_HDRFramebuffer->IsComplete())
+						// Validate new framebuffer
+						if (!newFramebuffer->IsComplete())
 						{
-							VP_ERROR("HDR Framebuffer incomplete after resize!");
+							VP_ERROR("HDR Framebuffer incomplete after resize! Restoring previous framebuffer and disabling HDR.");
+							
+							// Restore old resources (they remain valid)
+							m_HDRFramebuffer = oldFramebuffer;
+							m_HDRColorTexture = oldColorTexture;
+							m_HDRDepthTexture = oldDepthTexture;
+							
+							// Disable HDR rendering to prevent crashes
+							m_HDREnabled = false;
+						}
+						else
+						{
+							// Success - swap in new resources
+							m_HDRFramebuffer = newFramebuffer;
+							m_HDRColorTexture = newColorTexture;
+							m_HDRDepthTexture = newDepthTexture;
+							m_HDREnabled = true;
 						}
 					}
 
@@ -1222,6 +1323,7 @@ private:
 	float m_Exposure = 1.0f;
 	float m_Gamma = 2.2f;
 	float m_WhitePoint = 4.0f;      // For Reinhard Extended
+	bool m_HDREnabled = true;       // Tracks HDR pipeline availability
 
 	// Post-Processing (Chapter 36)
 	std::unique_ptr<VizEngine::Bloom> m_Bloom;
