@@ -30,6 +30,21 @@ uniform float u_Exposure;       // For exposure-based and manual control
 uniform float u_Gamma;          // Typically 2.2
 uniform float u_WhitePoint;     // For Reinhard Extended
 
+// Bloom (Chapter 36)
+uniform sampler2D u_BloomTexture;
+uniform float u_BloomIntensity;
+uniform bool u_EnableBloom;
+
+// Color Grading (Chapter 36)
+uniform sampler3D u_ColorGradingLUT;
+uniform bool u_EnableColorGrading;
+uniform float u_LUTContribution;  // Blend factor (0=off, 1=full)
+
+// Parametric color controls
+uniform float u_Saturation;
+uniform float u_Contrast;
+uniform float u_Brightness;
+
 // ============================================================================
 // Tone Mapping Functions
 // ============================================================================
@@ -99,12 +114,43 @@ vec3 Uncharted2ToneMapping(vec3 color)
 }
 
 // ============================================================================
+// Parametric Color Grading
+// ============================================================================
+
+vec3 ApplyParametricGrading(vec3 color)
+{
+    // Saturation
+    vec3 grayscale = vec3(dot(color, vec3(0.2126, 0.7152, 0.0722)));
+    color = mix(grayscale, color, u_Saturation);
+    
+    // Contrast
+    color = (color - 0.5) * u_Contrast + 0.5;
+    
+    // Brightness
+    color = color + u_Brightness;
+    
+    // Clamp to valid range
+    color = clamp(color, 0.0, 1.0);
+    
+    return color;
+}
+
+// ============================================================================
 // Main Fragment Shader
 // ============================================================================
 void main()
 {
     // Sample HDR color from framebuffer
     vec3 hdrColor = texture(u_HDRBuffer, v_TexCoords).rgb;
+    
+    // ========================================================================
+    // Bloom Composite (BEFORE tone mapping, in HDR space)
+    // ========================================================================
+    if (u_EnableBloom)
+    {
+        vec3 bloomColor = texture(u_BloomTexture, v_TexCoords).rgb;
+        hdrColor += bloomColor * u_BloomIntensity;
+    }
     
     // Apply exposure (for all modes except Reinhard simple)
     vec3 exposedColor = hdrColor * u_Exposure;
@@ -141,6 +187,20 @@ void main()
     {
         // Fallback: no tone mapping (for debugging)
         ldrColor = clamp(exposedColor, 0.0, 1.0);
+    }
+    
+    // ========================================================================
+    // Color Grading (AFTER tone mapping, in LDR space [0,1])
+    // ========================================================================
+    
+    // Apply parametric grading first
+    ldrColor = ApplyParametricGrading(ldrColor);
+    
+    // Apply LUT grading (if enabled)
+    if (u_EnableColorGrading)
+    {
+        vec3 lutColor = texture(u_ColorGradingLUT, ldrColor).rgb;
+        ldrColor = mix(ldrColor, lutColor, u_LUTContribution);
     }
     
     // Apply gamma correction (linear -> sRGB)

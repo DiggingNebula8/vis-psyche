@@ -1,6 +1,7 @@
 #include <VizEngine.h>
 #include <VizEngine/Events/ApplicationEvent.h>
 #include <VizEngine/Events/KeyEvent.h>
+#include <VizEngine/Renderer/Bloom.h>
 #include <chrono>
 
 class Sandbox : public VizEngine::Application
@@ -299,6 +300,31 @@ public:
 		m_FullscreenQuad = std::make_shared<VizEngine::FullscreenQuad>();
 
 		VP_INFO("HDR pipeline initialized successfully");
+
+		// =========================================================================
+		// Post-Processing Setup (Chapter 36)
+		// =========================================================================
+		VP_INFO("Setting up post-processing...");
+
+		// Create Bloom Processor (half resolution for performance)
+		int bloomWidth = m_WindowWidth / 2;
+		int bloomHeight = m_WindowHeight / 2;
+		m_Bloom = std::make_unique<VizEngine::Bloom>(bloomWidth, bloomHeight);
+		m_Bloom->SetThreshold(m_BloomThreshold);
+		m_Bloom->SetKnee(m_BloomKnee);
+		m_Bloom->SetBlurPasses(m_BloomBlurPasses);
+
+		VP_INFO("Bloom initialized: {}x{}", bloomWidth, bloomHeight);
+
+		// Create Neutral Color Grading LUT (16x16x16)
+		m_ColorGradingLUT = VizEngine::Texture::CreateNeutralLUT3D(16);
+
+		if (m_ColorGradingLUT == 0)
+		{
+			VP_ERROR("Failed to create color grading LUT!");
+		}
+
+		VP_INFO("Post-processing initialized successfully");
 	}
 
 	void OnUpdate(float deltaTime) override
@@ -471,7 +497,22 @@ public:
 		m_HDRFramebuffer->Unbind();
 
 		// =========================================================================
-		// Pass 3: Tone Mapping to Screen (Chapter 35)
+		// Pass 3: Bloom Processing (Chapter 36)
+		// =========================================================================
+		std::shared_ptr<VizEngine::Texture> bloomTexture = nullptr;
+		if (m_EnableBloom && m_Bloom)
+		{
+			// Update bloom parameters (in case they changed via ImGui)
+			m_Bloom->SetThreshold(m_BloomThreshold);
+			m_Bloom->SetKnee(m_BloomKnee);
+			m_Bloom->SetBlurPasses(m_BloomBlurPasses);
+
+			// Process HDR buffer to generate bloom
+			bloomTexture = m_Bloom->Process(m_HDRColorTexture);
+		}
+
+		// =========================================================================
+		// Pass 4: Tone Mapping + Post-Processing to Screen (Chapter 35 & 36)
 		// =========================================================================
 		renderer.SetViewport(0, 0, m_WindowWidth, m_WindowHeight);
 		renderer.Clear(m_ClearColor);
@@ -491,6 +532,28 @@ public:
 		m_ToneMappingShader->SetFloat("u_Exposure", m_Exposure);
 		m_ToneMappingShader->SetFloat("u_Gamma", m_Gamma);
 		m_ToneMappingShader->SetFloat("u_WhitePoint", m_WhitePoint);
+
+		// Bloom parameters
+		m_ToneMappingShader->SetBool("u_EnableBloom", m_EnableBloom);
+		m_ToneMappingShader->SetFloat("u_BloomIntensity", m_BloomIntensity);
+		if (bloomTexture)
+		{
+			bloomTexture->Bind(1);
+			m_ToneMappingShader->SetInt("u_BloomTexture", 1);
+		}
+
+		// Color grading parameters
+		m_ToneMappingShader->SetBool("u_EnableColorGrading", m_EnableColorGrading);
+		m_ToneMappingShader->SetFloat("u_LUTContribution", m_LUTContribution);
+		m_ToneMappingShader->SetFloat("u_Saturation", m_Saturation);
+		m_ToneMappingShader->SetFloat("u_Contrast", m_Contrast);
+		m_ToneMappingShader->SetFloat("u_Brightness", m_Brightness);
+
+		if (m_EnableColorGrading && m_ColorGradingLUT != 0)
+		{
+			VizEngine::Texture::BindTexture3D(m_ColorGradingLUT, 2);
+			m_ToneMappingShader->SetInt("u_ColorGradingLUT", 2);
+		}
 
 		// Render fullscreen quad
 		m_FullscreenQuad->Render();
@@ -864,6 +927,35 @@ public:
 		}
 
 		uiManager.EndWindow();
+
+		// =========================================================================
+		// Post-Processing Panel (Chapter 36)
+		// =========================================================================
+		uiManager.StartWindow("Post-Processing");
+
+		// Bloom section
+		if (uiManager.CollapsingHeader("Bloom"))
+		{
+			uiManager.Checkbox("Enable Bloom", &m_EnableBloom);
+			uiManager.SliderFloat("Threshold", &m_BloomThreshold, 0.0f, 5.0f);
+			uiManager.SliderFloat("Knee", &m_BloomKnee, 0.0f, 1.0f);
+			uiManager.SliderFloat("Intensity", &m_BloomIntensity, 0.0f, 0.2f);
+			uiManager.SliderInt("Blur Passes", &m_BloomBlurPasses, 1, 10);
+		}
+
+		// Color Grading section
+		if (uiManager.CollapsingHeader("Color Grading"))
+		{
+			uiManager.Checkbox("Enable Color Grading", &m_EnableColorGrading);
+			uiManager.SliderFloat("LUT Contribution", &m_LUTContribution, 0.0f, 1.0f);
+			uiManager.Separator();
+			uiManager.Text("Parametric Controls");
+			uiManager.SliderFloat("Saturation", &m_Saturation, 0.0f, 2.0f);
+			uiManager.SliderFloat("Contrast", &m_Contrast, 0.5f, 2.0f);
+			uiManager.SliderFloat("Brightness", &m_Brightness, -0.5f, 0.5f);
+		}
+
+		uiManager.EndWindow();
 	}
 
 	void OnEvent(VizEngine::Event& e) override
@@ -902,6 +994,16 @@ public:
 						{
 							VP_ERROR("HDR Framebuffer incomplete after resize!");
 						}
+					}
+
+					// Recreate Bloom processor with new dimensions (Chapter 36)
+					if (m_Bloom)
+					{
+						VP_INFO("Recreating Bloom processor: {}x{}", m_WindowWidth / 2, m_WindowHeight / 2);
+						m_Bloom = std::make_unique<VizEngine::Bloom>(m_WindowWidth / 2, m_WindowHeight / 2);
+						m_Bloom->SetThreshold(m_BloomThreshold);
+						m_Bloom->SetKnee(m_BloomKnee);
+						m_Bloom->SetBlurPasses(m_BloomBlurPasses);
 					}
 				}
 				return false;  // Don't consume, allow propagation
@@ -1115,6 +1217,22 @@ private:
 	float m_Exposure = 1.0f;
 	float m_Gamma = 2.2f;
 	float m_WhitePoint = 4.0f;      // For Reinhard Extended
+
+	// Post-Processing (Chapter 36)
+	std::unique_ptr<VizEngine::Bloom> m_Bloom;
+	bool m_EnableBloom = true;
+	float m_BloomThreshold = 1.0f;
+	float m_BloomKnee = 0.5f;
+	float m_BloomIntensity = 0.04f;
+	int m_BloomBlurPasses = 5;
+
+	// Color Grading (Chapter 36)
+	unsigned int m_ColorGradingLUT = 0;  // Raw OpenGL texture ID
+	bool m_EnableColorGrading = false;
+	float m_LUTContribution = 1.0f;
+	float m_Saturation = 1.0f;
+	float m_Contrast = 1.0f;
+	float m_Brightness = 0.0f;
 };
 
 std::unique_ptr<VizEngine::Application> VizEngine::CreateApplication(VizEngine::EngineConfig& config)

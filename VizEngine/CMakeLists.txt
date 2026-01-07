@@ -32,6 +32,7 @@ set(VIZENGINE_SOURCES
     
     # Renderer
     src/VizEngine/Renderer/Skybox.cpp
+    src/VizEngine/Renderer/Bloom.cpp
     
     # GUI
     src/VizEngine/GUI/UIManager.cpp
@@ -80,6 +81,7 @@ set(VIZENGINE_HEADERS
     
     # Renderer headers
     src/VizEngine/Renderer/Skybox.h
+    src/VizEngine/Renderer/Bloom.h
     
     # GUI headers
     src/VizEngine/GUI/UIManager.h
