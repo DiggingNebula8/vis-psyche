@@ -60,12 +60,13 @@ namespace VizEngine
 			return;
 		}
 
-		m_IsValid = true;
-
 		// ====================================================================
 		// Create Fullscreen Quad
 		// ====================================================================
 		m_Quad = std::make_shared<FullscreenQuad>();
+
+		// All validations passed - mark as valid
+		m_IsValid = true;
 
 		VP_CORE_INFO("Bloom created: {}x{}, {} blur passes", width, height, m_BlurPasses);
 	}
@@ -77,6 +78,13 @@ namespace VizEngine
 		{
 			VP_CORE_ERROR("Bloom::Process called on invalid Bloom instance");
 			return hdrTexture;  // Return input unchanged
+		}
+
+		// Validate input parameter
+		if (!hdrTexture)
+		{
+			VP_CORE_ERROR("Bloom::Process called with null hdrTexture");
+			return nullptr;
 		}
 
 		// ====================================================================
