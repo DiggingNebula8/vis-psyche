@@ -282,6 +282,7 @@ public:
 		if (!m_HDRFramebuffer->IsComplete())
 		{
 			VP_ERROR("HDR Framebuffer is not complete!");
+			m_HDREnabled = false;
 		}
 		else
 		{
@@ -294,6 +295,7 @@ public:
 		if (!m_ToneMappingShader->IsValid())
 		{
 			VP_ERROR("Failed to load tone mapping shader!");
+			m_HDREnabled = false;
 		}
 
 		// Create fullscreen quad
@@ -1101,10 +1103,39 @@ public:
 					if (m_Bloom)
 					{
 						VP_INFO("Recreating Bloom processor: {}x{}", m_WindowWidth / 2, m_WindowHeight / 2);
-						m_Bloom = std::make_unique<VizEngine::Bloom>(m_WindowWidth / 2, m_WindowHeight / 2);
-						m_Bloom->SetThreshold(m_BloomThreshold);
-						m_Bloom->SetKnee(m_BloomKnee);
-						m_Bloom->SetBlurPasses(m_BloomBlurPasses);
+						
+						// Preserve old bloom processor and settings
+						auto oldBloom = std::move(m_Bloom);
+						
+						try
+						{
+							// Attempt to create new bloom processor
+							auto newBloom = std::make_unique<VizEngine::Bloom>(m_WindowWidth / 2, m_WindowHeight / 2);
+							
+							if (newBloom)
+							{
+								// Copy settings from old bloom to new
+								newBloom->SetThreshold(m_BloomThreshold);
+								newBloom->SetKnee(m_BloomKnee);
+								newBloom->SetBlurPasses(m_BloomBlurPasses);
+								
+								// Success - swap in new bloom processor
+								m_Bloom = std::move(newBloom);
+							}
+							else
+							{
+								// Failed to create - restore old bloom
+								VP_ERROR("Failed to create new Bloom processor, keeping previous instance");
+								m_Bloom = std::move(oldBloom);
+							}
+						}
+						catch (const std::exception& e)
+						{
+							// Exception during creation - restore old bloom
+							VP_ERROR("Exception while recreating Bloom processor: {}", e.what());
+							VP_ERROR("Keeping previous Bloom instance");
+							m_Bloom = std::move(oldBloom);
+						}
 					}
 				}
 				return false;  // Don't consume, allow propagation
