@@ -1047,7 +1047,12 @@ public:
 
 	void OnDestroy() override
 	{
-		// RAII handles cleanup
+		// Clean up raw OpenGL resources not wrapped in RAII
+		if (m_ColorGradingLUT != 0)
+		{
+			VizEngine::Texture::DeleteTexture3D(m_ColorGradingLUT);
+			m_ColorGradingLUT = 0;
+		}
 	}
 
 private:
