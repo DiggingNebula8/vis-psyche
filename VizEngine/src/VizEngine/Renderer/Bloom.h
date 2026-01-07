@@ -45,6 +45,9 @@ namespace VizEngine
 		float GetIntensity() const { return m_Intensity; }
 		int GetBlurPasses() const { return m_BlurPasses; }
 
+		// Validation
+		bool IsValid() const { return m_IsValid; }
+
 	private:
 		// Framebuffers for multi-pass rendering
 		std::shared_ptr<Framebuffer> m_ExtractFB;
@@ -70,5 +73,8 @@ namespace VizEngine
 		int m_BlurPasses = 5;        // Number of blur iterations (more = softer)
 
 		int m_Width, m_Height;
+
+	// Validation flag
+	bool m_IsValid = false;
 	};
 }

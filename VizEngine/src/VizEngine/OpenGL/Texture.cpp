@@ -327,6 +327,19 @@ namespace VizEngine
 
 	unsigned int Texture::CreateNeutralLUT3D(int size)
 	{
+		// Validate size parameter to prevent division by zero and invalid textures
+		if (size <= 0)
+		{
+			VP_CORE_ERROR("CreateNeutralLUT3D: Invalid size {} (must be > 0)", size);
+			return 0;
+		}
+
+		if (size == 1)
+		{
+			VP_CORE_WARN("CreateNeutralLUT3D: size=1 would cause division by zero, clamping to 2");
+			size = 2;
+		}
+
 		const int totalTexels = size * size * size;
 		std::vector<float> lutData(totalTexels * 3);
 

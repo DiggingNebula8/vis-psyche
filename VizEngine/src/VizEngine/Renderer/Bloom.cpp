@@ -51,6 +51,16 @@ namespace VizEngine
 		m_ExtractShader = std::make_shared<Shader>("resources/shaders/bloom_extract.shader");
 		m_BlurShader = std::make_shared<Shader>("resources/shaders/bloom_blur.shader");
 
+		// Validate shaders loaded successfully
+		if (!m_ExtractShader->IsValid() || !m_BlurShader->IsValid())
+		{
+			VP_CORE_ERROR("Bloom: Failed to load shaders!");
+			m_IsValid = false;
+			return;
+		}
+
+		m_IsValid = true;
+
 		// ====================================================================
 		// Create Fullscreen Quad
 		// ====================================================================
@@ -61,6 +71,13 @@ namespace VizEngine
 
 	std::shared_ptr<Texture> Bloom::Process(std::shared_ptr<Texture> hdrTexture)
 	{
+		// Early return if shaders failed to load
+		if (!m_IsValid)
+		{
+			VP_CORE_ERROR("Bloom::Process called on invalid Bloom instance");
+			return hdrTexture;  // Return input unchanged
+		}
+
 		// ====================================================================
 		// Pass 1: Extract Bright Regions
 		// ====================================================================
@@ -125,3 +142,4 @@ namespace VizEngine
 		return sourceTexture;
 	}
 }
+
