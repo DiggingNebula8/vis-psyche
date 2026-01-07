@@ -43,6 +43,7 @@ namespace VizEngine
 		if (!m_ExtractFB->IsComplete() || !m_BlurFB1->IsComplete() || !m_BlurFB2->IsComplete())
 		{
 			VP_CORE_ERROR("Bloom: Framebuffers not complete!");
+		m_IsValid = false;
 		}
 
 		// ====================================================================
@@ -101,13 +102,17 @@ namespace VizEngine
 		m_BlurShader->SetVec2("u_TextureSize", glm::vec2(m_Width, m_Height));
 
 		std::shared_ptr<Texture> sourceTexture = m_ExtractTexture;
-		std::shared_ptr<Framebuffer> targetFB;
 
 		for (int i = 0; i < m_BlurPasses; ++i)
 		{
-			// Horizontal pass
-			targetFB = (i % 2 == 0) ? m_BlurFB1 : m_BlurFB2;
-			targetFB->Bind();
+			// Determine targets for this iteration (explicit to avoid read/write hazards)
+			std::shared_ptr<Framebuffer> horizTargetFB = (i % 2 == 0) ? m_BlurFB1 : m_BlurFB2;
+			std::shared_ptr<Texture> horizTargetTex = (i % 2 == 0) ? m_BlurTexture1 : m_BlurTexture2;
+			std::shared_ptr<Framebuffer> vertTargetFB = (i % 2 == 0) ? m_BlurFB2 : m_BlurFB1;
+			std::shared_ptr<Texture> vertTargetTex = (i % 2 == 0) ? m_BlurTexture2 : m_BlurTexture1;
+
+			// Horizontal pass: read from sourceTexture, write to horizTargetFB
+			horizTargetFB->Bind();
 			glClear(GL_COLOR_BUFFER_BIT);
 
 			m_BlurShader->SetBool("u_Horizontal", true);
@@ -116,26 +121,22 @@ namespace VizEngine
 			sourceTexture->Bind(0);
 			m_Quad->Render();
 
-			targetFB->Unbind();
+			horizTargetFB->Unbind();
 
-			// Update source for next pass
-			sourceTexture = (i % 2 == 0) ? m_BlurTexture1 : m_BlurTexture2;
-
-			// Vertical pass
-			targetFB = (i % 2 == 0) ? m_BlurFB2 : m_BlurFB1;
-			targetFB->Bind();
+			// Vertical pass: read from horizTargetTex, write to vertTargetFB
+			vertTargetFB->Bind();
 			glClear(GL_COLOR_BUFFER_BIT);
 
 			m_BlurShader->SetBool("u_Horizontal", false);
 			m_BlurShader->SetInt("u_Image", 0);
 
-			sourceTexture->Bind(0);
+			horizTargetTex->Bind(0);
 			m_Quad->Render();
 
-			targetFB->Unbind();
+			vertTargetFB->Unbind();
 
 			// Update source for next iteration
-			sourceTexture = (i % 2 == 0) ? m_BlurTexture2 : m_BlurTexture1;
+			sourceTexture = vertTargetTex;
 		}
 
 		// Return final blurred result
