@@ -117,6 +117,16 @@ namespace VizEngine
 		return ImGui::ColorEdit4(label, color);
 	}
 
+	bool UIManager::CollapsingHeader(const char* label)
+	{
+		return ImGui::CollapsingHeader(label);
+	}
+
+	bool UIManager::SliderInt(const char* label, int* value, int min, int max)
+	{
+		return ImGui::SliderInt(label, value, min, max);
+	}
+
 	bool UIManager::Selectable(const char* label, bool selected)
 	{
 		return ImGui::Selectable(label, selected);

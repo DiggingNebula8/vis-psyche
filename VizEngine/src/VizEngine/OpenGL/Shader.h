@@ -51,6 +51,7 @@ namespace VizEngine
 		void SetVec4(const std::string& name, const glm::vec4& value);
 		void SetColor(const std::string& name, const glm::vec4& value);
 		void SetMatrix4fv(const std::string& name, const glm::mat4& matrix);
+		void SetVec2(const std::string& name, const glm::vec2& value);
 
 	private:
 		std::string m_shaderPath;

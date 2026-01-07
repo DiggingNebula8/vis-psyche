@@ -57,6 +57,12 @@ namespace VizEngine
 		// Color editors
 		bool ColorEdit3(const char* label, float* color);
 		bool ColorEdit4(const char* label, float* color);
+
+		// Layout
+		bool CollapsingHeader(const char* label);
+		
+		// Integers
+		bool SliderInt(const char* label, int* value, int min, int max);
 		
 		// Selection
 		bool Selectable(const char* label, bool selected);
