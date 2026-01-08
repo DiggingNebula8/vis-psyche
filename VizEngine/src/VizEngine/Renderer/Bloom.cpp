@@ -113,40 +113,35 @@ namespace VizEngine
 
 		for (int i = 0; i < m_BlurPasses; ++i)
 		{
-			// Determine targets for this iteration (explicit to avoid read/write hazards)
-			std::shared_ptr<Framebuffer> horizTargetFB = (i % 2 == 0) ? m_BlurFB1 : m_BlurFB2;
-			std::shared_ptr<Texture> horizTargetTex = (i % 2 == 0) ? m_BlurTexture1 : m_BlurTexture2;
-			std::shared_ptr<Framebuffer> vertTargetFB = (i % 2 == 0) ? m_BlurFB2 : m_BlurFB1;
-			std::shared_ptr<Texture> vertTargetTex = (i % 2 == 0) ? m_BlurTexture2 : m_BlurTexture1;
+			// Alternate targets: if source is Blur2, write to Blur1, and vice versa
+			bool useBlur1AsHorizTarget = (sourceTexture == m_BlurTexture2);
+			
+			std::shared_ptr<Framebuffer> horizTargetFB = useBlur1AsHorizTarget ? m_BlurFB1 : m_BlurFB2;
+			std::shared_ptr<Texture> horizTargetTex = useBlur1AsHorizTarget ? m_BlurTexture1 : m_BlurTexture2;
+			std::shared_ptr<Framebuffer> vertTargetFB = useBlur1AsHorizTarget ? m_BlurFB2 : m_BlurFB1;
+			std::shared_ptr<Texture> vertTargetTex = useBlur1AsHorizTarget ? m_BlurTexture2 : m_BlurTexture1;
 
 			// Horizontal pass: read from sourceTexture, write to horizTargetFB
 			horizTargetFB->Bind();
 			glClear(GL_COLOR_BUFFER_BIT);
-
 			m_BlurShader->SetBool("u_Horizontal", true);
 			m_BlurShader->SetInt("u_Image", 0);
-
 			sourceTexture->Bind(0);
 			m_Quad->Render();
-
 			horizTargetFB->Unbind();
 
 			// Vertical pass: read from horizTargetTex, write to vertTargetFB
 			vertTargetFB->Bind();
 			glClear(GL_COLOR_BUFFER_BIT);
-
 			m_BlurShader->SetBool("u_Horizontal", false);
 			m_BlurShader->SetInt("u_Image", 0);
-
 			horizTargetTex->Bind(0);
 			m_Quad->Render();
-
 			vertTargetFB->Unbind();
 
 			// Update source for next iteration
 			sourceTexture = vertTargetTex;
 		}
-
 		// Return final blurred result
 		return sourceTexture;
 	}
