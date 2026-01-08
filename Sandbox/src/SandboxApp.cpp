@@ -249,6 +249,11 @@ public:
 		// PBR Rendering Setup (Chapter 33)
 		// =========================================================================
 		m_DefaultLitShader = std::make_unique<VizEngine::Shader>("resources/shaders/defaultlit.shader");
+		if (!m_DefaultLitShader->IsValid())
+		{
+			VP_ERROR("Failed to load m_DefaultLitShader - cannot initialize PBR rendering!");
+			return;
+		}
 		m_SphereMesh = std::shared_ptr<VizEngine::Mesh>(VizEngine::Mesh::CreateSphere(1.0f, 32).release());
 		VP_INFO("PBR rendering initialized");
 
@@ -459,21 +464,29 @@ public:
 		else
 		{
 			// HDR unavailable - fall back to direct LDR rendering
-			VP_WARN("HDR rendering disabled, falling back to LDR path");
-			
-			// Render directly to screen without HDR
-			renderer.Clear(m_ClearColor);
-			
-			// Setup shader with all common uniforms
-			SetupDefaultLitShader();
-			
-			// Render scene
-			RenderSceneObjects();
-				
-			// Render skybox
-			if (m_ShowSkybox && m_Skybox)
+			if (!m_HdrFallbackWarned)
 			{
-				m_Skybox->Render(m_Camera);
+				VP_WARN("HDR rendering disabled, falling back to LDR path");
+				m_HdrFallbackWarned = true;
+			}
+			
+			// Only proceed if m_DefaultLitShader is valid
+			if (m_DefaultLitShader)
+			{
+				// Render directly to screen without HDR
+				renderer.Clear(m_ClearColor);
+				
+				// Setup shader with all common uniforms
+				SetupDefaultLitShader();
+				
+				// Render scene
+				RenderSceneObjects();
+					
+				// Render skybox
+				if (m_ShowSkybox && m_Skybox)
+				{
+					m_Skybox->Render(m_Camera);
+				}
 			}
 		}
 
@@ -1318,6 +1331,7 @@ private:
 	float m_Gamma = 2.2f;
 	float m_WhitePoint = 4.0f;      // For Reinhard Extended
 	bool m_HDREnabled = true;       // Tracks HDR pipeline availability
+	bool m_HdrFallbackWarned = false;  // One-time warning flag for HDR fallback
 
 	// Post-Processing (Chapter 36)
 	std::unique_ptr<VizEngine::Bloom> m_Bloom;
