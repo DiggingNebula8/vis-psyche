@@ -440,53 +440,8 @@ public:
 			m_HDRFramebuffer->Bind();
 			renderer.Clear(m_ClearColor);
 
-			m_DefaultLitShader->Bind();
-
-		// Set camera matrices
-		m_DefaultLitShader->SetMatrix4fv("u_View", m_Camera.GetViewMatrix());
-		m_DefaultLitShader->SetMatrix4fv("u_Projection", m_Camera.GetProjectionMatrix());
-		m_DefaultLitShader->SetVec3("u_ViewPos", m_Camera.GetPosition());
-
-		// Set PBR point lights
-		m_DefaultLitShader->SetInt("u_LightCount", 4);
-		for (int i = 0; i < 4; ++i)
-		{
-			m_DefaultLitShader->SetVec3("u_LightPositions[" + std::to_string(i) + "]", m_PBRLightPositions[i]);
-			m_DefaultLitShader->SetVec3("u_LightColors[" + std::to_string(i) + "]", m_PBRLightColors[i]);
-		}
-
-		// Set directional light from ImGui Lighting panel
-		m_DefaultLitShader->SetBool("u_UseDirLight", true);
-		m_DefaultLitShader->SetVec3("u_DirLightDirection", m_Light.GetDirection());
-		m_DefaultLitShader->SetVec3("u_DirLightColor", m_Light.Diffuse * 2.0f);
-
-		// Set shadow mapping uniforms
-		m_DefaultLitShader->SetMatrix4fv("u_LightSpaceMatrix", m_LightSpaceMatrix);
-		if (m_ShadowMapDepth)
-		{
-			m_ShadowMapDepth->Bind(1);
-			m_DefaultLitShader->SetInt("u_ShadowMap", 1);
-		}
-
-		// Bind IBL textures (Chapter 34)
-		if (m_UseIBL && m_IrradianceMap && m_PrefilteredMap && m_BRDFLut)
-		{
-			m_IrradianceMap->Bind(5);
-			m_DefaultLitShader->SetInt("u_IrradianceMap", 5);
-
-			m_PrefilteredMap->Bind(6);
-			m_DefaultLitShader->SetInt("u_PrefilteredMap", 6);
-
-			m_BRDFLut->Bind(7);
-			m_DefaultLitShader->SetInt("u_BRDF_LUT", 7);
-
-			m_DefaultLitShader->SetFloat("u_MaxReflectionLOD", 4.0f);  // maxMipLevels - 1
-			m_DefaultLitShader->SetBool("u_UseIBL", true);
-		}
-		else
-		{
-			m_DefaultLitShader->SetBool("u_UseIBL", false);
-		}
+			// Setup shader with all common uniforms
+			SetupDefaultLitShader();
 
 			// Render scene objects with PBR
 			RenderSceneObjects();
@@ -509,61 +464,16 @@ public:
 			// Render directly to screen without HDR
 			renderer.Clear(m_ClearColor);
 			
-			if (m_DefaultLitShader)
+			// Setup shader with all common uniforms
+			SetupDefaultLitShader();
+			
+			// Render scene
+			RenderSceneObjects();
+				
+			// Render skybox
+			if (m_ShowSkybox && m_Skybox)
 			{
-				m_DefaultLitShader->Bind();
-				
-				// Set camera matrices
-				m_DefaultLitShader->SetMatrix4fv("u_View", m_Camera.GetViewMatrix());
-				m_DefaultLitShader->SetMatrix4fv("u_Projection", m_Camera.GetProjectionMatrix());
-				m_DefaultLitShader->SetVec3("u_ViewPos", m_Camera.GetPosition());
-				
-				// Set PBR point lights
-				m_DefaultLitShader->SetInt("u_LightCount", 4);
-				for (int i = 0; i < 4; ++i)
-				{
-					m_DefaultLitShader->SetVec3("u_LightPositions[" + std::to_string(i) + "]", m_PBRLightPositions[i]);
-					m_DefaultLitShader->SetVec3("u_LightColors[" + std::to_string(i) + "]", m_PBRLightColors[i]);
-				}
-				
-				// Set directional light
-				m_DefaultLitShader->SetBool("u_UseDirLight", true);
-				m_DefaultLitShader->SetVec3("u_DirLightDirection", m_Light.GetDirection());
-				m_DefaultLitShader->SetVec3("u_DirLightColor", m_Light.Diffuse * 2.0f);
-				
-				// Set shadow mapping uniforms
-				m_DefaultLitShader->SetMatrix4fv("u_LightSpaceMatrix", m_LightSpaceMatrix);
-				if (m_ShadowMapDepth)
-				{
-					m_ShadowMapDepth->Bind(1);
-					m_DefaultLitShader->SetInt("u_ShadowMap", 1);
-				}
-				
-				// Bind IBL textures
-				if (m_UseIBL && m_IrradianceMap && m_PrefilteredMap && m_BRDFLut)
-				{
-					m_IrradianceMap->Bind(5);
-					m_DefaultLitShader->SetInt("u_IrradianceMap", 5);
-					m_PrefilteredMap->Bind(6);
-					m_DefaultLitShader->SetInt("u_PrefilteredMap", 6);
-					m_BRDFLut->Bind(7);
-					m_DefaultLitShader->SetInt("u_BRDF_LUT", 7);
-					m_DefaultLitShader->SetFloat("u_MaxReflectionLOD", 4.0f);
-					m_DefaultLitShader->SetBool("u_UseIBL", true);
-				}
-				else
-				{
-					m_DefaultLitShader->SetBool("u_UseIBL", false);
-				}
-				
-				// Render scene
-				RenderSceneObjects();
-				
-				// Render skybox
-				if (m_ShowSkybox && m_Skybox)
-				{
-					m_Skybox->Render(m_Camera);
-				}
+				m_Skybox->Render(m_Camera);
 			}
 		}
 
@@ -1260,6 +1170,59 @@ private:
 
 			obj.MeshPtr->Bind();
 			renderer.Draw(obj.MeshPtr->GetVertexArray(), obj.MeshPtr->GetIndexBuffer(), *m_DefaultLitShader);
+		}
+	}
+
+	// =========================================================================
+	// Helper: Setup default lit shader with common uniforms
+	// =========================================================================
+	void SetupDefaultLitShader()
+	{
+		if (!m_DefaultLitShader) return;
+		
+		m_DefaultLitShader->Bind();
+		
+		// Set camera matrices
+		m_DefaultLitShader->SetMatrix4fv("u_View", m_Camera.GetViewMatrix());
+		m_DefaultLitShader->SetMatrix4fv("u_Projection", m_Camera.GetProjectionMatrix());
+		m_DefaultLitShader->SetVec3("u_ViewPos", m_Camera.GetPosition());
+		
+		// Set PBR point lights
+		m_DefaultLitShader->SetInt("u_LightCount", 4);
+		for (int i = 0; i < 4; ++i)
+		{
+			m_DefaultLitShader->SetVec3("u_LightPositions[" + std::to_string(i) + "]", m_PBRLightPositions[i]);
+			m_DefaultLitShader->SetVec3("u_LightColors[" + std::to_string(i) + "]", m_PBRLightColors[i]);
+		}
+		
+		// Set directional light
+		m_DefaultLitShader->SetBool("u_UseDirLight", true);
+		m_DefaultLitShader->SetVec3("u_DirLightDirection", m_Light.GetDirection());
+		m_DefaultLitShader->SetVec3("u_DirLightColor", m_Light.Diffuse * 2.0f);
+		
+		// Set shadow mapping uniforms
+		m_DefaultLitShader->SetMatrix4fv("u_LightSpaceMatrix", m_LightSpaceMatrix);
+		if (m_ShadowMapDepth)
+		{
+			m_ShadowMapDepth->Bind(1);
+			m_DefaultLitShader->SetInt("u_ShadowMap", 1);
+		}
+		
+		// Bind IBL textures
+		if (m_UseIBL && m_IrradianceMap && m_PrefilteredMap && m_BRDFLut)
+		{
+			m_IrradianceMap->Bind(5);
+			m_DefaultLitShader->SetInt("u_IrradianceMap", 5);
+			m_PrefilteredMap->Bind(6);
+			m_DefaultLitShader->SetInt("u_PrefilteredMap", 6);
+			m_BRDFLut->Bind(7);
+			m_DefaultLitShader->SetInt("u_BRDF_LUT", 7);
+			m_DefaultLitShader->SetFloat("u_MaxReflectionLOD", 4.0f);
+			m_DefaultLitShader->SetBool("u_UseIBL", true);
+		}
+		else
+		{
+			m_DefaultLitShader->SetBool("u_UseIBL", false);
 		}
 	}
 
