@@ -1,4 +1,5 @@
 #include "Mesh.h"
+#include <cmath>
 
 namespace VizEngine
 {
@@ -192,6 +193,63 @@ namespace VizEngine
 			0, 1, 2,
 			2, 3, 0
 		};
+
+		return std::make_unique<Mesh>(vertices, indices);
+	}
+
+	std::unique_ptr<Mesh> Mesh::CreateSphere(float radius, int segments)
+	{
+		// Generate UV sphere with proper normals for PBR lighting
+		std::vector<Vertex> vertices;
+		std::vector<unsigned int> indices;
+
+		glm::vec4 white(1.0f, 1.0f, 1.0f, 1.0f);
+		const float PI = 3.14159265359f;
+
+		// Generate vertices
+		for (int y = 0; y <= segments; ++y)
+		{
+			for (int x = 0; x <= segments; ++x)
+			{
+				// Spherical coordinates
+				float xSegment = static_cast<float>(x) / static_cast<float>(segments);
+				float ySegment = static_cast<float>(y) / static_cast<float>(segments);
+				
+				float xPos = std::cos(xSegment * 2.0f * PI) * std::sin(ySegment * PI);
+				float yPos = std::cos(ySegment * PI);
+				float zPos = std::sin(xSegment * 2.0f * PI) * std::sin(ySegment * PI);
+
+				glm::vec3 position(xPos * radius, yPos * radius, zPos * radius);
+				glm::vec3 normal(xPos, yPos, zPos);  // Normal = position normalized (unit sphere)
+				glm::vec2 texCoords(xSegment, ySegment);
+
+				vertices.emplace_back(
+					glm::vec4(position, 1.0f),
+					glm::normalize(normal),
+					white,
+					texCoords
+				);
+			}
+		}
+
+		// Generate indices
+		for (int y = 0; y < segments; ++y)
+		{
+			for (int x = 0; x < segments; ++x)
+			{
+				unsigned int current = y * (segments + 1) + x;
+				unsigned int next = current + segments + 1;
+
+				// Two triangles per quad
+				indices.push_back(current);
+				indices.push_back(next);
+				indices.push_back(current + 1);
+
+				indices.push_back(current + 1);
+				indices.push_back(next);
+				indices.push_back(next + 1);
+			}
+		}
 
 		return std::make_unique<Mesh>(vertices, indices);
 	}

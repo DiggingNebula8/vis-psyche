@@ -45,13 +45,13 @@ namespace VizEngine
 
 		// Access loaded data
 		const std::vector<std::shared_ptr<Mesh>>& GetMeshes() const { return m_Meshes; }
-		const std::vector<PBRMaterial>& GetMaterials() const { return m_Materials; }
+		const std::vector<Material>& GetMaterials() const { return m_Materials; }
 
 		// Get the material index for a specific mesh
 		size_t GetMaterialIndexForMesh(size_t meshIndex) const;
 		
 		// Get the material for a specific mesh (convenience)
-		const PBRMaterial& GetMaterialForMesh(size_t meshIndex) const;
+		const Material& GetMaterialForMesh(size_t meshIndex) const;
 
 		// Model info
 		const std::string& GetName() const { return m_Name; }
@@ -76,14 +76,15 @@ namespace VizEngine
 		std::string m_Directory;  // For resolving relative texture paths
 
 		std::vector<std::shared_ptr<Mesh>> m_Meshes;
-		std::vector<PBRMaterial> m_Materials;
+		std::vector<Material> m_Materials;
 		std::vector<size_t> m_MeshMaterialIndices;  // Material index for each mesh
 
 		// Texture cache to avoid reloading same texture
 		std::unordered_map<int, std::shared_ptr<Texture>> m_TextureCache;
 
 		// Default material for meshes without one
-		static PBRMaterial s_DefaultMaterial;
+		static Material s_DefaultMaterial;
 	};
 }
+
 

@@ -11,6 +11,57 @@
 #include <glad/glad.h>
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
+#include <cmath>
+
+namespace
+{
+	// Unit cube vertices for cubemap rendering (36 vertices, positions only)
+	// Extracted as a file-scoped constant to avoid duplication across methods
+	static constexpr float UNIT_CUBE_VERTICES[] = {
+		// Back face
+		-1.0f, -1.0f, -1.0f,
+		 1.0f,  1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f,  1.0f, -1.0f,
+		-1.0f, -1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+		// Front face
+		-1.0f, -1.0f,  1.0f,
+		 1.0f, -1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		-1.0f,  1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
+		// Left face
+		-1.0f,  1.0f,  1.0f,
+		-1.0f,  1.0f, -1.0f,
+		-1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f,  1.0f,
+		-1.0f,  1.0f,  1.0f,
+		// Right face
+		 1.0f,  1.0f,  1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f,  1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f, -1.0f,  1.0f,
+		// Bottom face
+		-1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f,  1.0f,
+		 1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f, -1.0f,
+		// Top face
+		-1.0f,  1.0f, -1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f, -1.0f,
+		 1.0f,  1.0f,  1.0f,
+		-1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f,  1.0f
+	};
+}
 
 namespace VizEngine
 {
@@ -97,54 +148,11 @@ namespace VizEngine
 			glm::lookAt(glm::vec3(0.0f), glm::vec3( 0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))   // -Z
 		};
 
-		// Cube vertices (positions only, for fullscreen rendering)
-		float cubeVertices[] = {
-			// Positions
-			-1.0f, -1.0f, -1.0f,
-			 1.0f,  1.0f, -1.0f,
-			 1.0f, -1.0f, -1.0f,
-			 1.0f,  1.0f, -1.0f,
-			-1.0f, -1.0f, -1.0f,
-			-1.0f,  1.0f, -1.0f,
-
-			-1.0f, -1.0f,  1.0f,
-			 1.0f, -1.0f,  1.0f,
-			 1.0f,  1.0f,  1.0f,
-			 1.0f,  1.0f,  1.0f,
-			-1.0f,  1.0f,  1.0f,
-			-1.0f, -1.0f,  1.0f,
-
-			-1.0f,  1.0f,  1.0f,
-			-1.0f,  1.0f, -1.0f,
-			-1.0f, -1.0f, -1.0f,
-			-1.0f, -1.0f, -1.0f,
-			-1.0f, -1.0f,  1.0f,
-			-1.0f,  1.0f,  1.0f,
-
-			 1.0f,  1.0f,  1.0f,
-			 1.0f, -1.0f, -1.0f,
-			 1.0f,  1.0f, -1.0f,
-			 1.0f, -1.0f, -1.0f,
-			 1.0f,  1.0f,  1.0f,
-			 1.0f, -1.0f,  1.0f,
-
-			-1.0f, -1.0f, -1.0f,
-			 1.0f, -1.0f, -1.0f,
-			 1.0f, -1.0f,  1.0f,
-			 1.0f, -1.0f,  1.0f,
-			-1.0f, -1.0f,  1.0f,
-			-1.0f, -1.0f, -1.0f,
-
-			-1.0f,  1.0f, -1.0f,
-			 1.0f,  1.0f,  1.0f,
-			 1.0f,  1.0f, -1.0f,
-			 1.0f,  1.0f,  1.0f,
-			-1.0f,  1.0f, -1.0f,
-			-1.0f,  1.0f,  1.0f
-		};
-
-		// Setup cube VAO/VBO
-		auto cubeVBO = std::make_shared<VertexBuffer>(cubeVertices, sizeof(cubeVertices));
+		// Setup cube VAO/VBO using shared vertex data
+		auto cubeVBO = std::make_shared<VertexBuffer>(
+			UNIT_CUBE_VERTICES,
+			static_cast<unsigned int>(sizeof(UNIT_CUBE_VERTICES))
+		);
 		VertexBufferLayout layout;
 		layout.Push<float>(3);  // Position
 
@@ -212,4 +220,279 @@ namespace VizEngine
 
 		return cubemap;
 	}
+
+	std::shared_ptr<Texture> CubemapUtils::GenerateIrradianceMap(
+		std::shared_ptr<Texture> environmentMap,
+		int resolution)
+	{
+		if (!environmentMap || !environmentMap->IsCubemap())
+		{
+			VP_CORE_ERROR("GenerateIrradianceMap: Input must be a cubemap!");
+			return nullptr;
+		}
+
+		VP_CORE_INFO("Generating irradiance map ({}x{})...", resolution, resolution);
+
+		// Create empty irradiance cubemap
+		auto irradianceMap = std::make_shared<Texture>(resolution, true);
+
+		// Create framebuffer
+		auto framebuffer = std::make_shared<Framebuffer>(resolution, resolution);
+		unsigned int rbo;
+		glGenRenderbuffers(1, &rbo);
+		glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, resolution, resolution);
+
+		framebuffer->Bind();
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo);
+
+		// Verify framebuffer completeness before proceeding
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		{
+			VP_CORE_ERROR("GenerateIrradianceMap: Framebuffer incomplete after depth attachment");
+			glDeleteRenderbuffers(1, &rbo);
+			framebuffer->Unbind();
+			return nullptr;
+		}
+
+		// Load irradiance convolution shader
+		auto shader = std::make_shared<Shader>("resources/shaders/irradiance_convolution.shader");
+		if (!shader->IsValid())
+		{
+			VP_CORE_ERROR("Failed to load irradiance_convolution.shader");
+			glDeleteRenderbuffers(1, &rbo);
+			framebuffer->Unbind();
+			return nullptr;
+		}
+
+		// Capture matrices (same as equirect conversion)
+		glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
+		glm::mat4 captureViews[] = {
+			glm::lookAt(glm::vec3(0.0f), glm::vec3( 1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+			glm::lookAt(glm::vec3(0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+			glm::lookAt(glm::vec3(0.0f), glm::vec3( 0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
+			glm::lookAt(glm::vec3(0.0f), glm::vec3( 0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
+			glm::lookAt(glm::vec3(0.0f), glm::vec3( 0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+			glm::lookAt(glm::vec3(0.0f), glm::vec3( 0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
+		};
+
+		// Setup cube VAO/VBO using shared vertex data
+		auto cubeVBO = std::make_shared<VertexBuffer>(
+			UNIT_CUBE_VERTICES,
+			static_cast<unsigned int>(sizeof(UNIT_CUBE_VERTICES))
+		);
+		VertexBufferLayout layout;
+		layout.Push<float>(3);
+		auto cubeVAO = std::make_shared<VertexArray>();
+		cubeVAO->LinkVertexBuffer(*cubeVBO, layout);
+
+		shader->Bind();
+		shader->SetMatrix4fv("u_Projection", captureProjection);
+		environmentMap->Bind(0);
+		shader->SetInt("u_EnvironmentMap", 0);
+
+		GLint prevViewport[4];
+		glGetIntegerv(GL_VIEWPORT, prevViewport);
+		glViewport(0, 0, resolution, resolution);
+
+		for (unsigned int i = 0; i < 6; ++i)
+		{
+			shader->SetMatrix4fv("u_View", captureViews[i]);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+				GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, irradianceMap->GetID(), 0);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+			cubeVAO->Bind();
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
+
+		framebuffer->Unbind();
+		glViewport(prevViewport[0], prevViewport[1], prevViewport[2], prevViewport[3]);
+		glDeleteRenderbuffers(1, &rbo);
+
+		VP_CORE_INFO("Irradiance map complete!");
+		return irradianceMap;
+	}
+
+	std::shared_ptr<Texture> CubemapUtils::GeneratePrefilteredMap(
+		std::shared_ptr<Texture> environmentMap,
+		int resolution)
+	{
+		if (!environmentMap || !environmentMap->IsCubemap())
+		{
+			VP_CORE_ERROR("GeneratePrefilteredMap: Input must be a cubemap!");
+			return nullptr;
+		}
+
+		VP_CORE_INFO("Generating pre-filtered environment map ({}x{})...", resolution, resolution);
+
+		// Create empty cubemap with mipmaps
+		auto prefilteredMap = std::make_shared<Texture>(resolution, true);
+
+		// Enable mipmaps and allocate mip storage
+		glBindTexture(GL_TEXTURE_CUBE_MAP, prefilteredMap->GetID());
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+		// Load prefilter shader
+		auto shader = std::make_shared<Shader>("resources/shaders/prefilter_environment.shader");
+		if (!shader->IsValid())
+		{
+			VP_CORE_ERROR("Failed to load prefilter_environment.shader");
+			return nullptr;
+		}
+
+		// Capture matrices
+		glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
+		glm::mat4 captureViews[] = {
+			glm::lookAt(glm::vec3(0.0f), glm::vec3( 1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+			glm::lookAt(glm::vec3(0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+			glm::lookAt(glm::vec3(0.0f), glm::vec3( 0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
+			glm::lookAt(glm::vec3(0.0f), glm::vec3( 0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
+			glm::lookAt(glm::vec3(0.0f), glm::vec3( 0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+			glm::lookAt(glm::vec3(0.0f), glm::vec3( 0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
+		};
+
+		// Setup cube VAO/VBO using shared vertex data
+		auto cubeVBO = std::make_shared<VertexBuffer>(
+			UNIT_CUBE_VERTICES,
+			static_cast<unsigned int>(sizeof(UNIT_CUBE_VERTICES))
+		);
+		VertexBufferLayout layout;
+		layout.Push<float>(3);
+		auto cubeVAO = std::make_shared<VertexArray>();
+		cubeVAO->LinkVertexBuffer(*cubeVBO, layout);
+
+		shader->Bind();
+		shader->SetMatrix4fv("u_Projection", captureProjection);
+		environmentMap->Bind(0);
+		shader->SetInt("u_EnvironmentMap", 0);
+
+		// Create framebuffer
+		auto framebuffer = std::make_shared<Framebuffer>(resolution, resolution);
+		framebuffer->Bind();
+
+		GLint prevViewport[4];
+		glGetIntegerv(GL_VIEWPORT, prevViewport);
+
+		// Create single RBO for all mip levels (reused by resizing)
+		// Must attach before checking framebuffer completeness
+		unsigned int rbo;
+		glGenRenderbuffers(1, &rbo);
+		glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, resolution, resolution);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo);
+
+		// Verify framebuffer is usable (now has depth attachment)
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		{
+			VP_CORE_ERROR("GeneratePrefilteredMap: Framebuffer not usable");
+			glDeleteRenderbuffers(1, &rbo);
+			framebuffer->Unbind();
+			return nullptr;
+		}
+
+		unsigned int maxMipLevels = 5;
+		for (unsigned int mip = 0; mip < maxMipLevels; ++mip)
+		{
+			// Calculate mip dimensions
+			unsigned int mipWidth = static_cast<unsigned int>(resolution * std::pow(0.5f, mip));
+			unsigned int mipHeight = mipWidth;
+
+			// Resize depth buffer for this mip size
+			glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);
+			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo);
+
+			glViewport(0, 0, mipWidth, mipHeight);
+
+			// Roughness for this mip level
+			float roughness = (float)mip / (float)(maxMipLevels - 1);
+			shader->SetFloat("u_Roughness", roughness);
+
+			// Render to each face at this mip level
+			for (unsigned int i = 0; i < 6; ++i)
+			{
+				shader->SetMatrix4fv("u_View", captureViews[i]);
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+					GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, prefilteredMap->GetID(), mip);
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+				cubeVAO->Bind();
+				glDrawArrays(GL_TRIANGLES, 0, 36);
+			}
+		}
+
+		glDeleteRenderbuffers(1, &rbo);
+
+		framebuffer->Unbind();
+		glViewport(prevViewport[0], prevViewport[1], prevViewport[2], prevViewport[3]);
+
+		VP_CORE_INFO("Pre-filtered environment map complete ({} mip levels)!", maxMipLevels);
+		return prefilteredMap;
+	}
+
+	std::shared_ptr<Texture> CubemapUtils::GenerateBRDFLUT(int resolution)
+	{
+		VP_CORE_INFO("Generating BRDF LUT ({}x{})...", resolution, resolution);
+
+		// Create 2D texture (RG16F format for scale + bias)
+		auto brdfLUT = std::make_shared<Texture>(
+			resolution, resolution,
+			GL_RG16F, GL_RG, GL_FLOAT
+		);
+
+		// Load BRDF integration shader
+		auto shader = std::make_shared<Shader>("resources/shaders/brdf_integration.shader");
+		if (!shader->IsValid())
+		{
+			VP_CORE_ERROR("Failed to load brdf_integration.shader");
+			return nullptr;
+		}
+
+		// Create framebuffer
+		auto framebuffer = std::make_shared<Framebuffer>(resolution, resolution);
+		framebuffer->AttachColorTexture(brdfLUT, 0);
+
+		if (!framebuffer->IsComplete())
+		{
+			VP_CORE_ERROR("BRDF LUT framebuffer incomplete!");
+			return nullptr;
+		}
+
+		// Fullscreen quad (clip space, position + UV)
+		float quadVertices[] = {
+			// Positions    // TexCoords
+			-1.0f,  1.0f, 0.0f,  0.0f, 1.0f,
+			-1.0f, -1.0f, 0.0f,  0.0f, 0.0f,
+			 1.0f,  1.0f, 0.0f,  1.0f, 1.0f,
+			 1.0f, -1.0f, 0.0f,  1.0f, 0.0f,
+		};
+
+		auto quadVBO = std::make_shared<VertexBuffer>(quadVertices, sizeof(quadVertices));
+		VertexBufferLayout layout;
+		layout.Push<float>(3);  // Position
+		layout.Push<float>(2);  // TexCoords
+
+		auto quadVAO = std::make_shared<VertexArray>();
+		quadVAO->LinkVertexBuffer(*quadVBO, layout);
+
+		GLint prevViewport[4];
+		glGetIntegerv(GL_VIEWPORT, prevViewport);
+
+		framebuffer->Bind();
+		glViewport(0, 0, resolution, resolution);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		shader->Bind();
+		quadVAO->Bind();
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+		framebuffer->Unbind();
+		glViewport(prevViewport[0], prevViewport[1], prevViewport[2], prevViewport[3]);
+
+		VP_CORE_INFO("BRDF LUT complete!");
+		return brdfLUT;
+	}
 }
+

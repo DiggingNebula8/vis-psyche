@@ -1,6 +1,7 @@
 #include "Texture.h"
 #include "VizEngine/Log.h"
 #include "stb_image.h"
+#include <vector>
 
 namespace VizEngine
 {
@@ -318,5 +319,86 @@ namespace VizEngine
 		glBindTexture(target, m_texture);
 		glTexParameterfv(target, GL_TEXTURE_BORDER_COLOR, color);
 		glBindTexture(target, 0);
+	}
+
+	// =========================================================================
+	// Static Utility Methods
+	// =========================================================================
+
+	unsigned int Texture::CreateNeutralLUT3D(int size)
+	{
+		// Validate size parameter to prevent division by zero and invalid textures
+		if (size <= 0)
+		{
+			VP_CORE_ERROR("CreateNeutralLUT3D: Invalid size {} (must be > 0)", size);
+			return 0;
+		}
+
+		if (size == 1)
+		{
+			VP_CORE_WARN("CreateNeutralLUT3D: size=1 would cause division by zero, clamping to 2");
+			size = 2;
+		}
+
+		const int totalTexels = size * size * size;
+		std::vector<float> lutData(totalTexels * 3);
+
+		// Generate identity mapping: input RGB = output RGB
+		for (int b = 0; b < size; ++b)
+		{
+			for (int g = 0; g < size; ++g)
+			{
+				for (int r = 0; r < size; ++r)
+				{
+					int index = (b * size * size + g * size + r) * 3;
+					lutData[index + 0] = r / float(size - 1);
+					lutData[index + 1] = g / float(size - 1);
+					lutData[index + 2] = b / float(size - 1);
+				}
+			}
+		}
+
+		// Create 3D texture
+		unsigned int textureID;
+		glGenTextures(1, &textureID);
+		glBindTexture(GL_TEXTURE_3D, textureID);
+
+		glTexImage3D(
+			GL_TEXTURE_3D,
+			0,                      // Mip level
+			GL_RGB16F,              // Internal format (HDR precision)
+			size, size, size,
+			0,                      // Border
+			GL_RGB,                 // Format
+			GL_FLOAT,               // Data type
+			lutData.data()
+		);
+
+		// Set texture parameters
+		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+		glBindTexture(GL_TEXTURE_3D, 0);
+
+		VP_CORE_INFO("Neutral 3D LUT created: {}x{}x{} (ID: {})", size, size, size, textureID);
+
+		return textureID;
+	}
+
+	void Texture::BindTexture3D(unsigned int textureID, unsigned int slot)
+	{
+		glActiveTexture(GL_TEXTURE0 + slot);
+		glBindTexture(GL_TEXTURE_3D, textureID);
+	}
+
+	void Texture::DeleteTexture3D(unsigned int textureID)
+	{
+		if (textureID != 0)
+		{
+			glDeleteTextures(1, &textureID);
+		}
 	}
 }

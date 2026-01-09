@@ -19,5 +19,9 @@ namespace VizEngine
 		// Shadow mapping helpers
 		void EnablePolygonOffset(float factor, float units);
 		void DisablePolygonOffset();
+
+		// Depth test control (for post-processing)
+		void EnableDepthTest();
+		void DisableDepthTest();
 	};
 }

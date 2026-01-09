@@ -63,7 +63,31 @@ namespace VizEngine
 		inline int GetHeight() const { return m_Height; }
 		inline unsigned int GetID() const { return m_texture; }
 		inline bool IsCubemap() const { return m_IsCubemap; }
-		inline bool IsHDR() const { return m_IsHDR; }
+	inline bool IsHDR() const { return m_IsHDR; }
+
+	// =========================================================================
+	// Static Utility Methods
+	// =========================================================================
+
+	/**
+	 * Create a neutral (identity) 3D color grading LUT.
+	 * @param size LUT dimensions (e.g., 16 for 16x16x16)
+	 * @return OpenGL texture ID for GL_TEXTURE_3D (caller owns, must delete)
+	 */
+	static unsigned int CreateNeutralLUT3D(int size = 16);
+
+	/**
+	 * Bind a 3D texture (e.g., color grading LUT) to a texture unit.
+	 * @param textureID OpenGL texture ID for GL_TEXTURE_3D
+	 * @param slot Texture unit (0-15)
+	 */
+	static void BindTexture3D(unsigned int textureID, unsigned int slot);
+
+	/**
+	 * Delete a 3D texture created by CreateNeutralLUT3D.
+	 * @param textureID OpenGL texture ID to delete
+	 */
+	static void DeleteTexture3D(unsigned int textureID);
 
 	private:
 		unsigned int m_texture;

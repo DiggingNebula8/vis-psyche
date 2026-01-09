@@ -8,13 +8,16 @@
 
 namespace VizEngine
 {
+	// Forward declaration
+	class Shader;
+
 	/**
 	 * PBR Material using the metallic-roughness workflow (glTF standard).
 	 * 
 	 * This is separate from the Phong Material in Light.h.
 	 * Use this for models loaded from glTF files.
 	 */
-	struct VizEngine_API PBRMaterial
+	struct VizEngine_API Material
 	{
 		std::string Name = "Unnamed";
 
@@ -22,6 +25,7 @@ namespace VizEngine
 		glm::vec4 BaseColor = glm::vec4(1.0f);  // RGBA albedo color
 		float Metallic = 0.0f;                   // 0 = dielectric, 1 = metal
 		float Roughness = 0.5f;                  // 0 = smooth/mirror, 1 = rough
+		float AO = 1.0f;                         // Ambient occlusion (1.0 = no occlusion)
 
 		// Textures (nullptr if not present)
 		std::shared_ptr<Texture> BaseColorTexture = nullptr;
@@ -41,15 +45,18 @@ namespace VizEngine
 		// Double-sided rendering
 		bool DoubleSided = false;
 
-		PBRMaterial() = default;
+		Material() = default;
 
 		// Simple constructor with just color
-		explicit PBRMaterial(const glm::vec4& baseColor)
+		explicit Material(const glm::vec4& baseColor)
 			: BaseColor(baseColor) {}
 
 		// Constructor with color and metallic/roughness
-		PBRMaterial(const glm::vec4& baseColor, float metallic, float roughness)
+		Material(const glm::vec4& baseColor, float metallic, float roughness)
 			: BaseColor(baseColor), Metallic(metallic), Roughness(roughness) {}
+
+		// Upload material uniforms to PBR shader
+		void Bind(Shader& shader) const;
 
 		// Helper methods
 		bool HasBaseColorTexture() const { return BaseColorTexture != nullptr; }
@@ -64,4 +71,5 @@ namespace VizEngine
 		}
 	};
 }
+
 

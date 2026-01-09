@@ -12,6 +12,7 @@ set(VIZENGINE_SOURCES
     src/VizEngine/Core/Mesh.cpp
     src/VizEngine/Core/Scene.cpp
     src/VizEngine/Core/Model.cpp
+    src/VizEngine/Core/Material.cpp
     src/VizEngine/Core/TinyGLTF.cpp
     src/VizEngine/Core/Input.cpp
     
@@ -27,9 +28,11 @@ set(VIZENGINE_SOURCES
     src/VizEngine/OpenGL/VertexArray.cpp
     src/VizEngine/OpenGL/VertexBuffer.cpp
     src/VizEngine/OpenGL/CubemapUtils.cpp
+    src/VizEngine/OpenGL/FullscreenQuad.cpp
     
     # Renderer
     src/VizEngine/Renderer/Skybox.cpp
+    src/VizEngine/Renderer/Bloom.cpp
     
     # GUI
     src/VizEngine/GUI/UIManager.cpp
@@ -74,9 +77,11 @@ set(VIZENGINE_HEADERS
     src/VizEngine/OpenGL/VertexBuffer.h
     src/VizEngine/OpenGL/VertexBufferLayout.h
     src/VizEngine/OpenGL/CubemapUtils.h
+    src/VizEngine/OpenGL/FullscreenQuad.h
     
     # Renderer headers
     src/VizEngine/Renderer/Skybox.h
+    src/VizEngine/Renderer/Bloom.h
     
     # GUI headers
     src/VizEngine/GUI/UIManager.h

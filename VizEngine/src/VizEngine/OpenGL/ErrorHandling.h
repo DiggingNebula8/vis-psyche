@@ -3,7 +3,7 @@
 #include "Commons.h"
 #include "VizEngine/Core.h"
 
-#define VP_ASSERT(x) if (!(x)) __debugbreak();
+
 
 namespace VizEngine
 {

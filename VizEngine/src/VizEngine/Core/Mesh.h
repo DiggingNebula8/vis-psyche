@@ -56,6 +56,7 @@ namespace VizEngine
 		static std::unique_ptr<Mesh> CreatePyramid();
 		static std::unique_ptr<Mesh> CreateCube();
 		static std::unique_ptr<Mesh> CreatePlane(float size = 1.0f);
+		static std::unique_ptr<Mesh> CreateSphere(float radius = 1.0f, int segments = 32);
 
 	private:
 		void SetupMesh(const float* vertexData, size_t vertexDataSize, const unsigned int* indices, size_t indexCount);

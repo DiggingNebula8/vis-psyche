@@ -17,6 +17,7 @@
 #include "VizEngine/OpenGL/Shader.h"
 #include "VizEngine/OpenGL/Texture.h"
 #include "VizEngine/OpenGL/Framebuffer.h"
+#include "VizEngine/OpenGL/FullscreenQuad.h"
 #include "VizEngine/OpenGL/CubemapUtils.h"
 #include "VizEngine/Renderer/Skybox.h"
 
