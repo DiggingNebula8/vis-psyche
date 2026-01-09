@@ -43,7 +43,8 @@ namespace VizEngine
 		if (!m_ExtractFB->IsComplete() || !m_BlurFB1->IsComplete() || !m_BlurFB2->IsComplete())
 		{
 			VP_CORE_ERROR("Bloom: Framebuffers not complete!");
-		m_IsValid = false;
+			m_IsValid = false;
+			return;
 		}
 
 		// ====================================================================
